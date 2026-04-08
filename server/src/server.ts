@@ -1,0 +1,60 @@
+import cors from "cors";
+import dotenv from "dotenv";
+import express, { Request, Response, NextFunction } from 'express';
+import connectDB from "./config/connectDB";
+import courseAdminRoutes from './routes/courses.admin.routes';
+import courseUserRoutes from './routes/courses.user.routes';
+import enrollmentRoutes from './routes/enrollment.routes';
+import testimonialRoutes from './routes/testimonial.routes';
+import headlineRoutes from './routes/headlines.routes';
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.use(async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('[App] DB unavailable:', err);
+    res.status(503).json({
+      success: false,
+      message: 'Database temporarily unavailable. Please retry in a moment.',
+    });
+  }
+});
+
+
+
+app.use("/courses-admin",courseAdminRoutes)
+
+
+app.use('/courses-user',courseUserRoutes)
+
+
+app.use('/enrollment',enrollmentRoutes)
+
+
+app.use('/testimonials',testimonialRoutes)
+
+
+app.use('/headlines',headlineRoutes)
+
+
+
+
+// -----------------------------------------------------------------------
+if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 3000;
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => console.log(`[App] Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error('[App] Failed to start server:', err);
+      process.exit(1);
+    });
+}
