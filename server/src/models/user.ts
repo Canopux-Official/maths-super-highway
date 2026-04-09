@@ -6,7 +6,7 @@ export interface IUser extends Document {
   password?: string;
   phone: string;
   dob?: Date;
-  role: 'admin' | 'student' | 'parent' | 'colleger';
+  role: 'admin' | 'student' | 'parent' | 'college';
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -21,7 +21,7 @@ const userSchema = new Schema<IUser>(
     dob: { type: Date },
     role: { 
       type: String, 
-      enum: ['admin', 'student', 'parent', 'colleger'], 
+      enum: ['admin', 'student', 'parent', 'college'], 
       default: 'student' 
     },
     isActive: { type: Boolean, default: true },

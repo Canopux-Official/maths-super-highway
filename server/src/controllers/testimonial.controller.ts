@@ -1,18 +1,20 @@
 import { Request, Response } from 'express';
 import Testimonial from '../models/testimonials';
+import mongoose from 'mongoose';
 
 // 1. Create Testimonial
 export const createTestimonial = async (req: Request, res: Response) => {
   try {
-    const { courseId, rating, message, userId } = req.body;
+    const { courseId, rating, message } = req.body;
     // const userId = req.user?._id; // Use this with Auth Middleware
+    const userId = "69d751dce6d76e43e343808d";
 
     // Check if the user already reviewed this course
     const existing = await Testimonial.findOne({ user: userId, course: courseId });
     if (existing) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "You have already reviewed this course. Please update your existing review." 
+      return res.status(400).json({
+        success: false,
+        message: "You have already reviewed this course. Please update your existing review."
       });
     }
 
@@ -33,7 +35,8 @@ export const createTestimonial = async (req: Request, res: Response) => {
 export const updateTestimonial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { rating, message, userId } = req.body;
+    const { rating, message } = req.body;
+    const userId = "69d751dce6d76e43e343808d";
 
     const testimonial = await Testimonial.findById(id);
 
@@ -60,7 +63,8 @@ export const updateTestimonial = async (req: Request, res: Response) => {
 export const deleteTestimonial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { userId, userRole } = req.body; // Assume role comes from middleware
+    const {userRole } = req.body; // Assume role comes from middleware
+    const userId = "69d751dce6d76e43e343808d";
 
     const testimonial = await Testimonial.findById(id);
     if (!testimonial) {
@@ -81,28 +85,62 @@ export const deleteTestimonial = async (req: Request, res: Response) => {
 };
 
 
-export const getLandingPageTestimonials = async (req: Request, res: Response) => {
-  try {
-    // 1. Fetch top testimonials (e.g., only 4 and 5 stars)
-    // 2. Limit to 6 or 9 so the landing page grid looks even
-    // 3. Populate user (to show who said it) and course (to show what they studied)
-    const testimonials = await Testimonial.find({ rating: { $gte: 4 } })
-      .populate('user', 'name') 
-      .populate('course', 'title')
-      .sort({ createdAt: -1 }) // Get the freshest ones first
-      .limit(6)
-      .lean();
 
+
+
+export const getMyTestimonialForCourse = async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.params;
+    const userId = "69d751dce6d76e43e343808d"; // replace with req.user?.id
+ 
+    const testimonial = await Testimonial.findOne({
+      user: new mongoose.Types.ObjectId(userId),
+      course: new mongoose.Types.ObjectId(courseId as any),
+    });
+ 
     return res.status(200).json({
       success: true,
-      count: testimonials.length,
-      data: testimonials
+      data: testimonial || null,
     });
   } catch (error: any) {
-    return res.status(500).json({ 
-      success: false, 
-      message: "Could not fetch testimonials for landing page",
-      error: error.message 
-    });
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+ 
+export const getPageTestimonialsPaginated = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+ 
+    const testimonials = await Testimonial.aggregate([
+      { $match: { course: new mongoose.Types.ObjectId(id as any) } },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          rating: 1,
+          comment: 1,
+          message: 1,
+          createdAt: 1,
+          "user.name": "$userDetails.name",
+        },
+      },
+    ]);
+ 
+    return res.status(200).json({ success: true, data: testimonials });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

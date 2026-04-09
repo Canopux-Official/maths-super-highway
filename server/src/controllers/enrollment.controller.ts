@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import Course from '../models/courses';
 import Enrollment from '../models/enrollment';
 
 // --- POST: Enroll in a Course ---
 export const enrollInCourse = async (req: Request, res: Response) => {
   try {
-    const { courseId,studentId} = req.body;
+    const { courseId} = req.body;
     // const studentId = req.user?._id; // Assuming user info is attached via auth middleware
+    const studentId = "69d751dce6d76e43e343808d";
 
     // 1. Check if course exists
     const course = await Course.findById(courseId);
@@ -37,8 +38,9 @@ export const enrollInCourse = async (req: Request, res: Response) => {
 // --- DELETE: Remove Enrollment (Unenroll) ---
 export const unenrollFromCourse = async (req: Request, res: Response) => {
   try {
-    const { courseId,studentId } = req.body;
+    const { courseId } = req.body;
     // const studentId = req.user?._id;
+    const studentId = "69d751dce6d76e43e343808d";
 
     const result = await Enrollment.findOneAndDelete({
       student: studentId,
@@ -52,6 +54,26 @@ export const unenrollFromCourse = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: 'Unenrolled successfully',
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const checkEnrollment = async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.params;
+    const studentId = "69d751dce6d76e43e343808d"; // replace with req.user?.id
+ 
+    const enrollment = await Enrollment.findOne({
+      student: new mongoose.Types.ObjectId(studentId),
+      course: new mongoose.Types.ObjectId(courseId as any),
+    });
+ 
+    return res.status(200).json({
+      success: true,
+      enrolled: !!enrollment,
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

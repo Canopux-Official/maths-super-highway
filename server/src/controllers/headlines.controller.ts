@@ -100,9 +100,9 @@ export const deleteHeadline = async (req: Request, res: Response) => {
 };
 
 // 4. Get Live Headlines (For User View)
-export const getLiveHeadlines = async (_req: Request, res: Response) => {
+export const getHeadlines = async (_req: Request, res: Response) => {
   try {
-    const headlines = await Headline.find({ isLive: true }).sort({ createdAt: -1 });
+    const headlines = await Headline.find({}).sort({ createdAt: -1 });
     return res.status(200).json({ success: true, data: headlines });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

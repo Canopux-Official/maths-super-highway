@@ -7,6 +7,8 @@ import courseUserRoutes from './routes/courses.user.routes';
 import enrollmentRoutes from './routes/enrollment.routes';
 import testimonialRoutes from './routes/testimonial.routes';
 import headlineRoutes from './routes/headlines.routes';
+import adminManageStudentRoutes from './routes/studentmanage.admin.routes'
+import landingPageRoutes from './routes/landingPage.routes';
 
 dotenv.config();
 
@@ -42,6 +44,12 @@ app.use('/testimonials',testimonialRoutes)
 
 
 app.use('/headlines',headlineRoutes)
+
+
+app.use('/admin-manage-student',adminManageStudentRoutes)
+
+
+app.use('/landing-page',landingPageRoutes)
 
 
 

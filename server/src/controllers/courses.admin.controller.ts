@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import Course, { ICourse } from '../models/courses';
 import Enrollment from '../models/enrollment';
 
@@ -56,24 +56,49 @@ export const getAdminSubItems = async (req: Request, res: Response) => {
     }
 };
 
-// 2. Get Leaf Node Details + Enrolled Students
 export const getAdminPageDetails = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
+        // 1. Basic check for the course
         const page = await Course.findById(id);
         if (!page) return res.status(404).json({ success: false, message: 'Page not found' });
 
-        // Fetch all enrollments for this specific page/course
-        const enrollments = await Enrollment.find({ course: id })
-            .populate('student', 'name email phone') // Only get necessary student info
-            .lean();
+        // 2. Use Aggregation instead of find().populate()
+        const enrollmentsWithStudents = await Enrollment.aggregate([
+            {
+                // Filter for this specific course ID
+                $match: { course: new mongoose.Types.ObjectId(id as any) }
+            },
+            {
+                // Perform the "JOIN" with the users collection
+                $lookup: {
+                    from: 'users',           // The ACTUAL name of the collection in MongoDB (usually lowercase plural)
+                    localField: 'student',   // The field in Enrollment
+                    foreignField: '_id',     // The field in User
+                    as: 'studentDetails'     // Where to put the result
+                }
+            },
+            {
+                // Since lookup returns an array, turn it into a single object
+                $unwind: '$studentDetails'
+            },
+            {
+                // Shape the output to match what you want
+                $project: {
+                    _id: 0,
+                    name: '$studentDetails.name',
+                    email: '$studentDetails.email',
+                    phone: '$studentDetails.phone'
+                }
+            }
+        ]);
 
         return res.status(200).json({
             success: true,
             data: {
                 details: page,
-                enrolledStudents: enrollments.map(e => e.student) // Flatten the structure
+                enrolledStudents: enrollmentsWithStudents
             }
         });
     } catch (error: any) {
@@ -100,7 +125,7 @@ export const createCourse = async (req: Request, res: Response) => {
                 page: [],
             };
 
-            const childType = itemType ?? 'category';
+            const childType = itemType ?? 'folder';
             if (!allowedChildren[parent.itemType as string].includes(childType)) {
                 return res.status(400).json({
                     success: false,
