@@ -39,7 +39,7 @@ function App() {
       </ThemeProvider> */}
 
       {/* student dashbaord */}
-      {/* <ThemeProvider theme={mathTheme}>
+      <ThemeProvider theme={mathTheme}>
         <Router>
           <StudentSidebar>
             <Routes>
@@ -52,10 +52,10 @@ function App() {
             </Routes>
           </StudentSidebar>
         </Router>
-      </ThemeProvider> */}
+      </ThemeProvider>
 
       {/* landing page */}
-      <ThemeProvider theme={theme}>
+      {/* <ThemeProvider theme={theme}>
         <CssBaseline />
         <Box>
           <Header />
@@ -65,7 +65,7 @@ function App() {
           <AboutUs />
           <Footer />
         </Box>
-      </ThemeProvider>
+      </ThemeProvider> */}
     </>
   )
 }
