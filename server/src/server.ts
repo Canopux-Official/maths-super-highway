@@ -1,5 +1,7 @@
-import cors from "cors";
 import dotenv from "dotenv";
+dotenv.config();
+
+import cors from "cors";
 import express, { Request, Response, NextFunction } from 'express';
 import connectDB from "./config/connectDB";
 import courseAdminRoutes from './routes/courses.admin.routes';
@@ -9,8 +11,8 @@ import testimonialRoutes from './routes/testimonial.routes';
 import headlineRoutes from './routes/headlines.routes';
 import adminManageStudentRoutes from './routes/studentmanage.admin.routes'
 import landingPageRoutes from './routes/landingPage.routes';
-
-dotenv.config();
+import authRoutes from './routes/auth.routes';
+import { verifyAuth, verifyRole } from './middlewares/auth.middleware';
 
 const app = express();
 app.use(cors());
@@ -29,30 +31,21 @@ app.use(async (_req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+app.use('/auth', authRoutes);
 
+app.use("/courses-admin", verifyAuth, verifyRole(['admin']), courseAdminRoutes);
 
-app.use("/courses-admin",courseAdminRoutes)
+app.use('/courses-user', verifyAuth, courseUserRoutes);
 
+app.use('/enrollment', verifyAuth, enrollmentRoutes);
 
-app.use('/courses-user',courseUserRoutes)
+app.use('/testimonials', testimonialRoutes);
 
+app.use('/headlines', headlineRoutes);
 
-app.use('/enrollment',enrollmentRoutes)
+app.use('/admin-manage-student', verifyAuth, verifyRole(['admin']), adminManageStudentRoutes);
 
-
-app.use('/testimonials',testimonialRoutes)
-
-
-app.use('/headlines',headlineRoutes)
-
-
-app.use('/admin-manage-student',adminManageStudentRoutes)
-
-
-app.use('/landing-page',landingPageRoutes)
-
-
-
+app.use('/landing-page', landingPageRoutes);
 
 // -----------------------------------------------------------------------
 if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
@@ -66,3 +59,5 @@ if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
       process.exit(1);
     });
 }
+
+export default app;

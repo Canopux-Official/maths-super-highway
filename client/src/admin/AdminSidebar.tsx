@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Box, Drawer, AppBar, Toolbar, List, Typography,
   Divider, IconButton, ListItem, ListItemButton,
@@ -11,7 +12,8 @@ import {
   Calculate as CourseIcon,
   School as UserIcon,
   Campaign as HeadlineIcon,
-  ChevronRight as ChevronIcon
+  ChevronRight as ChevronIcon,
+  Logout as LogoutIcon
 } from '@mui/icons-material';
 
 const drawerWidth = 264;
@@ -28,8 +30,15 @@ const menuItems = [
 export default function AdminSidebar({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleDrawerToggle = () => setMobileOpen(prev => !prev);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const DrawerContent = () => (
     <Box
@@ -114,10 +123,13 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
       <Box sx={{ p: 1.5, borderTop: '1px solid rgba(255,255,255,0.07)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: '10px', px: 1.25, py: 1 }}>
           <Avatar sx={{ width: 30, height: 30, bgcolor: '#1e3a5f', fontSize: 11, fontWeight: 600, color: '#90caf9' }}>AD</Avatar>
-          <Box>
+          <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontSize: 12, fontWeight: 500, color: 'white', lineHeight: 1.3 }}>Admin User</Typography>
             <Typography sx={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', lineHeight: 1.3 }}>Administrator</Typography>
           </Box>
+          <IconButton size="small" onClick={handleLogout} sx={{ color: 'rgba(255,255,255,0.5)', '&:hover': { color: 'error.light', bgcolor: 'rgba(255,0,0,0.1)' } }}>
+            <LogoutIcon fontSize="small" />
+          </IconButton>
         </Box>
       </Box>
     </Box>

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import AdminSidebar from './admin/AdminSidebar'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@emotion/react';
@@ -9,6 +8,7 @@ import HeadlineManagement from './admin/headlines/components/HeadlineManagement'
 import StudentSidebar from './student/StudentSidebar';
 import AllCoursesTab from './student/course/components/CourseTab';
 import EnrolledCoursesTab from './student/enrollment/components/EnrollmentTab';
+import ProfilePage from './student/profile/components/ProfilePage';
 import theme from './landingPage/theme';
 import { Box, CssBaseline } from '@mui/material';
 import Header from './landingPage/components/Header';
@@ -18,55 +18,82 @@ import Testimonials from './landingPage/components/Testimonial';
 import AboutUs from './landingPage/components/AboutUs';
 import Footer from './landingPage/components/Footer';
 
+import { AuthProvider } from './context/AuthProvider';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './auth/components/LoginPage';
+import SignupPage from './auth/components/SignupPage';
+
 function App() {
 
   return (
-    <>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <Box>
+                <Header />
+                <Hero />
+                <LandingCourses />
+                <Testimonials />
+                <AboutUs />
+                <Footer />
+              </Box>
+            </ThemeProvider>
+          } />
 
-    {/* admin dashboard */}
-      {/* <ThemeProvider theme={mathTheme}>
-        <Router>
-          <AdminSidebar>
-            <Routes>
-              <Route path="/" element={<Navigate to="/admin/headlines" />} />
-               <Route path="/admin/headlines" element={<HeadlineManagement />} /> 
-               <Route path="/admin/courses" element={<Courses />} /> 
-               <Route path="/admin/users" element={<UserManagement />} /> 
-           
-            </Routes>
-          </AdminSidebar>
-        </Router>
-      </ThemeProvider> */}
+          <Route path="/login" element={
+            <ThemeProvider theme={mathTheme}>
+              <CssBaseline />
+              <LoginPage />
+            </ThemeProvider>
+          } />
 
-      {/* student dashbaord */}
-      <ThemeProvider theme={mathTheme}>
-        <Router>
-          <StudentSidebar>
-            <Routes>
-              <Route path="/" element={<Navigate to="/student/courses" />} />
-              <Route path="/admin/headlines" element={<HeadlineManagement />} />
-              <Route path="/student/enrolled-courses" element={<EnrolledCoursesTab />} />
-              <Route path="/student/courses" element={<AllCoursesTab />} />
-              <Route path="/student/users" element={<UserManagement />} />
+          <Route path="/signup" element={
+            <ThemeProvider theme={mathTheme}>
+              <CssBaseline />
+              <SignupPage />
+            </ThemeProvider>
+          } />
 
-            </Routes>
-          </StudentSidebar>
-        </Router>
-      </ThemeProvider>
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={
+            <ThemeProvider theme={mathTheme}>
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSidebar>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/admin/headlines" replace />} />
+                    <Route path="headlines" element={<HeadlineManagement />} />
+                    <Route path="courses" element={<Courses />} />
+                    <Route path="users" element={<UserManagement />} />
+                  </Routes>
+                </AdminSidebar>
+              </ProtectedRoute>
+            </ThemeProvider>
+          } />
 
-      {/* landing page */}
-      {/* <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Box>
-          <Header />
-          <Hero />
-          <LandingCourses />
-          <Testimonials />
-          <AboutUs />
-          <Footer />
-        </Box>
-      </ThemeProvider> */}
-    </>
+          {/* Student Routes */}
+          <Route path="/student/*" element={
+            <ThemeProvider theme={mathTheme}>
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentSidebar>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/student/courses" replace />} />
+                    <Route path="enrolled-courses" element={<EnrolledCoursesTab />} />
+                    <Route path="courses" element={<AllCoursesTab />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                  </Routes>
+                </StudentSidebar>
+              </ProtectedRoute>
+            </ThemeProvider>
+          } />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 
