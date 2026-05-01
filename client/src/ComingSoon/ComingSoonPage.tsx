@@ -56,9 +56,9 @@ export default function ComingSoonPage() {
         }
 
         .logo-icon {
-          width: 56px;
-          height: 56px;
-          background: #1a1a2e;
+          width: 100px;
+          height: 100px;
+          // background: #1a1a2e;
           border-radius: 14px;
           display: flex;
           align-items: center;
@@ -142,31 +142,31 @@ export default function ComingSoonPage() {
 
         {/* Paper planes */}
         <svg className="plane plane-1" width="44" height="44" viewBox="0 0 44 44" fill="none">
-          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#e8b84b" stroke="#c9973a" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M22 26L42 4" stroke="#c9973a" strokeWidth="1.5"/>
+          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#e8b84b" stroke="#c9973a" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M22 26L42 4" stroke="#c9973a" strokeWidth="1.5" />
         </svg>
         <svg className="plane plane-2" width="38" height="38" viewBox="0 0 44 44" fill="none">
-          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#e05c3a" stroke="#c04428" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M22 26L42 4" stroke="#c04428" strokeWidth="1.5"/>
+          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#e05c3a" stroke="#c04428" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M22 26L42 4" stroke="#c04428" strokeWidth="1.5" />
         </svg>
         <svg className="plane plane-3" width="32" height="32" viewBox="0 0 44 44" fill="none">
-          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#5abfcf" stroke="#3aa0b0" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M22 26L42 4" stroke="#3aa0b0" strokeWidth="1.5"/>
+          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#5abfcf" stroke="#3aa0b0" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M22 26L42 4" stroke="#3aa0b0" strokeWidth="1.5" />
         </svg>
         <svg className="plane plane-4" width="28" height="28" viewBox="0 0 44 44" fill="none">
-          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#e8b84b" stroke="#c9973a" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M22 26L42 4" stroke="#c9973a" strokeWidth="1.5"/>
+          <path d="M2 22L42 4L28 42L22 26L2 22Z" fill="#e8b84b" stroke="#c9973a" strokeWidth="1.5" strokeLinejoin="round" />
+          <path d="M22 26L42 4" stroke="#c9973a" strokeWidth="1.5" />
         </svg>
 
         {/* Clouds SVG at bottom */}
         <svg className="clouds" viewBox="0 0 1440 180" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <ellipse cx="200" cy="200" rx="260" ry="90" fill="#e8e4dc"/>
-          <ellipse cx="400" cy="210" rx="200" ry="80" fill="#ede9e0"/>
-          <ellipse cx="650" cy="220" rx="300" ry="100" fill="#e8e4dc"/>
-          <ellipse cx="950" cy="215" rx="280" ry="95" fill="#ede9e0"/>
-          <ellipse cx="1200" cy="205" rx="250" ry="85" fill="#e8e4dc"/>
-          <ellipse cx="1400" cy="210" rx="180" ry="75" fill="#ede9e0"/>
-          <rect x="0" y="155" width="1440" height="30" fill="#e0dbd2"/>
+          <ellipse cx="200" cy="200" rx="260" ry="90" fill="#e8e4dc" />
+          <ellipse cx="400" cy="210" rx="200" ry="80" fill="#ede9e0" />
+          <ellipse cx="650" cy="220" rx="300" ry="100" fill="#e8e4dc" />
+          <ellipse cx="950" cy="215" rx="280" ry="95" fill="#ede9e0" />
+          <ellipse cx="1200" cy="205" rx="250" ry="85" fill="#e8e4dc" />
+          <ellipse cx="1400" cy="210" rx="180" ry="75" fill="#ede9e0" />
+          <rect x="0" y="155" width="1440" height="30" fill="#e0dbd2" />
         </svg>
 
         {/* Main content */}
@@ -175,17 +175,15 @@ export default function ComingSoonPage() {
           {/* Logo */}
           <div className="logo">
             <div className="logo-icon">
-              <svg width="32" height="32" viewBox="0 0 50 50" fill="none">
-                <rect x="5" y="22" width="40" height="5" rx="2.5" fill="white" opacity="0.95"/>
-                <rect x="11" y="24" width="7" height="2" rx="1" fill="#1a1a2e"/>
-                <rect x="22" y="24" width="7" height="2" rx="1" fill="#1a1a2e"/>
-                <rect x="33" y="24" width="7" height="2" rx="1" fill="#1a1a2e"/>
-                <text x="10" y="20" fontSize="13" fill="white" fontFamily="Georgia, serif" fontWeight="bold">∑</text>
-                <text x="27" y="20" fontSize="11" fill="white" fontFamily="Georgia, serif" fontWeight="bold">π</text>
-                <text x="10" y="38" fontSize="11" fill="white" fontFamily="Georgia, serif" fontWeight="bold">∫</text>
-                <text x="28" y="38" fontSize="12" fill="white" fontFamily="Georgia, serif" fontWeight="bold">∞</text>
-              </svg>
+              <img
+                src="/transparentLogo.png"
+                alt="Maths Super Highway Logo"
+                width="80"
+                height="80"
+                style={{ objectFit: "contain" }}
+              />
             </div>
+
             <div className="logo-name">
               Maths Super Highway
               <span>The Fast Lane to Mathematical Mastery</span>
@@ -194,7 +192,7 @@ export default function ComingSoonPage() {
 
           <div className="divider" />
 
-          <h1 className="headline">Coming<br/>Soon</h1>
+          <h1 className="headline">Coming<br />Soon</h1>
 
           <p className="subtext">Get ready! Something really cool is coming!</p>
 
