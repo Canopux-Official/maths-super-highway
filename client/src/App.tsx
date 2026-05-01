@@ -1,5 +1,5 @@
 // import AdminSidebar from './admin/AdminSidebar'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // import { ThemeProvider } from '@emotion/react';
 // import { mathTheme } from './admin/theme';
 // import Courses from './admin/courses/components/CoursePage';
