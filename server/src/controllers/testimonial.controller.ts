@@ -6,8 +6,8 @@ import mongoose from 'mongoose';
 export const createTestimonial = async (req: Request, res: Response) => {
   try {
     const { courseId, rating, message } = req.body;
-    // const userId = req.user?._id; // Use this with Auth Middleware
-    const userId = "69d751dce6d76e43e343808d";
+    const userId = req.user?.userId; // Use this with Auth Middleware
+    // const userId = "69d751dce6d76e43e343808d";
 
     // Check if the user already reviewed this course
     const existing = await Testimonial.findOne({ user: userId, course: courseId });
@@ -36,7 +36,7 @@ export const updateTestimonial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { rating, message } = req.body;
-    const userId = "69d751dce6d76e43e343808d";
+    const userId = req.user?.userId;
 
     const testimonial = await Testimonial.findById(id);
 
@@ -64,7 +64,7 @@ export const deleteTestimonial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const {userRole } = req.body; // Assume role comes from middleware
-    const userId = "69d751dce6d76e43e343808d";
+    const userId = req.user?.userId;
 
     const testimonial = await Testimonial.findById(id);
     if (!testimonial) {
@@ -91,7 +91,7 @@ export const deleteTestimonial = async (req: Request, res: Response) => {
 export const getMyTestimonialForCourse = async (req: Request, res: Response) => {
   try {
     const { courseId } = req.params;
-    const userId = "69d751dce6d76e43e343808d"; // replace with req.user?.id
+    const userId = req.user?.userId;; // replace with req.user?.id
  
     const testimonial = await Testimonial.findOne({
       user: new mongoose.Types.ObjectId(userId),

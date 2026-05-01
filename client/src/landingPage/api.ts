@@ -2,7 +2,7 @@ import axios from "axios";
 import type { Course, Testimonial } from ".";
 
 // Base URL — replace with your actual API base URL
-const API_BASE_URL = import.meta.env.VITE_SERVER_URL; // Adjust based on your vite proxy or base URL
+const API_BASE_URL = import.meta.env.VITE_API_URL; // Adjust based on your vite proxy or base URL
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

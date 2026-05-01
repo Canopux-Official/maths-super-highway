@@ -65,7 +65,7 @@ const TestimonialsScroller: React.FC<Props> = ({ courseId, initialTestimonials }
       setLoadingMore(true);
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/user/courses/page/${courseId}/testimonials?page=${page}&limit=10`
+          `${import.meta.env.VITE_API_URL}/user/courses/page/${courseId}/testimonials?page=${page}&limit=10`
         );
         const json = await res.json();
         const newItems = json.data || [];

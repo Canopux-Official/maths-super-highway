@@ -33,17 +33,17 @@ app.use(async (_req: Request, res: Response, next: NextFunction) => {
 
 app.use('/auth', authRoutes);
 
-app.use("/courses-admin", verifyAuth, verifyRole(['admin']), courseAdminRoutes);
+app.use("/courses-admin", courseAdminRoutes);
 
-app.use('/courses-user', verifyAuth, courseUserRoutes);
+app.use('/courses-user', courseUserRoutes);
 
-app.use('/enrollment', verifyAuth, enrollmentRoutes);
+app.use('/enrollment', enrollmentRoutes);
 
 app.use('/testimonials', testimonialRoutes);
 
 app.use('/headlines', headlineRoutes);
 
-app.use('/admin-manage-student', verifyAuth, verifyRole(['admin']), adminManageStudentRoutes);
+app.use('/admin-manage-student', adminManageStudentRoutes);
 
 app.use('/landing-page', landingPageRoutes);
 

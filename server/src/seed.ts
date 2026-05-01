@@ -25,11 +25,11 @@ const seedData = async () => {
     }
 
     await Promise.all([
-      Course.deleteMany({}),
-      Enrollment.deleteMany({}),
-      Headline.deleteMany({}),
-      Testimonial.deleteMany({}),
-      Otp.deleteMany({}),
+      // Course.deleteMany({}),
+      // Enrollment.deleteMany({}),
+      // Headline.deleteMany({}),
+      // Testimonial.deleteMany({}),
+      // Otp.deleteMany({}),
     ]);
 
     console.log('Seeding Users...');
@@ -38,7 +38,7 @@ const seedData = async () => {
 
     const admin = await User.create({
       name: 'System Admin',
-      email: 'architmishra062@gmail.com',
+      email: 'canopus.incglobe@gmail.com',
       password: adminPassword,
       phone: '1234567890',
       role: 'admin',
@@ -46,48 +46,48 @@ const seedData = async () => {
 
     const student = await User.create({
       name: 'John Student',
-      email: 'archit240305@gmail.com',
+      email: 'dummyforwork2898@gmail.com',
       password: studentPassword,
       phone: '0987654321',
       role: 'student',
     });
 
-    console.log('Seeding Courses...');
-    const mainFolder = await Course.create({
-      title: 'Mathematics Level 1',
-      itemType: 'folder',
-      order: 1,
-      parentId: null
-    });
+    // console.log('Seeding Courses...');
+    // const mainFolder = await Course.create({
+    //   title: 'Mathematics Level 1',
+    //   itemType: 'folder',
+    //   order: 1,
+    //   parentId: null
+    // });
 
-    const coursePage = await Course.create({
-      title: 'Algebra Basics',
-      content: '<p>Welcome to Algebra!</p>',
-      itemType: 'page',
-      order: 1,
-      parentId: mainFolder._id
-    });
+    // const coursePage = await Course.create({
+    //   title: 'Algebra Basics',
+    //   content: '<p>Welcome to Algebra!</p>',
+    //   itemType: 'page',
+    //   order: 1,
+    //   parentId: mainFolder._id
+    // });
 
-    console.log('Seeding Enrollments...');
-    await Enrollment.create({
-      student: student._id,
-      course: mainFolder._id
-    });
+    // console.log('Seeding Enrollments...');
+    // await Enrollment.create({
+    //   student: student._id,
+    //   course: mainFolder._id
+    // });
 
-    console.log('Seeding Headlines...');
-    await Headline.create({
-      text: 'Welcome to the new academic year!',
-      link: '/student/courses',
-      isLive: true
-    });
+    // console.log('Seeding Headlines...');
+    // await Headline.create({
+    //   text: 'Welcome to the new academic year!',
+    //   link: '/student/courses',
+    //   isLive: true
+    // });
 
-    console.log('Seeding Testimonials...');
-    await Testimonial.create({
-      user: student._id,
-      course: mainFolder._id,
-      message: 'This course is amazing!',
-      rating: 5
-    });
+    // console.log('Seeding Testimonials...');
+    // await Testimonial.create({
+    //   user: student._id,
+    //   course: mainFolder._id,
+    //   message: 'This course is amazing!',
+    //   rating: 5
+    // });
 
     console.log('Database seeded successfully!');
     process.exit(0);

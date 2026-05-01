@@ -73,8 +73,8 @@ export const getUserPageDetails = async (req: Request, res: Response) => {
 export const getMyEnrolledCourses = async (req: Request, res: Response) => {
   try {
     // const { userId } = req.body;
-    // const userId = req.user?.id; // Assuming you have authentication middleware that sets req.user
-    const userId = "69d751dce6d76e43e343808d";
+    const userId = req.user?.userId; // Assuming you have authentication middleware that sets req.user
+    // const userId = "69d751dce6d76e43e343808d";
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized access" });

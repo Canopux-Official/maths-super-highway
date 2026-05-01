@@ -7,8 +7,8 @@ import Enrollment from '../models/enrollment';
 export const enrollInCourse = async (req: Request, res: Response) => {
   try {
     const { courseId} = req.body;
-    // const studentId = req.user?._id; // Assuming user info is attached via auth middleware
-    const studentId = "69d751dce6d76e43e343808d";
+    const studentId = req.user?.userId; // Assuming user info is attached via auth middleware
+    // const studentId = "69d751dce6d76e43e343808d";
 
     // 1. Check if course exists
     const course = await Course.findById(courseId);
@@ -39,8 +39,8 @@ export const enrollInCourse = async (req: Request, res: Response) => {
 export const unenrollFromCourse = async (req: Request, res: Response) => {
   try {
     const { courseId } = req.body;
-    // const studentId = req.user?._id;
-    const studentId = "69d751dce6d76e43e343808d";
+    const studentId = req.user?.userId;
+    // const studentId = "69d751dce6d76e43e343808d";
 
     const result = await Enrollment.findOneAndDelete({
       student: studentId,
@@ -64,7 +64,7 @@ export const unenrollFromCourse = async (req: Request, res: Response) => {
 export const checkEnrollment = async (req: Request, res: Response) => {
   try {
     const { courseId } = req.params;
-    const studentId = "69d751dce6d76e43e343808d"; // replace with req.user?.id
+    const studentId = req.user?.userId; // replace with req.user?.id
  
     const enrollment = await Enrollment.findOne({
       student: new mongoose.Types.ObjectId(studentId),

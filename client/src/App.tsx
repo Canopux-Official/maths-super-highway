@@ -22,6 +22,7 @@ import { AuthProvider } from './context/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './auth/components/LoginPage';
 import SignupPage from './auth/components/SignupPage';
+import CommingSoonPage from './ComingSoon/ComingSoonPage';
 
 function App() {
 
@@ -30,7 +31,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={
+          {/* <Route path="/" element={
             <ThemeProvider theme={theme}>
               <CssBaseline />
               <Box>
@@ -42,24 +43,24 @@ function App() {
                 <Footer />
               </Box>
             </ThemeProvider>
-          } />
+          } /> */}
 
-          <Route path="/login" element={
+          {/* <Route path="/login" element={
             <ThemeProvider theme={mathTheme}>
               <CssBaseline />
               <LoginPage />
             </ThemeProvider>
-          } />
+          } /> */}
 
-          <Route path="/signup" element={
+          {/* <Route path="/signup" element={
             <ThemeProvider theme={mathTheme}>
               <CssBaseline />
               <SignupPage />
             </ThemeProvider>
-          } />
+          } /> */}
 
           {/* Admin Routes */}
-          <Route path="/admin/*" element={
+          {/* <Route path="/admin/*" element={
             <ThemeProvider theme={mathTheme}>
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSidebar>
@@ -72,10 +73,10 @@ function App() {
                 </AdminSidebar>
               </ProtectedRoute>
             </ThemeProvider>
-          } />
+          } /> */}
 
           {/* Student Routes */}
-          <Route path="/student/*" element={
+          {/* <Route path="/student/*" element={
             <ThemeProvider theme={mathTheme}>
               <ProtectedRoute allowedRoles={['student']}>
                 <StudentSidebar>
@@ -88,9 +89,12 @@ function App() {
                 </StudentSidebar>
               </ProtectedRoute>
             </ThemeProvider>
-          } />
+          } /> */}
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+          
+          <Route path="/" element={<CommingSoonPage />} />
+
         </Routes>
       </Router>
     </AuthProvider>
