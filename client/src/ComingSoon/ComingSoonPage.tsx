@@ -185,7 +185,7 @@ export default function ComingSoonPage() {
             </div>
 
             <div className="logo-name">
-              Maths Super Highway
+              Math Super Highway
               <span>The Fast Lane to Mathematical Mastery</span>
             </div>
           </div>
