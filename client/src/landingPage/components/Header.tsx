@@ -16,7 +16,6 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import FunctionsIcon from "@mui/icons-material/Functions";
-import { green } from "@mui/material/colors";
 
 const navLinks = [
     { label: "Home", href: "#hero" },

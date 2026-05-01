@@ -107,7 +107,7 @@
 // export default CourseItemCard;
 
 import React from "react";
-import { Box, Typography, Card, CardActionArea, CardContent, Stack } from "@mui/material";
+import { Box, Typography, Card, CardActionArea, CardContent } from "@mui/material";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import ArticleIcon from "@mui/icons-material/Article";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";

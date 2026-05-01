@@ -9,8 +9,6 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Rating,
-  Avatar,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import HomeIcon from "@mui/icons-material/Home";

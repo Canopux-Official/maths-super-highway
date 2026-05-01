@@ -227,8 +227,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
-  Typography,
-  CircularProgress,
+  Typography, 
   Alert,
   Breadcrumbs,
   Link,
@@ -269,7 +268,7 @@ const AllCoursesTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
-  const [currentFolder, setCurrentFolder] = useState<string>("root");
+  const [_, setCurrentFolder] = useState<string>("root");
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
 
   const loadItems = useCallback(async (folderId: string) => {

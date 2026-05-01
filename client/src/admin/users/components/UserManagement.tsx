@@ -2,16 +2,15 @@ import React, { useEffect, useState } from 'react';
 import {
     Box, Typography, Table, TableBody, TableCell, 
     TableContainer, TableHead, TableRow, Paper, IconButton, 
-    Stack, Dialog, DialogTitle, DialogContent, TextField, 
-    DialogActions, Chip, Switch, Tabs, Tab, Button
+    Stack, Chip, Switch, Tabs, Tab,
 } from '@mui/material';
-import { Edit, Delete, Person, Mail, Phone } from '@mui/icons-material';
+import { Delete, Person } from '@mui/icons-material';
 import { userService } from '../services/api';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [currentTab, setCurrentTab] = useState('student');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [_, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<any>(null);
     const [form, setForm] = useState({ phone: '', dob: '' });
 
