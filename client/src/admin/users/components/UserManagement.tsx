@@ -10,9 +10,9 @@ import { userService } from '../services/api';
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [currentTab, setCurrentTab] = useState('student');
-    const [_, setIsModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<any>(null);
-    const [form, setForm] = useState({ phone: '', dob: '' });
+    // const [_, setIsModalOpen] = useState(false);
+    // const [editingUser, setEditingUser] = useState<any>(null);
+    // const [form, setForm] = useState({ phone: '', dob: '' });
 
     const loadUsers = async () => {
         const res = await userService.getUsers();
@@ -32,21 +32,21 @@ const UserManagement = () => {
         setCurrentTab(newValue);
     };
 
-    const handleOpenEdit = (user: any) => {
-        setEditingUser(user);
-        const formattedDate = user.dob ? new Date(user.dob).toISOString().split('T')[0] : '';
-        setForm({ phone: user.phone || '', dob: formattedDate });
-        setIsModalOpen(true);
-    };
+    // const handleOpenEdit = (user: any) => {
+    //     setEditingUser(user);
+    //     const formattedDate = user.dob ? new Date(user.dob).toISOString().split('T')[0] : '';
+    //     setForm({ phone: user.phone || '', dob: formattedDate });
+    //     setIsModalOpen(true);
+    // };
 
-    const handleUpdate = async () => {
-        if (!editingUser) return;
-        const res = await userService.updateUser(editingUser._id, form);
-        if (res.success) {
-            setIsModalOpen(false);
-            loadUsers();
-        }
-    };
+    // const handleUpdate = async () => {
+    //     if (!editingUser) return;
+    //     const res = await userService.updateUser(editingUser._id, form);
+    //     if (res.success) {
+    //         setIsModalOpen(false);
+    //         loadUsers();
+    //     }
+    // };
 
     const handleStatusToggle = async (user: any) => {
         const res = await userService.updateUser(user._id, { isActive: !user.isActive });
