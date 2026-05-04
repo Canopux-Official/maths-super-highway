@@ -174,7 +174,7 @@ export default function ComingSoonPage() {
 
           {/* Logo */}
           <div className="logo">
-            <div className="logo-icon">
+            {/* <div className="logo-icon">
               <img
                 src="/transparentLogo.png"
                 alt="Maths Super Highway Logo"
@@ -182,7 +182,7 @@ export default function ComingSoonPage() {
                 height="80"
                 style={{ objectFit: "contain" }}
               />
-            </div>
+            </div> */}
 
             <div className="logo-name">
               Math Super Highway
