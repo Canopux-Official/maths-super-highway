@@ -16,6 +16,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import FunctionsIcon from "@mui/icons-material/Functions";
+import { useNavigate } from "react-router-dom";
 
 const navLinks = [
     { label: "Home", href: "#hero" },
@@ -28,6 +29,7 @@ const navLinks = [
 const Header: React.FC = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const navigate : any  = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -36,9 +38,7 @@ const Header: React.FC = () => {
     }, []);
 
     const handleNavClick = (href: string) => {
-        setDrawerOpen(false);
-        const el = document.querySelector(href);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
+        navigate(href)
     };
 
     return (
@@ -106,7 +106,7 @@ const Header: React.FC = () => {
                             <Button
                                 variant="contained"
                                 color="secondary"
-                                onClick={() => handleNavClick("#courses")}
+                                onClick={() => handleNavClick("/signup")}
                                 sx={{ ml: 1.5, color: "#fff" }}
                             >
                                 Enroll Now
