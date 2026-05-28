@@ -3,6 +3,7 @@ import { Box, Container, Typography, Button, Stack } from "@mui/material";
 import SchoolIcon from "@mui/icons-material/School";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import bg from '../../../public/bgImage.jpg';
 import NewsTicker from "./NewsTicker";
 
@@ -89,6 +90,37 @@ const Hero: React.FC = () => {
 
             {/* ✅ All content — unblurred, sits above everything */}
             <Container maxWidth="md" sx={{ position: "relative", zIndex: 10, py: 10, textAlign: "center" }}>
+                {/* Construction Banner */}
+                <Box sx={{
+                    mb: 5,
+                    display: "inline-flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: 1.5,
+                    bgcolor: "rgba(255, 60, 60, 0.15)",
+                    border: "2px solid #ff4d4d",
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 3,
+                    boxShadow: "0 0 20px rgba(255, 77, 77, 0.4)",
+                    animation: "pulseWarning 2s infinite",
+                    "@keyframes pulseWarning": {
+                        "0%": { boxShadow: "0 0 10px rgba(255, 77, 77, 0.3)" },
+                        "50%": { boxShadow: "0 0 25px rgba(255, 77, 77, 0.7)" },
+                        "100%": { boxShadow: "0 0 10px rgba(255, 77, 77, 0.3)" }
+                    }
+                }}>
+                    <WarningAmberIcon sx={{ color: "#ff4d4d", fontSize: "2rem" }} />
+                    <Typography variant="h6" sx={{
+                        color: "#ffdddd",
+                        fontWeight: 800,
+                        letterSpacing: "0.05em",
+                        textTransform: "uppercase"
+                    }}>
+                        The website is under construction. All facts, information and content are for demo.
+                    </Typography>
+                </Box>
+
                 {/* Badge */}
                 <Box sx={{
                     display: "inline-flex", alignItems: "center", gap: 1,
