@@ -17,7 +17,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
 export const verifyAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  console.log(authHeader)
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ success: false, message: 'Unauthorized, missing token' });
