@@ -65,5 +65,11 @@ export const courseService = {
     updateCourse: async (id: string, data: any) => {
         const res = await apiClient.patch(`/courses-admin/update/${id}`, data);
         return res.data;
+    },
+     
+
+    getEnrolledStudents: async (id: string) => {
+        const response = await apiClient.get(`/courses-admin/enrolled-count/${id}`);
+        return response.data;
     }
 };

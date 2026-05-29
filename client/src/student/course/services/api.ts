@@ -18,4 +18,9 @@ export const courseService = {
     const res = await apiClient.get(`/courses-user/myenroll-courses`);
     return res.data;
   },
+
+  getEnrolledStudents: async (id: string) => {
+    const response = await apiClient.get(`/courses-user/enrolled-count/${id}`);
+    return response.data;
+  }
 };

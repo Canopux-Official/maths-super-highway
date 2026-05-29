@@ -15,6 +15,7 @@ import {
     Class as EnrolledIcon, // Use Class icon
     Logout as LogoutIcon,
 } from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const drawerWidth = 264;
 
@@ -30,6 +31,7 @@ const menuItems = [
         path: '/student/enrolled-courses'
     },
     { text: 'Profile', icon: <UserIcon />, path: '/student/profile' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/student' },
 ];
 
 // Highway lane stripe pattern for sidebar background

@@ -3,6 +3,9 @@ import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 export interface IEnrollment extends Document {
   student: Types.ObjectId;
   course: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+
 }
 
 const enrollmentSchema = new Schema<IEnrollment>(

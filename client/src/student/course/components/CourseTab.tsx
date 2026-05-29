@@ -227,7 +227,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
-  Typography, 
+  Typography,
   Alert,
   Breadcrumbs,
   Link,
@@ -270,13 +270,46 @@ const AllCoursesTab: React.FC = () => {
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
   const [_, setCurrentFolder] = useState<string>("root");
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
+  const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number | null>>({});
+
+  // const loadItems = useCallback(async (folderId: string) => {
+  //   setLoading(true);
+  //   setError("");
+  //   try {
+  //     const res = await courseService.getSubItems(folderId);
+  //     setItems(res.data || []);
+  //   } catch {
+  //     setError("Failed to load courses. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
   const loadItems = useCallback(async (folderId: string) => {
     setLoading(true);
     setError("");
     try {
       const res = await courseService.getSubItems(folderId);
-      setItems(res.data || []);
+      const courseItems: CourseItem[] = res.data || [];
+      setItems(courseItems);
+
+      // Seed all as null (loading state) immediately so cards show skeletons
+      const initial: Record<string, null> = {};
+      courseItems.forEach(i => { initial[i._id] = null; });
+      setEnrolledCounts(initial);
+
+      // Fetch all counts in parallel
+      const counts = await Promise.all(
+        courseItems.map(item =>
+          courseService.getEnrolledStudents(item._id)
+            .then(r => ({ id: item._id, count: r.success ? r.data.enrolledCount : 0 }))
+            .catch(() => ({ id: item._id, count: 0 }))
+        )
+      );
+      const countMap: Record<string, number> = {};
+      counts.forEach(({ id, count }) => { countMap[id] = count; });
+      setEnrolledCounts(countMap);
+
     } catch {
       setError("Failed to load courses. Please try again.");
     } finally {
@@ -481,6 +514,7 @@ const AllCoursesTab: React.FC = () => {
             <CourseItemCard
               key={item._id}
               item={item}
+              enrolledCount={enrolledCounts[item._id] ?? null}
               onClick={() =>
                 item.itemType === "folder"
                   ? handleFolderClick(item)

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { validateCreateCourse, validateMongoId, validateUpdateCourse } from '../validation/course.validation';
 import { createCourse, deleteCourse, getAdminPageDetails, getAdminSubItems, updateCourse } from '../controllers/courses.admin.controller';
 import { verifyAuth, verifyRole } from '../middlewares/auth.middleware';
+import { getEnrolledCount } from '../controllers/courses.user.controller';
 
 const router = Router();
 
@@ -19,5 +20,7 @@ router.patch('/update/:id',verifyAuth,verifyRole(["admin"]), validateUpdateCours
 
 // DELETE /api/courses/:id   → hard delete course + all descendants
 router.delete('/delete/:id',verifyAuth,verifyRole(["admin"]), validateMongoId, deleteCourse);
+
+router.get('/enrolled-count/:id',verifyAuth,verifyRole(["admin"]),validateMongoId,getEnrolledCount);
 
 export default router;

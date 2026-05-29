@@ -23,13 +23,17 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './auth/components/LoginPage';
 import SignupPage from './auth/components/SignupPage';
 import CommingSoonPage from './ComingSoon/ComingSoonPage';
+import AdminDashboard from './admin/dashboard/components/AdminDashboard';
+import UserDashboard from './student/dashboard/components/UserDashboard';
+import { useAuth } from './context/AuthContext';
 
 function App() {
 
   console.log(import.meta.env.VITE_ENVIRONMENT);
   console.log(import.meta.env.MODE);
+  const { user } = useAuth();
 
-  if (import.meta.env.VITE_ENVIRONMENT ==  'development') {
+  if (import.meta.env.VITE_ENVIRONMENT == 'development') {
     return (
       <AuthProvider>
         <Router>
@@ -69,10 +73,10 @@ function App() {
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminSidebar>
                     <Routes>
-                      <Route path="/" element={<Navigate to="/admin/headlines" replace />} />
                       <Route path="headlines" element={<HeadlineManagement />} />
                       <Route path="courses" element={<Courses />} />
                       <Route path="users" element={<UserManagement />} />
+                      <Route path="/" element={<AdminDashboard />} />
                     </Routes>
                   </AdminSidebar>
                 </ProtectedRoute>
@@ -85,10 +89,10 @@ function App() {
                 <ProtectedRoute allowedRoles={['student']}>
                   <StudentSidebar>
                     <Routes>
-                      <Route path="/" element={<Navigate to="/student/courses" replace />} />
                       <Route path="enrolled-courses" element={<EnrolledCoursesTab />} />
                       <Route path="courses" element={<AllCoursesTab />} />
                       <Route path="profile" element={<ProfilePage />} />
+                      <Route path="/" element={<UserDashboard userId={user!.userId} />} />
                     </Routes>
                   </StudentSidebar>
                 </ProtectedRoute>

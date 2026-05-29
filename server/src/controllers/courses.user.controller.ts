@@ -123,3 +123,100 @@ export const getMyEnrolledCourses = async (req: Request, res: Response) => {
     });
   }
 }; 
+
+
+export const getEnrolledCount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id as any)) {
+      res.status(400).json({ success: false, message: 'Invalid course ID' });
+      return;
+    }
+
+    const objectId = new mongoose.Types.ObjectId(id as any);
+
+    const result = await Course.aggregate([
+      // 1. Match the target course item
+      { $match: { _id: objectId } },
+
+      // 2. Recursively find ALL descendants in one query
+      {
+        $graphLookup: {
+          from: 'courses',
+          startWith: '$_id',
+          connectFromField: '_id',
+          connectToField: 'parentId',
+          as: 'descendants',
+          restrictSearchWithMatch: { isActive: true }
+        }
+      },
+
+      // 3. Build the final list of page IDs to query enrollments against:
+      //    - If the item itself is a page  → just use its own _id
+      //    - If the item itself is a folder → use only the 'page' descendants
+      {
+        $project: {
+          itemType: 1,
+          pageIds: {
+            $cond: {
+              if: { $eq: ['$itemType', 'page'] },
+              then: ['$_id'],
+              else: {
+                $map: {
+                  input: {
+                    $filter: {
+                      input: '$descendants',
+                      as: 'desc',
+                      cond: { $eq: ['$$desc.itemType', 'page'] }
+                    }
+                  },
+                  as: 'page',
+                  in: '$$page._id'
+                }
+              }
+            }
+          }
+        }
+      },
+
+      // 4. Join with enrollments
+      {
+        $lookup: {
+          from: 'enrollments',
+          localField: 'pageIds',
+          foreignField: 'course',
+          as: 'enrollments'
+        }
+      },
+
+      // 5. Count unique students across all matched enrollments
+      {
+        $project: {
+          itemType: 1,
+          enrolledCount: {
+            $size: { $setUnion: ['$enrollments.student', []] }
+          }
+        }
+      }
+    ]);
+
+    if (!result.length) {
+      res.status(404).json({ success: false, message: 'Course item not found' });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        courseId: id,
+        itemType: result[0].itemType,
+        enrolledCount: result[0].enrolledCount,
+      },
+    });
+
+  } catch (error) {
+    console.error('getEnrolledCount error:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

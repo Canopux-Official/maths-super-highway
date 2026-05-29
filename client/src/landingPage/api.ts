@@ -56,3 +56,8 @@ export const getNewsTicker = async () => {
         return [];
     }
 };
+
+export const getEnrolledStudents = async (id: string) => {
+    const response = await apiClient.get(`/landing-page/enrolled-count/${id}`);
+    return response.data;
+}

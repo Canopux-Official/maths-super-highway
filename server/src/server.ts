@@ -12,7 +12,8 @@ import headlineRoutes from './routes/headlines.routes';
 import adminManageStudentRoutes from './routes/studentmanage.admin.routes'
 import landingPageRoutes from './routes/landingPage.routes';
 import authRoutes from './routes/auth.routes';
-import { verifyAuth, verifyRole } from './middlewares/auth.middleware';
+import dashboardAdminRoutes from './routes/dashboard.admin.routes';
+import dashboardUserRoutes from './routes/dashboard.user.routes';
 
 const app = express();
 app.use(cors());
@@ -46,6 +47,10 @@ app.use('/headlines', headlineRoutes);
 app.use('/admin-manage-student', adminManageStudentRoutes);
 
 app.use('/landing-page', landingPageRoutes);
+
+app.use('/dashboard-admin',dashboardAdminRoutes);
+
+app.use('/dashboard-user',dashboardUserRoutes);
 
 // -----------------------------------------------------------------------
 if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {

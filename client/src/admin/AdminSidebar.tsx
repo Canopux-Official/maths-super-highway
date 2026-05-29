@@ -6,6 +6,7 @@ import {
   Divider, IconButton, ListItem, ListItemButton,
   ListItemIcon, ListItemText, CssBaseline, Avatar
 } from '@mui/material';
+ 
 import {
   Menu as MenuIcon,
   Functions as MathIcon,
@@ -15,13 +16,15 @@ import {
   ChevronRight as ChevronIcon,
   Logout as LogoutIcon
 } from '@mui/icons-material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const drawerWidth = 264;
 
 const menuItems = [
-  { text: 'Announcements',    icon: <HeadlineIcon />, path: '/admin/headlines' },
-  { text: 'Course Analytics', icon: <CourseIcon />,   path: '/admin/courses'  },
-  { text: 'Student Directory',icon: <UserIcon />,     path: '/admin/users'    },
+  { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
+  { text: 'Announcements', icon: <HeadlineIcon />, path: '/admin/headlines' },
+  { text: 'Course Analytics', icon: <CourseIcon />, path: '/admin/courses' },
+  { text: 'Student Directory', icon: <UserIcon />, path: '/admin/users' },
 ];
 
 // Highway lane stripe pattern for sidebar background
@@ -46,7 +49,7 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: '#0d1b2a'      
+        bgcolor: '#0d1b2a'
       }}
     >
       {/* Logo */}
