@@ -8,6 +8,7 @@ export interface IUser extends Document {
   dob?: Date;
   role: 'admin' | 'student' | 'parent' | 'college';
   isActive: boolean;
+  isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +26,7 @@ const userSchema = new Schema<IUser>(
       default: 'student' 
     },
     isActive: { type: Boolean, default: true },
+    isVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

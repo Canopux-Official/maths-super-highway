@@ -8,17 +8,22 @@ import {
   Tabs,
   Tab,
   Divider,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mathTheme } from '../../admin/theme';
 import SpeedIcon from '@mui/icons-material/Speed';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const SignupPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'SIGNUP' | 'OTP'>('SIGNUP');
   const [error, setError] = useState('');
@@ -30,10 +35,25 @@ const SignupPage = () => {
   const { login } = useAuth();
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+  const validateForm = () => {
+    if (!name.trim()) return 'Name is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email address';
+    if (!/^\d{10}$/.test(phone)) return 'Phone number must be exactly 10 digits';
+    if (password.length < 6) return 'Password must be at least 6 characters';
+    return null;
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -128,7 +148,7 @@ const SignupPage = () => {
             width: '100%',
           }}
         >
-          <SpeedIcon sx={{ fontSize: { xs: 56, md: 100 }, mb: 2, color: '#ffd700' }} />
+          <img src="/transparentLogo.png" alt="Logo" style={{ height: '120px', width: 'auto', objectFit: 'contain', marginBottom: '16px' }} />
           <Typography
             variant="h1"
             sx={{
@@ -234,7 +254,10 @@ const SignupPage = () => {
                 fullWidth
                 label="Phone Number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setPhone(val);
+                }}
                 variant="outlined"
               />
               <TextField
@@ -242,10 +265,25 @@ const SignupPage = () => {
                 required
                 fullWidth
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 variant="outlined"
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setShowPassword(!showPassword)}
+                          sx={{ color: '#94A3B8' }}
+                        >
+                          {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
               <Button
                 type="submit"

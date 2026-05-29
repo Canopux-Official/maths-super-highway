@@ -67,8 +67,8 @@ const NewsTicker: React.FC = () => {
 
     if (loading) {
         return (
-            <Box sx={{ position: "absolute", top: 0, left: 0, width: "100%", zIndex: 1100 }}>
-                <Skeleton variant="rectangular" width="100%" height={38} sx={{ bgcolor: "rgba(255,255,255,0.08)" }} />
+            <Box sx={{ position: "absolute", bottom: 0, left: 0, width: "100%", zIndex: 1100 }}>
+                <Skeleton variant="rectangular" width="100%" height={40} sx={{ bgcolor: "rgba(255,255,255,0.06)" }} />
             </Box>
         );
     }
@@ -83,46 +83,47 @@ const NewsTicker: React.FC = () => {
                 left: 0,
                 width: "100%",
                 zIndex: 1100,
-                bgcolor: "#ffffff",
-                borderTop: "1px solid rgba(0,0,0,0.08)",
+                bgcolor: "#05101D", // Deep navy for prominence
+                borderTop: "2px solid #06B6D4", // Gold top border
                 display: "flex",
                 alignItems: "center",
-                height: 38,
+                height: 48, // Taller
                 overflow: "hidden",
             }}
         >
-            {/* Static LIVE NEWS label */}
+            {/* "LIVE NEWS" label — navy + gold */}
             <Box
                 sx={{
                     flexShrink: 0,
                     display: "flex",
                     alignItems: "center",
-                    gap: 0.8,
-                    bgcolor: "#1a3d2e",
-                    px: 1.8,
+                    gap: 0.75,
+                    background: "linear-gradient(135deg, #06B6D4, #0891B2)", // Gold badge
+                    px: 3,
                     height: "100%",
                     zIndex: 2,
-                    boxShadow: "4px 0 8px rgba(0,0,0,0.15)",
+                    boxShadow: "4px 0 16px rgba(0,0,0,0.3)",
                 }}
             >
-                <CampaignIcon sx={{ fontSize: 16, color: "#86efac" }} />
+                <CampaignIcon sx={{ fontSize: 18, color: "#0A1628" }} />
                 <Typography
                     sx={{
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "0.72rem",
-                        letterSpacing: "0.1em",
+                        color: "#0A1628",
+                        fontWeight: 800,
+                        fontSize: "0.8rem",
+                        letterSpacing: "0.15em",
                         whiteSpace: "nowrap",
+                        fontFamily: "'Sora', sans-serif",
+                        textTransform: "uppercase",
                     }}
                 >
-                    LIVE NEWS
+                    Live News
                 </Typography>
+                {/* Divider removed as badge has strong contrast */}
             </Box>
 
-            {/* Scrolling area */}
-            <Box
-                sx={{ flex: 1, overflow: "hidden", height: "100%", position: "relative" }}
-            >
+            {/* Scrolling ticker */}
+            <Box sx={{ flex: 1, overflow: "hidden", height: "100%", position: "relative" }}>
                 <motion.div
                     ref={contentRef}
                     style={{
@@ -137,7 +138,6 @@ const NewsTicker: React.FC = () => {
                         willChange: "transform",
                     }}
                 >
-                    {/* Render TWICE for seamless loop */}
                     {[0, 1].map((copyIndex) =>
                         news.map((item) => (
                             <Box
@@ -151,8 +151,12 @@ const NewsTicker: React.FC = () => {
                                     gap: 1,
                                     px: 3,
                                     cursor: item.link ? "pointer" : "default",
+                                    transition: "background 0.2s",
+                                    "&:hover": {
+                                        background: "rgba(255,255,255,0.06)",
+                                    },
                                     "&:hover .ticker-text": {
-                                        color: "#1a3d2e",
+                                        color: "#22D3EE",
                                         textDecoration: item.link ? "underline" : "none",
                                     },
                                     "&:hover .ticker-icon": {
@@ -162,7 +166,7 @@ const NewsTicker: React.FC = () => {
                             >
                                 {/* Dot separator */}
                                 <FiberManualRecordIcon
-                                    sx={{ fontSize: 7, color: "#1a3d2e", flexShrink: 0 }}
+                                    sx={{ fontSize: 6, color: "#06B6D4", flexShrink: 0 }}
                                 />
 
                                 {/* isLive badge */}
@@ -172,17 +176,17 @@ const NewsTicker: React.FC = () => {
                                             display: "inline-flex",
                                             alignItems: "center",
                                             gap: 0.4,
-                                            bgcolor: "#ef4444",
-                                            px: 0.8,
-                                            py: 0.1,
+                                            bgcolor: "#EF4444",
+                                            px: 0.75,
+                                            py: 0.15,
                                             borderRadius: "4px",
                                             flexShrink: 0,
                                         }}
                                     >
                                         <Box
                                             sx={{
-                                                width: 5,
-                                                height: 5,
+                                                width: 4,
+                                                height: 4,
                                                 borderRadius: "50%",
                                                 bgcolor: "#fff",
                                                 animation: "livePulse 1.2s infinite",
@@ -192,7 +196,7 @@ const NewsTicker: React.FC = () => {
                                                 },
                                             }}
                                         />
-                                        <Typography sx={{ fontSize: "0.6rem", color: "#fff", fontWeight: 700, letterSpacing: "0.08em" }}>
+                                        <Typography sx={{ fontSize: "0.58rem", color: "#fff", fontWeight: 700, letterSpacing: "0.08em" }}>
                                             LIVE
                                         </Typography>
                                     </Box>
@@ -202,24 +206,25 @@ const NewsTicker: React.FC = () => {
                                 <Typography
                                     className="ticker-text"
                                     sx={{
-                                        fontSize: "0.8rem",
-                                        color: "#374151",
-                                        fontWeight: 500,
+                                        fontSize: "0.95rem",
+                                        color: "#F8FAFC",
+                                        fontWeight: 600,
                                         letterSpacing: "0.02em",
                                         whiteSpace: "nowrap",
                                         transition: "color 0.2s",
+                                        fontFamily: "'Inter', sans-serif",
                                     }}
                                 >
                                     {item.text}
                                 </Typography>
 
-                                {/* External link icon — shows on hover */}
+                                {/* External link icon */}
                                 {item.link && (
                                     <OpenInNewIcon
                                         className="ticker-icon"
                                         sx={{
-                                            fontSize: 12,
-                                            color: "#1a3d2e",
+                                            fontSize: 14,
+                                            color: "#22D3EE",
                                             opacity: 0,
                                             transition: "opacity 0.2s",
                                             flexShrink: 0,

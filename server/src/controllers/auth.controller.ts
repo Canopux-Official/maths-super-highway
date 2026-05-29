@@ -44,8 +44,9 @@ const getEmailTemplate = (otp: string, isResend: boolean, currentAttempts: numbe
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #2e447dff; padding: 30px 20px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">JJ Institute of Science</h1>
-        <p style="color: #E8F5E9; margin: 5px 0 0; font-size: 14px;">Excellence in JEE, NEET & Boards</p>
+        <img src="${process.env.CLIENT_LINK || 'http://localhost:5173'}/transparentLogo.png" alt="Maths Superhighway Logo" style="max-height: 80px; margin-bottom: 15px;" />
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">Maths Superhighway</h1>
+        <p style="color: #E8F5E9; margin: 5px 0 0; font-size: 14px;">Master Mathematics with ease</p>
       </div>
 
       <div style="padding: 40px 30px; text-align: center;">
@@ -73,7 +74,7 @@ const getEmailTemplate = (otp: string, isResend: boolean, currentAttempts: numbe
 
       <div style="background-color: #f5f5f5; padding: 15px; text-align: center; border-top: 1px solid #eeeeee;">
         <p style="color: #888888; font-size: 12px; margin: 0;">
-          &copy; ${new Date().getFullYear()} JJ Institute of Science. All rights reserved.
+          &copy; ${new Date().getFullYear()} Maths Superhighway. All rights reserved.
         </p>
       </div>
     </div>
@@ -194,7 +195,7 @@ export const resendOtpInternal = async (email: string) => {
     await existingOtp.save();
 
     await transporter.sendMail({
-      from: `"JJ Institute Auth" <${process.env.MAIL_USER}>`,
+      from: `"Maths Superhighway Auth" <${process.env.MAIL_USER}>`,
       to: email,
       subject: "Your New Verification Code",
       html: getEmailTemplate(otp, true, existingOtp.attempts),
@@ -218,7 +219,11 @@ export const signup = async (req: Request, res: Response) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      if (existingUser.isActive) {
+      if (existingUser.isVerified) {
+        if (!existingUser.isActive) {
+          res.status(403).json({ success: false, message: "This account has been marked as inactive by the administrator." });
+          return;
+        }
         res.status(400).json({ success: false, message: "Email is already registered" });
         return;
       } else {
@@ -269,6 +274,11 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
 
+    if (user.isVerified && !user.isActive) {
+      res.status(403).json({ success: false, message: "Your account has been marked as inactive by the administrator." });
+      return;
+    }
+
     const isMatch = await bcrypt.compare(password, user.password || '');
     if (!isMatch) {
       res.status(400).json({ success: false, message: "Invalid credentials" });
@@ -314,9 +324,14 @@ export const verifyLogin = async (req: Request, res: Response) => {
     }
 
     // Activate user if they are verifying for the first time
-    if (!user.isActive) {
-      user.isActive = true;
+    if (!user.isVerified) {
+      user.isVerified = true;
+      user.isActive = true; // Make them active initially
       await user.save();
+    } else if (!user.isActive) {
+      // If already verified but inactive, they are deactivated. Block login.
+      res.status(403).json({ success: false, message: "Your account has been marked as inactive by the administrator." });
+      return;
     }
 
     const token = jwt.sign(
@@ -377,5 +392,29 @@ export const getMe = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Get me error:", error);
     res.status(500).json({ success: false, message: "Server error getting user profile" });
+  }
+};
+
+export const updateMe = async (req: Request, res: Response) => {
+  try {
+    if (!req.user || !req.user.userId) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+    const { name, phone, dob } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $set: { name, phone, dob } },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    if (!user) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+    res.status(200).json({ success: true, message: 'Profile updated successfully', user });
+  } catch (error: any) {
+    console.error("Update me error:", error);
+    res.status(500).json({ success: false, message: error.message || "Server error updating user profile" });
   }
 };

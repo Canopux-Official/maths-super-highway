@@ -144,3 +144,37 @@ export const getPageTestimonialsPaginated = async (req: Request, res: Response) 
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getLandingPageTestimonials = async (req: Request, res: Response) => {
+  try {
+    const testimonials = await Testimonial.aggregate([
+      { $match: { rating: { $gte: 4 } } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          rating: 1,
+          message: 1,
+          createdAt: 1,
+          "user": {
+            name: "$userDetails.name",
+            role: "$userDetails.role"
+          }
+        },
+      },
+    ]);
+
+    return res.status(200).json({ success: true, data: testimonials });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

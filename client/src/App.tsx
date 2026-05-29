@@ -77,6 +77,7 @@ function App() {
                       <Route path="courses" element={<Courses />} />
                       <Route path="users" element={<UserManagement />} />
                       <Route path="/" element={<AdminDashboard />} />
+                      <Route path="profile" element={<ProfilePage />} />
                     </Routes>
                   </AdminSidebar>
                 </ProtectedRoute>

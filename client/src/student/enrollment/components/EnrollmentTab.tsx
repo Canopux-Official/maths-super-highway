@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Typography,
-  CircularProgress,
-  Alert,
-  Paper,
-  Button,
-  Collapse,
+  Box, Typography, CircularProgress, Alert, Paper,
+  Button, Collapse, Chip, Avatar,
 } from "@mui/material";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
 import ArticleIcon from "@mui/icons-material/Article";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlined";
 import { courseService } from "../../course/services/api";
 import FeedbackForm from "../../testimonial/components/FeedBackForm";
 
@@ -48,129 +45,120 @@ const EnrolledCoursesTab: React.FC = () => {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-        <CircularProgress size={32} />
+        <CircularProgress size={32} sx={{ color: "#1D4ED8" }} />
       </Box>
     );
   }
 
   if (error) {
-    return <Alert severity="error">{error}</Alert>;
+    return <Alert severity="error" sx={{ borderRadius: "10px" }}>{error}</Alert>;
   }
 
   if (courses.length === 0) {
     return (
-      <Box
-        sx={{
-          textAlign: "center",
-          py: 8,
-          border: "1px dashed",
-          borderColor: "divider",
-          borderRadius: 2,
-          color: "text.secondary",
-        }}
-      >
-        <BookmarkIcon sx={{ fontSize: 40, mb: 1, opacity: 0.35 }} />
-        <Typography variant="body2">You have not enrolled in any courses yet.</Typography>
-        <Typography variant="caption">Explore the All Courses tab to get started.</Typography>
+      <Box sx={{ textAlign: "center", py: 10, border: "1px dashed #BFDBFE", borderRadius: "12px", bgcolor: "#F8FAFC" }}>
+        <Box sx={{ width: 56, height: 56, borderRadius: "50%", bgcolor: "rgba(29,78,216,0.08)", display: "flex", alignItems: "center", justifyContent: "center", mx: "auto", mb: 2 }}>
+          <BookmarkIcon sx={{ color: "#1D4ED8", fontSize: 26 }} />
+        </Box>
+        <Typography sx={{ fontWeight: 700, fontSize: "0.9375rem", color: "#0A1628", fontFamily: "'Sora', sans-serif", mb: 0.5 }}>
+          No enrolled courses yet
+        </Typography>
+        <Typography sx={{ color: "#64748B", fontSize: "0.85rem", fontFamily: "'Inter', sans-serif" }}>
+          Explore the All Courses tab to get started.
+        </Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
-        {courses.length} course{courses.length !== 1 ? "s" : ""} enrolled
-      </Typography>
+    <Box>
+      {/* Count pill */}
+      <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1, mb: 3, px: 1.5, py: 0.75, bgcolor: "rgba(29,78,216,0.07)", borderRadius: "8px", border: "1px solid rgba(29,78,216,0.15)" }}>
+        <BookmarkIcon sx={{ fontSize: 14, color: "#1D4ED8" }} />
+        <Typography sx={{ fontSize: "0.78rem", fontWeight: 700, color: "#1D4ED8", fontFamily: "'Inter', sans-serif", letterSpacing: "0.05em" }}>
+          {courses.length} Course{courses.length !== 1 ? "s" : ""} Enrolled
+        </Typography>
+      </Box>
 
-      {courses.map((course) => (
-        <Paper
-          key={course._id}
-          elevation={0}
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 2,
-            overflow: "hidden",
-          }}
-        >
-          {/* Course Row */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: "14px 16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <Box
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {courses.map((course, idx) => {
+          const initials = course.title.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+          const enrollDate = new Date(course.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+          const isFeedbackOpen = expandedFeedback === course._id;
+
+          return (
+            <Paper
+              key={course._id}
+              elevation={0}
               sx={{
-                width: 38,
-                height: 38,
-                borderRadius: 1.5,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                bgcolor: "primary.50",
-                color: "primary.main",
-                flexShrink: 0,
+                border: "1px solid #E2E8F0",
+                borderRadius: "12px",
+                overflow: "hidden",
+                transition: "box-shadow 0.2s",
+                "&:hover": { boxShadow: "0 4px 20px rgba(29,78,216,0.08)" },
+                animation: `fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) ${idx * 0.08}s both`,
+                "@keyframes fadeInUp": {
+                  from: { opacity: 0, transform: "translateY(16px)" },
+                  to: { opacity: 1, transform: "translateY(0)" },
+                },
               }}
             >
-              <ArticleIcon sx={{ fontSize: 18 }} />
-            </Box>
+              {/* Course Row */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, p: "14px 20px", flexWrap: "wrap", borderLeft: "3px solid #1D4ED8" }}>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: "rgba(29,78,216,0.10)", color: "#1D4ED8", fontWeight: 700, fontSize: "0.85rem", fontFamily: "'Sora', sans-serif" }}>
+                  {initials}
+                </Avatar>
 
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: 500,
-                  color: "text.primary",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {course.title}
-              </Typography>
-              <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                Enrolled on{" "}
-                {new Date(course.createdAt).toLocaleDateString("en-IN", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </Typography>
-            </Box>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontWeight: 700, color: "#0A1628", fontFamily: "'Sora', sans-serif", fontSize: "0.9375rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mb: 0.25 }}>
+                    {course.title}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <CalendarTodayIcon sx={{ fontSize: 12, color: "#94A3B8" }} />
+                    <Typography sx={{ color: "#64748B", fontSize: "0.75rem", fontFamily: "'Inter', sans-serif" }}>
+                      Enrolled on {enrollDate}
+                    </Typography>
+                  </Box>
+                </Box>
 
-            <Button
-              size="small"
-              variant={expandedFeedback === course._id ? "contained" : "outlined"}
-              onClick={() => toggleFeedback(course._id)}
-              disableElevation
-              sx={{ textTransform: "none", fontSize: "0.8rem", flexShrink: 0, borderRadius: 1.5 }}
-            >
-              {expandedFeedback === course._id ? "Close" : "Leave Feedback"}
-            </Button>
-          </Box>
+                <Chip
+                  label="Enrolled"
+                  size="small"
+                  sx={{ bgcolor: "rgba(22,163,74,0.10)", color: "#16A34A", fontWeight: 700, fontSize: "0.7rem", fontFamily: "'Inter', sans-serif", border: "1px solid rgba(22,163,74,0.2)", display: { xs: "none", sm: "flex" } }}
+                />
 
-          {/* Feedback Form (collapsible) */}
-          <Collapse in={expandedFeedback === course._id}>
-            <Box
-              sx={{
-                borderTop: "1px solid",
-                borderColor: "divider",
-                p: { xs: 2, sm: 3 },
-                bgcolor: "action.hover",
-              }}
-            >
-              <FeedbackForm
-                courseId={course._id}
-                onSubmitSuccess={() => setExpandedFeedback(null)}
-              />
-            </Box>
-          </Collapse>
-        </Paper>
-      ))}
+                <Button
+                  size="small"
+                  variant={isFeedbackOpen ? "contained" : "outlined"}
+                  onClick={() => toggleFeedback(course._id)}
+                  startIcon={<ChatBubbleOutlineIcon sx={{ fontSize: 14 }} />}
+                  disableElevation
+                  sx={{
+                    textTransform: "none",
+                    fontSize: "0.8rem",
+                    flexShrink: 0,
+                    borderRadius: "8px",
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                    ...(isFeedbackOpen
+                      ? { bgcolor: "#0A1628", color: "#fff", "&:hover": { bgcolor: "#112240" } }
+                      : { borderColor: "#0A1628", color: "#0A1628", "&:hover": { bgcolor: "rgba(10,22,40,0.04)", borderColor: "#0A1628" } }),
+                  }}
+                >
+                  {isFeedbackOpen ? "Close" : "Leave Feedback"}
+                </Button>
+              </Box>
+
+              {/* Feedback Form */}
+              <Collapse in={isFeedbackOpen}>
+                <Box sx={{ borderTop: "1px solid #E2E8F0", p: { xs: 2, sm: 3 }, bgcolor: "#F8FAFC" }}>
+                  <FeedbackForm courseId={course._id} onSubmitSuccess={() => setExpandedFeedback(null)} />
+                </Box>
+              </Collapse>
+            </Paper>
+          );
+        })}
+      </Box>
     </Box>
   );
 };
