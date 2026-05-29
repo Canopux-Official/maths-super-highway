@@ -124,7 +124,7 @@ const UserManagement = () => {
                                         >
                                             {/* User */}
                                             <TableCell sx={{ py: 1.75 }}>
-                                                <Stack direction="row" alignItems="center" gap={1.5}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                     <Avatar sx={{ width: 36, height: 36, bgcolor: cfg.bg, color: cfg.color, fontSize: '0.8rem', fontWeight: 700, fontFamily: "'Sora', sans-serif" }}>
                                                         {initials}
                                                     </Avatar>
@@ -134,7 +134,7 @@ const UserManagement = () => {
                                                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                                                         </Typography>
                                                     </Box>
-                                                </Stack>
+                                                </Box>
                                             </TableCell>
 
                                             {/* Contact */}
@@ -145,7 +145,7 @@ const UserManagement = () => {
 
                                             {/* Status */}
                                             <TableCell sx={{ py: 1.75 }}>
-                                                <Stack direction="row" alignItems="center" gap={1}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                     <Chip
                                                         label={user.isActive ? 'Active' : 'Inactive'}
                                                         size="small"
@@ -168,7 +168,7 @@ const UserManagement = () => {
                                                             '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#16A34A' },
                                                         }}
                                                     />
-                                                </Stack>
+                                                </Box>
                                             </TableCell>
 
                                             {/* Actions */}

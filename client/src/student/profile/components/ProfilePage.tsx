@@ -319,7 +319,7 @@ const ProfilePage = () => {
         </DialogTitle>
         <Divider />
         <DialogContent sx={{ pt: 3 }}>
-          <Stack gap={2.5}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <TextField
               label="Full Name"
               fullWidth
@@ -338,12 +338,12 @@ const ProfilePage = () => {
               label="Date of Birth"
               type="date"
               fullWidth
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               value={editForm.dob}
               onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
             />
-          </Stack>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 2, gap: 1 }}>
           <Button onClick={() => setEditOpen(false)} sx={{ color: '#64748B', borderRadius: '8px', textTransform: 'none', fontFamily: "'Inter', sans-serif" }}>

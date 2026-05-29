@@ -46,3 +46,4 @@ yarn.lock
 *.cache
 seedDb.ts
 seed2.ts
+dist

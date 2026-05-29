@@ -86,31 +86,31 @@ const theme = createTheme({
                     textTransform: "none",
                     fontWeight: 600,
                     transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                },
-                containedPrimary: {
-                    background: "linear-gradient(135deg, #1D4ED8, #2563EB)",
-                    boxShadow: "0 4px 16px rgba(29,78,216,0.3)",
-                    "&:hover": {
-                        background: "linear-gradient(135deg, #1E40AF, #1D4ED8)",
-                        boxShadow: "0 6px 24px rgba(29,78,216,0.4)",
-                        transform: "translateY(-1px)",
+                    "&.MuiButton-containedPrimary": {
+                        background: "linear-gradient(135deg, #1D4ED8, #2563EB)",
+                        boxShadow: "0 4px 16px rgba(29,78,216,0.3)",
+                        "&:hover": {
+                            background: "linear-gradient(135deg, #1E40AF, #1D4ED8)",
+                            boxShadow: "0 6px 24px rgba(29,78,216,0.4)",
+                            transform: "translateY(-1px)",
+                        },
                     },
-                },
-                containedSecondary: {
-                    background: "linear-gradient(135deg, #06B6D4, #0891B2)",
-                    boxShadow: "0 4px 16px rgba(6,182,212,0.3)",
-                    color: "#0A1628",
-                    "&:hover": {
-                        background: "linear-gradient(135deg, #0891B2, #B45309)",
-                        boxShadow: "0 6px 24px rgba(6,182,212,0.4)",
-                        transform: "translateY(-1px)",
+                    "&.MuiButton-containedSecondary": {
+                        background: "linear-gradient(135deg, #06B6D4, #0891B2)",
+                        boxShadow: "0 4px 16px rgba(6,182,212,0.3)",
+                        color: "#0A1628",
+                        "&:hover": {
+                            background: "linear-gradient(135deg, #0891B2, #B45309)",
+                            boxShadow: "0 6px 24px rgba(6,182,212,0.4)",
+                            transform: "translateY(-1px)",
+                        },
                     },
-                },
-                outlinedPrimary: {
-                    borderColor: "rgba(29,78,216,0.5)",
-                    "&:hover": {
-                        borderColor: "#1D4ED8",
-                        background: "rgba(29,78,216,0.05)",
+                    "&.MuiButton-outlinedPrimary": {
+                        borderColor: "rgba(29,78,216,0.5)",
+                        "&:hover": {
+                            borderColor: "#1D4ED8",
+                            background: "rgba(29,78,216,0.05)",
+                        },
                     },
                 },
             },

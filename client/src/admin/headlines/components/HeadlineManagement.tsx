@@ -267,7 +267,7 @@ const HeadlineManagement = () => {
                 </DialogTitle>
                 <Divider />
                 <DialogContent sx={{ pt: 3 }}>
-                    <Stack gap={2.5}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                         <TextField
                             label="Announcement Text"
                             fullWidth
@@ -294,7 +294,7 @@ const HeadlineManagement = () => {
                                 '& label.Mui-focused': { color: '#1D4ED8' },
                             }}
                         />
-                    </Stack>
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 3, pt: 2, gap: 1 }}>
                     <Button
