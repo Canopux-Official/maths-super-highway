@@ -4,6 +4,7 @@ import { ThemeProvider } from '@emotion/react';
 import { mathTheme } from './admin/theme';
 import Courses from './admin/courses/components/CoursePage';
 import UserManagement from './admin/users/components/UserManagement';
+import UserDetails from './admin/users/components/UserDetails';
 import HeadlineManagement from './admin/headlines/components/HeadlineManagement';
 import StudentSidebar from './student/StudentSidebar';
 import AllCoursesTab from './student/course/components/CourseTab';
@@ -35,8 +36,7 @@ function App() {
 
   if (import.meta.env.VITE_ENVIRONMENT == 'development') {
     return (
-      <AuthProvider>
-        <Router>
+      <Router>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={
@@ -76,6 +76,7 @@ function App() {
                       <Route path="headlines" element={<HeadlineManagement />} />
                       <Route path="courses" element={<Courses />} />
                       <Route path="users" element={<UserManagement />} />
+                      <Route path="users/:id" element={<UserDetails />} />
                       <Route path="/" element={<AdminDashboard />} />
                       <Route path="profile" element={<ProfilePage />} />
                     </Routes>
@@ -93,7 +94,7 @@ function App() {
                       <Route path="enrolled-courses" element={<EnrolledCoursesTab />} />
                       <Route path="courses" element={<AllCoursesTab />} />
                       <Route path="profile" element={<ProfilePage />} />
-                      <Route path="/" element={<UserDashboard userId={user!.userId} />} />
+                      <Route path="/" element={<UserDashboard userId={user?.userId || ''} />} />
                     </Routes>
                   </StudentSidebar>
                 </ProtectedRoute>
@@ -103,18 +104,15 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
-      </AuthProvider>
     )
   }
   else {
     return (
-      <AuthProvider>
-        <Router>
+      <Router>
           <Routes>
             <Route path="*" element={<CommingSoonPage />} />
           </Routes>
         </Router>
-      </AuthProvider>
     )
   }
 

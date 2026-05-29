@@ -44,7 +44,7 @@ const UserRecentEnrollments: React.FC<UserRecentEnrollmentsProps> = ({ recent })
                           overflow: 'hidden',
                         }}
                       >
-                        {entry.course.content}
+                        {entry.course.content.replace(/<[^>]*>?/gm, "")}
                       </Typography>
                     )}
                     <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>

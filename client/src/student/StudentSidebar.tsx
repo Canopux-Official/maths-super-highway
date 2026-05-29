@@ -8,7 +8,6 @@ import {
 } from '@mui/material';
 import {
     Menu as MenuIcon,
-    Functions as MathIcon,
     School as UserIcon,
     ChevronRight as ChevronIcon,
     LibraryBooks as AllCoursesIcon,
@@ -21,11 +20,11 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 const drawerWidth = 260;
 
 const menuItems = [
-    { text: 'Dashboard',        icon: <DashboardIcon />,  path: '/student',                  description: 'Overview' },
-    { text: 'All Courses',      icon: <AllCoursesIcon />, path: '/student/courses',          description: 'Browse content' },
-    { text: 'Enrolled Courses', icon: <EnrolledIcon />,   path: '/student/enrolled-courses', description: 'Your progress' },
-    { text: 'Profile',          icon: <UserIcon />,       path: '/student/profile',          description: 'Account details' },
-    { text: 'Back to Website',  icon: <HomeIcon />,       path: '/',                         description: 'Landing page' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/student', description: 'Overview' },
+    { text: 'All Courses', icon: <AllCoursesIcon />, path: '/student/courses', description: 'Browse content' },
+    { text: 'Enrolled Courses', icon: <EnrolledIcon />, path: '/student/enrolled-courses', description: 'Your progress' },
+    { text: 'Profile', icon: <UserIcon />, path: '/student/profile', description: 'Account details' },
+    { text: 'Back to Website', icon: <HomeIcon />, path: '/', description: 'Landing page' },
 ];
 
 export default function StudentSidebar({ children }: { children: React.ReactNode }) {

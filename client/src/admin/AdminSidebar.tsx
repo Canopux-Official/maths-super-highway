@@ -27,7 +27,7 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin', description: 'Overview' },
   { text: 'Announcements',    icon: <HeadlineIcon />, path: '/admin/headlines', description: 'Live ticker' },
   { text: 'Course Curriculum',icon: <CourseIcon />,   path: '/admin/courses',   description: 'Manage content' },
-  { text: 'Student Directory',icon: <UserIcon />,     path: '/admin/users',     description: 'Manage users' },
+  { text: 'Directory',icon: <UserIcon />,     path: '/admin/users',     description: 'Manage users' },
   { text: 'Account Profile',  icon: <PersonIcon />,   path: '/admin/profile',   description: 'My details' },
   { text: 'Back to Website',  icon: <HomeIcon />,     path: '/',                description: 'Landing page' },
 ];

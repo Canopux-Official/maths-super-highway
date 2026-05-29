@@ -45,7 +45,7 @@ const Header: React.FC = () => {
             const el = document.querySelector(href);
             if (el) el.scrollIntoView({ behavior: "smooth" });
         } else if (href === "/signup" && user) {
-            navigate(user.role === "admin" ? "/admin/headlines" : "/student/courses");
+            navigate(user.role === "admin" ? "/admin" : "/student");
         } else {
             navigate(href);
         }

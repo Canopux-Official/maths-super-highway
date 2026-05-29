@@ -91,7 +91,7 @@ const SignupPage = () => {
       if (!response.ok) throw new Error(data.message || 'OTP verification failed');
 
       login(data.token);
-      navigate('/student/courses');
+      navigate('/student');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Verification failed');
     } finally {

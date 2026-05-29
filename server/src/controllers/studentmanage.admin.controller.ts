@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/user';
+import Enrollment from '../models/enrollment';
+import Testimonial from '../models/testimonials';
 
 /**
  * @desc    Get all users (Typically filtered for the Admin view)
@@ -13,6 +15,33 @@ export const getAllUsers = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       data: users
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * @desc    Get detailed user profile including enrollments and testimonials
+ * @route   GET /api/users/:id
+ */
+export const getUserDetails = async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const enrollments = await Enrollment.find({ student: user._id }).populate('course', 'title category level price status isActive');
+    const testimonials = await Testimonial.find({ user: user._id }).populate('course', 'title');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user,
+        enrollments,
+        testimonials
+      }
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });

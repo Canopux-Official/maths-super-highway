@@ -44,7 +44,6 @@ const getEmailTemplate = (otp: string, isResend: boolean, currentAttempts: numbe
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #2e447dff; padding: 30px 20px; text-align: center;">
-        <img src="${process.env.CLIENT_LINK || 'http://localhost:5173'}/transparentLogo.png" alt="Maths Superhighway Logo" style="max-height: 80px; margin-bottom: 15px;" />
         <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">Maths Superhighway</h1>
         <p style="color: #E8F5E9; margin: 5px 0 0; font-size: 14px;">Master Mathematics with ease</p>
       </div>

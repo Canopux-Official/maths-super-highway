@@ -3,6 +3,7 @@ import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import StarIcon from '@mui/icons-material/Star';
+import { useQuery } from '@tanstack/react-query';
 
 import UserProfileCard from './UserProfileCard';
 import UserStatCard from './UserStatCard';
@@ -14,30 +15,14 @@ interface UserDashboardProps {
 }
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await userDashboardService.getStats(userId);
-        console.log(data)
-        setStats(data);
-      } catch (err) {
-        setError('Failed to load dashboard. Please try again.');
-        console.error('UserDashboard fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [userId]);
+  const { data: stats, isLoading: loading, error } = useQuery({
+    queryKey: ['userDashboardStats', userId],
+    queryFn: async () => {
+      const data = await userDashboardService.getStats(userId);
+      return data;
+    },
+    enabled: !!userId,
+  });
 
   if (loading) {
     return (
@@ -50,7 +35,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
   if (error) {
     return (
       <Box sx={{ p: 2 }}>
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error">Failed to load dashboard. Please try again.</Alert>
       </Box>
     );
   }

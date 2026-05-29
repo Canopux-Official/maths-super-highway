@@ -87,9 +87,9 @@ const LoginPage = () => {
       if (!response.ok) throw new Error(data.message || 'OTP verification failed');
       login(data.token);
       if (data.user.role === 'admin') {
-        navigate('/admin/headlines');
+        navigate('/admin');
       } else {
-        navigate('/student/courses');
+        navigate('/student');
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Verification failed');

@@ -2,42 +2,69 @@ import React, { useEffect, useState } from 'react';
 import {
     Box, Typography, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, IconButton,
-    Stack, Chip, Switch, Avatar,
+    Chip, Switch, Avatar, Tooltip
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Delete, Person, Groups, School, AccountBalance } from '@mui/icons-material';
 import { userService } from '../services/api';
 
 const roleConfig: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string; tab: string }> = {
     student: { label: 'Students', icon: <School sx={{ fontSize: 15 }} />, color: '#1D4ED8', bg: 'rgba(29,78,216,0.08)', tab: 'student' },
-    parent:  { label: 'Parents',  icon: <Groups sx={{ fontSize: 15 }} />,  color: '#0891B2', bg: 'rgba(8,145,178,0.08)',  tab: 'parent'  },
+    parent: { label: 'Parents', icon: <Groups sx={{ fontSize: 15 }} />, color: '#0891B2', bg: 'rgba(8,145,178,0.08)', tab: 'parent' },
     college: { label: 'Colleges', icon: <AccountBalance sx={{ fontSize: 15 }} />, color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', tab: 'college' },
 };
 
 const UserManagement = () => {
-    const [users, setUsers] = useState([]);
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [currentTab, setCurrentTab] = useState('student');
 
-    const loadUsers = async () => {
-        const res = await userService.getUsers();
-        if (res.success) {
-            const nonAdmins = res.data.filter((u: any) => u.role !== 'admin');
-            setUsers(nonAdmins);
+    // Fetch all users
+    const { data: users = [], isLoading, isError } = useQuery({
+        queryKey: ['adminUsers'],
+        queryFn: async () => {
+            const res = await userService.getUsers();
+            if (res.success) {
+                return res.data.filter((u: any) => u.role !== 'admin');
+            }
+            throw new Error('Failed to fetch users');
         }
-    };
+    });
 
-    useEffect(() => { loadUsers(); }, []);
+    // Toggle status mutation
+    const toggleStatusMutation = useMutation({
+        mutationFn: async (user: any) => {
+            const res = await userService.updateUser(user._id, { isActive: !user.isActive });
+            if (!res.success) throw new Error('Update failed');
+            return res;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        }
+    });
+
+    // Delete user mutation
+    const deleteUserMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await userService.deleteUser(id);
+            if (!res.success) throw new Error('Delete failed');
+            return res;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+        }
+    });
 
     const filteredUsers = users.filter((u: any) => u.role === currentTab);
 
-    const handleStatusToggle = async (user: any) => {
-        const res = await userService.updateUser(user._id, { isActive: !user.isActive });
-        if (res.success) loadUsers();
+    const handleStatusToggle = (user: any) => {
+        toggleStatusMutation.mutate(user);
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = (id: string) => {
         if (window.confirm(`Delete this ${currentTab} permanently?`)) {
-            const res = await userService.deleteUser(id);
-            if (res.success) loadUsers();
+            deleteUserMutation.mutate(id);
         }
     };
 
@@ -48,7 +75,7 @@ const UserManagement = () => {
             {/* ── Header ── */}
             <Box sx={{ mb: 4 }}>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#0A1628', fontFamily: "'Sora', sans-serif", letterSpacing: '-0.02em', mb: 0.5 }}>
-                    Student Directory
+                    Directory
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#64748B', fontFamily: "'Inter', sans-serif" }}>
                     Manage and monitor all registered users on the platform
@@ -101,8 +128,8 @@ const UserManagement = () => {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ bgcolor: '#F8FAFC' }}>
-                                {['User', 'Contact Info', 'Status', 'Actions'].map((h, i) => (
-                                    <TableCell key={h} align={i === 3 ? 'right' : 'left'} sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#475569', fontFamily: "'Inter', sans-serif", py: 1.75, borderBottom: '1px solid #E2E8F0' }}>
+                                {['User', 'Contact Info', 'Quick Info', 'Status', 'Actions'].map((h, i) => (
+                                    <TableCell key={h} align={i === 4 ? 'right' : 'left'} sx={{ fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#475569', fontFamily: "'Inter', sans-serif", py: 1.75, borderBottom: '1px solid #E2E8F0' }}>
                                         {h}
                                     </TableCell>
                                 ))}
@@ -143,6 +170,18 @@ const UserManagement = () => {
                                                 <Typography sx={{ fontSize: '0.75rem', color: '#94A3B8', fontFamily: "'Inter', sans-serif" }}>{user.phone || 'No phone'}</Typography>
                                             </TableCell>
 
+                                            {/* Quick Info */}
+                                            <TableCell sx={{ py: 1.75 }}>
+                                                <Typography sx={{ fontSize: '0.875rem', color: '#334155', fontFamily: "'Inter', sans-serif" }}>
+                                                    Joined: {new Date(user.createdAt).toLocaleDateString('en-GB')}
+                                                </Typography>
+                                                {user.dob && (
+                                                    <Typography sx={{ fontSize: '0.75rem', color: '#94A3B8', fontFamily: "'Inter', sans-serif" }}>
+                                                        DOB: {new Date(user.dob).toLocaleDateString('en-GB')}
+                                                    </Typography>
+                                                )}
+                                            </TableCell>
+
                                             {/* Status */}
                                             <TableCell sx={{ py: 1.75 }}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -173,20 +212,33 @@ const UserManagement = () => {
 
                                             {/* Actions */}
                                             <TableCell align="right" sx={{ py: 1.75 }}>
-                                                <IconButton
-                                                    onClick={() => handleDelete(user._id)}
-                                                    size="small"
-                                                    sx={{ color: '#EF4444', bgcolor: 'rgba(239,68,68,0.06)', borderRadius: '8px', width: 32, height: 32, '&:hover': { bgcolor: 'rgba(239,68,68,0.12)' } }}
-                                                >
-                                                    <Delete sx={{ fontSize: 15 }} />
-                                                </IconButton>
+                                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                                    <Tooltip title="View Profile">
+                                                        <IconButton
+                                                            onClick={() => navigate(`/admin/users/${user._id}`)}
+                                                            size="small"
+                                                            sx={{ color: '#1D4ED8', bgcolor: 'rgba(29,78,216,0.06)', borderRadius: '8px', width: 32, height: 32, '&:hover': { bgcolor: 'rgba(29,78,216,0.12)' } }}
+                                                        >
+                                                            <Person sx={{ fontSize: 15 }} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Delete">
+                                                        <IconButton
+                                                            onClick={() => handleDelete(user._id)}
+                                                            size="small"
+                                                            sx={{ color: '#EF4444', bgcolor: 'rgba(239,68,68,0.06)', borderRadius: '8px', width: 32, height: 32, '&:hover': { bgcolor: 'rgba(239,68,68,0.12)' } }}
+                                                        >
+                                                            <Delete sx={{ fontSize: 15 }} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     );
                                 })
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                                    <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                                         <Person sx={{ fontSize: 40, color: '#CBD5E1', mb: 1, display: 'block', mx: 'auto' }} />
                                         <Typography sx={{ color: '#94A3B8', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem' }}>
                                             No {roleConfig[currentTab].label.toLowerCase()} found.
