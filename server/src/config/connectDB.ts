@@ -95,4 +95,10 @@ mongoose.connection.on('error', (err) => {
   cache.promise = null;
 });
 
+// ADD this alongside your existing disconnected/error listeners
+mongoose.connection.on('reconnected', () => {
+  console.log('[DB] ✅ MongoDB reconnected');
+  cache.conn = mongoose;  // update stale cache reference
+});
+
 export default connectDB;
