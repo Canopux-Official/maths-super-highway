@@ -152,7 +152,7 @@ const ResultsManagement = () => {
       ) : (
         <Grid container spacing={3}>
           {results.map((result) => (
-            <Grid item xs={12} sm={6} md={4} key={result._id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result._id}>
               <Paper sx={{ p: 2, borderRadius: '12px', overflow: 'hidden', border: '1px solid #E2E8F0', position: 'relative' }}>
                 <Box sx={{ 
                   height: 200, 
@@ -186,7 +186,7 @@ const ResultsManagement = () => {
             </Grid>
           ))}
           {results.length === 0 && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography sx={{ textAlign: 'center', color: '#64748B', py: 5 }}>No results added yet.</Typography>
             </Grid>
           )}
