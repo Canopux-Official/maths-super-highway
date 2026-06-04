@@ -63,7 +63,7 @@ const Hero: React.FC = () => {
     // Auto-cycle
     useEffect(() => {
         if (results.length <= 1) return;
-        const t = setInterval(goNext, 4500);
+        const t = setInterval(goNext, 2500);
         return () => clearInterval(t);
     }, [results.length, goNext]);
 

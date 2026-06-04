@@ -34,10 +34,10 @@ const LandingResults = () => {
     setCurrentIndex((prev) => (prev + 1) % results.length);
   }, [results.length]);
 
-  // Auto-cycle every 4.5s
+  // Auto-cycle every 2.5s
   useEffect(() => {
     if (results.length <= 1) return;
-    const t = setInterval(goNext, 4500);
+    const t = setInterval(goNext, 2500);
     return () => clearInterval(t);
   }, [results.length, goNext]);
 
@@ -290,7 +290,7 @@ const LandingResults = () => {
                           position: 'absolute',
                           inset: 0,
                           bgcolor: '#F59E0B',
-                          animation: 'fillBar 4.5s linear forwards',
+                          animation: 'fillBar 2.5s linear forwards',
                           '@keyframes fillBar': {
                             '0%': { transform: 'scaleX(0)', transformOrigin: 'left' },
                             '100%': { transform: 'scaleX(1)', transformOrigin: 'left' },

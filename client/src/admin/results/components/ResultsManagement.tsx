@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, Paper, Grid, IconButton,
   CircularProgress, Alert, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, Switch, FormControlLabel
+  DialogContent, DialogActions, TextField, Switch, FormControlLabel,
+  Backdrop
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -49,6 +50,20 @@ const ResultsManagement = () => {
   useEffect(() => {
     fetchResults();
   }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (uploading) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for Chrome/Firefox to show the default warning
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [uploading]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -246,6 +261,26 @@ const ResultsManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Uploading Overlay */}
+      <Backdrop
+        sx={{ 
+          color: '#fff', 
+          zIndex: (theme) => Math.max(theme.zIndex.drawer, theme.zIndex.modal) + 2000, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 2,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)'
+        }}
+        open={uploading}
+      >
+        <CircularProgress color="inherit" size={60} thickness={4} />
+        <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: "'Sora', sans-serif" }}>
+          Uploading... Please wait
+        </Typography>
+        <Typography variant="body1" sx={{ opacity: 0.8, fontFamily: "'Inter', sans-serif" }}>
+          Do not refresh or close this page. This might take a moment.
+        </Typography>
+      </Backdrop>
     </Box>
   );
 };
