@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import {
     Box, Typography, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, IconButton,
-    Chip, Switch, Avatar, Tooltip
+    Chip, Switch, Avatar, Tooltip, Button
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Delete, Person, Groups, School, AccountBalance } from '@mui/icons-material';
+import { Delete, Person, Groups, School, AccountBalance, Download } from '@mui/icons-material';
 import { userService } from '../services/api';
+import ConfirmDialog from '../../../components/ConfirmDialog';
+import { exportUsersToExcel } from '../../../utils/excel';
 
 const roleConfig: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string; tab: string }> = {
     student: { label: 'Students', icon: <School sx={{ fontSize: 15 }} />, color: '#1D4ED8', bg: 'rgba(29,78,216,0.08)', tab: 'student' },
@@ -19,6 +21,11 @@ const UserManagement = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [currentTab, setCurrentTab] = useState('student');
+    const [confirmState, setConfirmState] = useState<{ open: boolean, title: string, message: string, action: (() => void) | null, color: "primary" | "error" | "warning" }>({
+        open: false, title: '', message: '', action: null, color: 'primary'
+    });
+    
+    const handleCloseConfirm = () => setConfirmState({ ...confirmState, open: false });
 
     // Fetch all users
     const { data: users = [], isLoading, isError } = useQuery({
@@ -59,13 +66,29 @@ const UserManagement = () => {
     const filteredUsers = users.filter((u: any) => u.role === currentTab);
 
     const handleStatusToggle = (user: any) => {
-        toggleStatusMutation.mutate(user);
+        setConfirmState({
+            open: true,
+            title: user.isActive ? 'Deactivate User' : 'Activate User',
+            message: `Are you sure you want to ${user.isActive ? 'deactivate' : 'activate'} this user?`,
+            color: user.isActive ? 'warning' : 'primary',
+            action: () => {
+                toggleStatusMutation.mutate(user);
+                handleCloseConfirm();
+            }
+        });
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm(`Delete this ${currentTab} permanently?`)) {
-            deleteUserMutation.mutate(id);
-        }
+        setConfirmState({
+            open: true,
+            title: `Delete ${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}`,
+            message: `Are you sure you want to delete this ${currentTab} permanently? This action cannot be undone.`,
+            color: 'error',
+            action: () => {
+                deleteUserMutation.mutate(id);
+                handleCloseConfirm();
+            }
+        });
     };
 
     const countByRole = (role: string) => (users as any[]).filter((u: any) => u.role === role).length;
@@ -73,13 +96,34 @@ const UserManagement = () => {
     return (
         <Box>
             {/* ── Header ── */}
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0A1628', fontFamily: "'Sora', sans-serif", letterSpacing: '-0.02em', mb: 0.5 }}>
-                    Directory
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#64748B', fontFamily: "'Inter', sans-serif" }}>
-                    Manage and monitor all registered users on the platform
-                </Typography>
+            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0A1628', fontFamily: "'Sora', sans-serif", letterSpacing: '-0.02em', mb: 0.5 }}>
+                        Directory
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#64748B', fontFamily: "'Inter', sans-serif" }}>
+                        Manage and monitor all registered users on the platform
+                    </Typography>
+                </Box>
+                <Button 
+                    variant="outlined" 
+                    startIcon={<Download />}
+                    onClick={() => exportUsersToExcel(filteredUsers, `Directory_${currentTab}`)}
+                    sx={{
+                        textTransform: 'none',
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 600,
+                        borderRadius: '8px',
+                        borderColor: '#E2E8F0',
+                        color: '#475569',
+                        '&:hover': {
+                            borderColor: '#CBD5E1',
+                            bgcolor: '#F8FAFC'
+                        }
+                    }}
+                >
+                    Export {currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}s (Excel)
+                </Button>
             </Box>
 
             {/* ── Custom Role Tabs ── */}
@@ -180,6 +224,13 @@ const UserManagement = () => {
                                                         DOB: {new Date(user.dob).toLocaleDateString('en-GB')}
                                                     </Typography>
                                                 )}
+                                                {user.targetExams && user.targetExams.length > 0 && (
+                                                    <Box sx={{ mt: 0.5, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                                        {user.targetExams.map((exam: any) => (
+                                                            <Chip key={exam._id} label={exam.name} size="small" sx={{ height: 16, fontSize: '0.6rem', bgcolor: '#E2E8F0' }} />
+                                                        ))}
+                                                    </Box>
+                                                )}
                                             </TableCell>
 
                                             {/* Status */}
@@ -250,6 +301,14 @@ const UserManagement = () => {
                     </Table>
                 </TableContainer>
             </Paper>
+            <ConfirmDialog 
+                open={confirmState.open} 
+                title={confirmState.title} 
+                message={confirmState.message} 
+                onConfirm={() => confirmState.action && confirmState.action()} 
+                onCancel={handleCloseConfirm} 
+                confirmColor={confirmState.color} 
+            />
         </Box>
     );
 };

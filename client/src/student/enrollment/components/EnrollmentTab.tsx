@@ -8,7 +8,9 @@ import ArticleIcon from "@mui/icons-material/Article";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlined";
 import { courseService } from "../../course/services/api";
+import { enrollmentService } from "../services/api";
 import FeedbackForm from "../../testimonial/components/FeedBackForm";
+import ConfirmDialog from "../../../components/ConfirmDialog";
 
 interface EnrolledCourse {
   _id: string;
@@ -22,6 +24,8 @@ const EnrolledCoursesTab: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [expandedFeedback, setExpandedFeedback] = useState<string | null>(null);
+  const [courseToUnenroll, setCourseToUnenroll] = useState<string | null>(null);
+  const [unenrollLoading, setUnenrollLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -40,6 +44,20 @@ const EnrolledCoursesTab: React.FC = () => {
 
   const toggleFeedback = (id: string) => {
     setExpandedFeedback((prev) => (prev === id ? null : id));
+  };
+
+  const handleUnenroll = async () => {
+    if (!courseToUnenroll) return;
+    setUnenrollLoading(true);
+    try {
+      await enrollmentService.unenrollFromCourse(courseToUnenroll);
+      setCourses((prev) => prev.filter((c) => c._id !== courseToUnenroll));
+    } catch (err) {
+      setError("Failed to unenroll. Please try again.");
+    } finally {
+      setUnenrollLoading(false);
+      setCourseToUnenroll(null);
+    }
   };
 
   if (loading) {
@@ -129,6 +147,27 @@ const EnrolledCoursesTab: React.FC = () => {
 
                 <Button
                   size="small"
+                  variant="outlined"
+                  onClick={() => setCourseToUnenroll(course._id)}
+                  disabled={unenrollLoading && courseToUnenroll === course._id}
+                  sx={{
+                    color: "#F87171",
+                    borderColor: "rgba(248,113,113,0.3)",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                    fontFamily: "'Inter', sans-serif",
+                    "&:hover": {
+                      borderColor: "#F87171",
+                      bgcolor: "rgba(248,113,113,0.08)",
+                    }
+                  }}
+                >
+                  {unenrollLoading && courseToUnenroll === course._id ? "Wait..." : "Unenroll"}
+                </Button>
+
+                <Button
+                  size="small"
                   variant={isFeedbackOpen ? "contained" : "outlined"}
                   onClick={() => toggleFeedback(course._id)}
                   startIcon={<ChatBubbleOutlineIcon sx={{ fontSize: 14 }} />}
@@ -159,6 +198,16 @@ const EnrolledCoursesTab: React.FC = () => {
           );
         })}
       </Box>
+
+      <ConfirmDialog
+        open={!!courseToUnenroll}
+        title="Unenroll from Course"
+        message="Are you sure you want to unenroll from this course? You will lose access to its contents."
+        onConfirm={handleUnenroll}
+        onCancel={() => setCourseToUnenroll(null)}
+        confirmColor="error"
+        confirmText="Unenroll"
+      />
     </Box>
   );
 };

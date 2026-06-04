@@ -210,7 +210,7 @@ export const resendOtpInternal = async (email: string) => {
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, phone, dob } = req.body;
+    const { name, email, password, phone, dob, targetExams } = req.body;
     if (!name || !email || !password || !phone) {
       res.status(400).json({ success: false, message: "Name, email, password, and phone are required" });
       return;
@@ -242,6 +242,7 @@ export const signup = async (req: Request, res: Response) => {
       dob,
       role: userRole,
       isActive: false, // User is not active yet
+      targetExams: targetExams || [],
     });
 
     const modelRefName = 'User';
@@ -334,7 +335,7 @@ export const verifyLogin = async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role, email: user.email },
+      { userId: user._id, role: user.role, email: user.email, name: user.name },
       JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -382,7 +383,7 @@ export const getMe = async (req: Request, res: Response) => {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;
     }
-    const user = await User.findById(req.user.userId).select('-password');
+    const user = await User.findById(req.user.userId).select('-password').populate('targetExams', 'name');
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found' });
       return;
@@ -400,12 +401,16 @@ export const updateMe = async (req: Request, res: Response) => {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;
     }
-    const { name, phone, dob } = req.body;
+    const { name, phone, dob, targetExams } = req.body;
+    
+    const updateData: any = { name, phone, dob };
+    if (targetExams !== undefined) updateData.targetExams = targetExams;
+
     const user = await User.findByIdAndUpdate(
       req.user.userId,
-      { $set: { name, phone, dob } },
+      { $set: updateData },
       { new: true, runValidators: true }
-    ).select('-password');
+    ).select('-password').populate('targetExams', 'name');
     
     if (!user) {
       res.status(404).json({ success: false, message: 'User not found' });

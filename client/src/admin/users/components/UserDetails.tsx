@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Box, Typography, Paper, Avatar, Chip,
-    Divider, IconButton, Card, CardContent, CircularProgress, Rating
+    Divider, IconButton, Card, CardContent, CircularProgress, Rating,
+    Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField
 } from '@mui/material';
 import {
     ArrowBack, Email, Phone, CalendarToday,
-    School, VerifiedUser, AccessTime
+    School, VerifiedUser, AccessTime, Edit
 } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '../services/api';
 
 const UserDetails = () => {
@@ -26,6 +27,33 @@ const UserDetails = () => {
     });
     const data = resData;
 
+    const queryClient = useQueryClient();
+    const [editPhoneOpen, setEditPhoneOpen] = useState(false);
+    const [newPhone, setNewPhone] = useState('');
+
+    const updatePhoneMutation = useMutation({
+        mutationFn: async (phone: string) => {
+            if (!id) throw new Error('No user ID');
+            const res = await userService.updateUser(id, { phone });
+            if (!res.success) throw new Error('Update failed');
+            return res;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userDetails', id] });
+            setEditPhoneOpen(false);
+        }
+    });
+
+    const handleEditPhoneClick = () => {
+        if (data?.user) {
+            setNewPhone(data.user.phone || '');
+            setEditPhoneOpen(true);
+        }
+    };
+
+    const handleSavePhone = () => {
+        updatePhoneMutation.mutate(newPhone);
+    };
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
@@ -93,6 +121,17 @@ const UserDetails = () => {
                                 />
                             )}
                         </Box>
+                        
+                        {user.targetExams && user.targetExams.length > 0 && (
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="caption" sx={{ display: 'block', mb: 1, color: '#64748B', fontWeight: 600 }}>TARGET EXAMS</Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
+                                    {user.targetExams.map((exam: any) => (
+                                        <Chip key={exam._id} label={exam.name} size="small" sx={{ bgcolor: '#F1F5F9', color: '#334155', fontWeight: 600 }} />
+                                    ))}
+                                </Box>
+                            </Box>
+                        )}
 
                         <Divider sx={{ mb: 3 }} />
 
@@ -103,7 +142,10 @@ const UserDetails = () => {
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Phone sx={{ color: '#94A3B8', fontSize: 20 }} />
-                                <Typography variant="body2" sx={{ color: '#334155' }}>{user.phone || 'N/A'}</Typography>
+                                <Typography variant="body2" sx={{ color: '#334155', flexGrow: 1 }}>{user.phone || 'N/A'}</Typography>
+                                <IconButton size="small" onClick={handleEditPhoneClick}>
+                                    <Edit sx={{ fontSize: 16 }} />
+                                </IconButton>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <CalendarToday sx={{ color: '#94A3B8', fontSize: 20 }} />
@@ -186,6 +228,29 @@ const UserDetails = () => {
 
                 </Box>
             </Box>
+
+            {/* Edit Phone Dialog */}
+            <Dialog open={editPhoneOpen} onClose={() => setEditPhoneOpen(false)}>
+                <DialogTitle>Edit Phone Number</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Phone Number"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        value={newPhone}
+                        onChange={(e) => setNewPhone(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditPhoneOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSavePhone} variant="contained" disabled={updatePhoneMutation.isPending}>
+                        {updatePhoneMutation.isPending ? 'Saving...' : 'Save'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

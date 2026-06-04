@@ -9,6 +9,7 @@ export interface IUser extends Document {
   role: 'admin' | 'student' | 'parent' | 'college';
   isActive: boolean;
   isVerified: boolean;
+  targetExams?: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,7 @@ const userSchema = new Schema<IUser>(
     },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
+    targetExams: [{ type: Schema.Types.ObjectId, ref: 'TargetExam' }],
   },
   { timestamps: true }
 );

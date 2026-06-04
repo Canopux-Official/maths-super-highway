@@ -343,10 +343,12 @@ import {
 } from '@mui/material';
 import {
     Folder, Description, Add, ChevronRight,
-    ArrowBack, Edit, Delete, People
+    ArrowBack, Edit, Delete, People, Download
 } from '@mui/icons-material';
 import Editor from '../components/TiptapEditor';
 import { courseService } from '../services/api';
+import ConfirmDialog from '../../../components/ConfirmDialog';
+import { exportUsersToExcel } from '../../../utils/excel';
 
 const Courses = () => {
     const [items, setItems] = useState<any[]>([]);
@@ -358,6 +360,11 @@ const Courses = () => {
     const [form, setForm] = useState({ title: '', itemType: 'folder' as 'folder' | 'page', content: '' });
     const [tabValue, setTabValue] = useState(0);
     const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number>>({});
+    
+    const [confirmState, setConfirmState] = useState<{ open: boolean, title: string, message: string, action: (() => void) | null, color: "primary" | "error" | "warning" }>({
+        open: false, title: '', message: '', action: null, color: 'primary'
+    });
+    const handleCloseConfirm = () => setConfirmState({ ...confirmState, open: false });
 
     const loadData = async (targetId: string) => {
         const res = await courseService.getSubItems(targetId);
@@ -413,9 +420,44 @@ const Courses = () => {
 
     const handleDelete = async (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
-        if (window.confirm("Are you sure? This will delete all sub-items as well.")) {
-            const res = await courseService.deleteCourse(id);
-            if (res.success) loadData(parentId);
+        setConfirmState({
+            open: true,
+            title: 'Delete Item',
+            message: 'Are you sure? This will delete all sub-items as well. This action cannot be undone.',
+            color: 'error',
+            action: async () => {
+                const res = await courseService.deleteCourse(id);
+                if (res.success) loadData(parentId);
+                handleCloseConfirm();
+            }
+        });
+    };
+
+    const handleSubmitConfirm = () => {
+        setConfirmState({
+            open: true,
+            title: editingId ? 'Update Item' : 'Create New Item',
+            message: `Are you sure you want to ${editingId ? 'update' : 'create'} this ${form.itemType}?`,
+            color: 'primary',
+            action: async () => {
+                await handleSubmit();
+                handleCloseConfirm();
+            }
+        });
+    };
+
+    const handleExportCourseStudents = async (e: React.MouseEvent, item: any) => {
+        e.stopPropagation();
+        try {
+            const res = await courseService.exportCourseStudents(item._id);
+            if (res.success && res.data.length > 0) {
+                exportUsersToExcel(res.data, `Course_${item.title.replace(/\s+/g, '_')}_Students`);
+            } else {
+                alert("No students enrolled in this course.");
+            }
+        } catch (error) {
+            console.error("Failed to export students", error);
+            alert("Failed to export students");
         }
     };
 
@@ -531,12 +573,21 @@ const Courses = () => {
                                     </TableCell>
                                     <TableCell align="right">
                                         <Stack sx={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 1 }}>
-                                            <IconButton size="small" onClick={(e) => handleEdit(e, item)}>
-                                                <Edit fontSize="small" />
-                                            </IconButton>
-                                            <IconButton size="small" color="error" onClick={(e) => handleDelete(e, item._id)}>
-                                                <Delete fontSize="small" />
-                                            </IconButton>
+                                            <Tooltip title="Export Enrolled Students">
+                                                <IconButton size="small" onClick={(e) => handleExportCourseStudents(e, item)} sx={{ color: '#0891B2' }}>
+                                                    <Download fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Edit">
+                                                <IconButton size="small" onClick={(e) => handleEdit(e, item)}>
+                                                    <Edit fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Delete">
+                                                <IconButton size="small" color="error" onClick={(e) => handleDelete(e, item._id)}>
+                                                    <Delete fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
                                         </Stack>
                                     </TableCell>
                                 </TableRow>
@@ -553,6 +604,7 @@ const Courses = () => {
                                 <Typography variant="h5" sx={{ fontWeight: 800 }}>{selectedPage.details.title}</Typography>
                             </Stack>
                             <Stack sx={{ flexDirection: 'row', gap: 2 }}>
+                                <Button variant="outlined" startIcon={<Download />} onClick={(e) => handleExportCourseStudents(e, selectedPage.details)} sx={{ color: '#0891B2', borderColor: '#0891B2' }}>Export Students</Button>
                                 <Button variant="outlined" startIcon={<Edit />} onClick={(e) => handleEdit(e, selectedPage.details)}>Edit Page</Button>
                                 <Button variant="outlined" color="error" startIcon={<Delete />} onClick={(e) => { handleDelete(e, selectedPage.details._id); setSelectedPage(null); }}>Delete</Button>
                             </Stack>
@@ -741,9 +793,18 @@ const Courses = () => {
                 </DialogContent>
                 <DialogActions sx={{ p: 3 }}>
                     <Button onClick={() => setIsModalOpen(false)} color="inherit">Cancel</Button>
-                    <Button variant="contained" onClick={handleSubmit}>Save Changes</Button>
+                    <Button variant="contained" onClick={handleSubmitConfirm}>Save Changes</Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog 
+                open={confirmState.open} 
+                title={confirmState.title} 
+                message={confirmState.message} 
+                onConfirm={() => confirmState.action && confirmState.action()} 
+                onCancel={handleCloseConfirm} 
+                confirmColor={confirmState.color} 
+            />
         </Box>
     );
 };

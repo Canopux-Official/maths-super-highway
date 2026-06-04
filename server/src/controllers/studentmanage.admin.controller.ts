@@ -10,7 +10,7 @@ import Testimonial from '../models/testimonials';
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     // We fetch all users except sensitive data like passwords
-    const users = await User.find().sort({ createdAt: -1 });
+    const users = await User.find().sort({ createdAt: -1 }).populate('targetExams', 'name');
 
     res.status(200).json({
       success: true,
@@ -27,7 +27,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
  */
 export const getUserDetails = async (req: Request, res: Response) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate('targetExams', 'name');
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -54,14 +54,16 @@ export const getUserDetails = async (req: Request, res: Response) => {
  */
 export const updateUserByAdmin = async (req: Request, res: Response) => {
   try {
-    const {isActive } = req.body;
+    const { isActive, phone } = req.body;
+
+    const updateFields: any = {};
+    if (isActive !== undefined) updateFields.isActive = isActive;
+    if (phone !== undefined) updateFields.phone = phone;
 
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { 
-        $set: {
-          isActive 
-        } 
+        $set: updateFields 
       },
       { new: true, runValidators: true }
     );

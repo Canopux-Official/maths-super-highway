@@ -617,6 +617,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { courseService } from "../services/api";
 import { enrollmentService } from "../../enrollment/services/api";
 import TestimonialsScroller from "../../testimonial/components/TestimonialScroller";
+import ConfirmDialog from "../../../components/ConfirmDialog";
 
 interface BreadcrumbEntry {
   id: string;
@@ -700,6 +701,8 @@ const CoursePageDetail: React.FC<Props> = ({
   const [enrollLoading, setEnrollLoading] = useState(false);
   const [enrollSuccess, setEnrollSuccess] = useState("");
   const [enrollError, setEnrollError] = useState("");
+  const [enrollConfirmOpen, setEnrollConfirmOpen] = useState(false);
+  const [unenrollConfirmOpen, setUnenrollConfirmOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -722,10 +725,15 @@ const CoursePageDetail: React.FC<Props> = ({
     load();
   }, [pageId]);
 
+  const handleEnrollClick = () => {
+    setEnrollConfirmOpen(true);
+  };
+
   const handleEnroll = async () => {
     setEnrollLoading(true);
     setEnrollError("");
     setEnrollSuccess("");
+    setEnrollConfirmOpen(false);
     try {
       await enrollmentService.enrollInCourse(pageId);
       setIsEnrolled(true);
@@ -739,6 +747,34 @@ const CoursePageDetail: React.FC<Props> = ({
     } catch (err: any) {
       setEnrollError(
         err?.response?.data?.message || "Enrollment failed. Please try again."
+      );
+    } finally {
+      setEnrollLoading(false);
+    }
+  };
+
+  const handleUnenrollClick = () => {
+    setUnenrollConfirmOpen(true);
+  };
+
+  const handleUnenroll = async () => {
+    setEnrollLoading(true);
+    setEnrollError("");
+    setEnrollSuccess("");
+    setUnenrollConfirmOpen(false);
+    try {
+      await enrollmentService.unenrollFromCourse(pageId);
+      setIsEnrolled(false);
+      setEnrollSuccess("You have successfully unenrolled from the course.");
+      if (pageData) {
+        setPageData({
+          ...pageData,
+          stats: { enrolledCount: Math.max(0, pageData.stats.enrolledCount - 1) },
+        });
+      }
+    } catch (err: any) {
+      setEnrollError(
+        err?.response?.data?.message || "Unenrollment failed. Please try again."
       );
     } finally {
       setEnrollLoading(false);
@@ -767,6 +803,26 @@ const CoursePageDetail: React.FC<Props> = ({
   return (
     <>
       <ReadProgress />
+      
+      <ConfirmDialog 
+        open={enrollConfirmOpen} 
+        title="Enroll in Course" 
+        message="Are you sure you want to enroll in this course?" 
+        onConfirm={handleEnroll} 
+        onCancel={() => setEnrollConfirmOpen(false)} 
+        confirmColor="primary" 
+        confirmText="Enroll"
+      />
+
+      <ConfirmDialog
+        open={unenrollConfirmOpen}
+        title="Unenroll from Course"
+        message="Are you sure you want to unenroll from this course? You will lose access to its contents."
+        onConfirm={handleUnenroll}
+        onCancel={() => setUnenrollConfirmOpen(false)}
+        confirmColor="error"
+        confirmText="Unenroll"
+      />
 
       <Box sx={{ fontFamily: "'DM Sans', sans-serif" }}>
 
@@ -869,25 +925,46 @@ const CoursePageDetail: React.FC<Props> = ({
                 {pageData.title}
               </Typography>
 
-              <Box sx={{ flexShrink: 0 }}>
+              <Box sx={{ flexShrink: 0, display: 'flex', gap: 1, alignItems: 'center' }}>
                 {isEnrolled ? (
-                  <Chip
-                    icon={<CheckCircleIcon sx={{ color: "#4ADE80 !important", fontSize: "15px !important" }} />}
-                    label="Enrolled"
-                    sx={{
-                      bgcolor: "rgba(22,163,74,0.15)",
-                      color: "#4ADE80",
-                      fontWeight: 700,
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: "0.8rem",
-                      border: "1px solid rgba(74,222,128,0.3)",
-                      px: 0.5,
-                    }}
-                  />
+                  <>
+                    <Chip
+                      icon={<CheckCircleIcon sx={{ color: "#4ADE80 !important", fontSize: "15px !important" }} />}
+                      label="Enrolled"
+                      sx={{
+                        bgcolor: "rgba(22,163,74,0.15)",
+                        color: "#4ADE80",
+                        fontWeight: 700,
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "0.8rem",
+                        border: "1px solid rgba(74,222,128,0.3)",
+                        px: 0.5,
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={handleUnenrollClick}
+                      disabled={enrollLoading}
+                      size="small"
+                      sx={{
+                        color: "#F87171",
+                        borderColor: "rgba(248,113,113,0.3)",
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontFamily: "'DM Sans', sans-serif",
+                        "&:hover": {
+                          borderColor: "#F87171",
+                          bgcolor: "rgba(248,113,113,0.08)",
+                        }
+                      }}
+                    >
+                      {enrollLoading ? "Wait…" : "Unenroll"}
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     variant="contained"
-                    onClick={handleEnroll}
+                    onClick={handleEnrollClick}
                     disabled={enrollLoading}
                     disableElevation
                     sx={{

@@ -6,6 +6,8 @@ import Courses from './admin/courses/components/CoursePage';
 import UserManagement from './admin/users/components/UserManagement';
 import UserDetails from './admin/users/components/UserDetails';
 import HeadlineManagement from './admin/headlines/components/HeadlineManagement';
+import TargetExamManagement from './admin/targetExams/components/TargetExamManagement';
+import ResultsManagement from './admin/results/components/ResultsManagement';
 import StudentSidebar from './student/StudentSidebar';
 import AllCoursesTab from './student/course/components/CourseTab';
 import EnrolledCoursesTab from './student/enrollment/components/EnrollmentTab';
@@ -77,6 +79,8 @@ function App() {
                       <Route path="courses" element={<Courses />} />
                       <Route path="users" element={<UserManagement />} />
                       <Route path="users/:id" element={<UserDetails />} />
+                      <Route path="target-exams" element={<TargetExamManagement />} />
+                      <Route path="results" element={<ResultsManagement />} />
                       <Route path="/" element={<AdminDashboard />} />
                       <Route path="profile" element={<ProfilePage />} />
                     </Routes>

@@ -11,6 +11,7 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mathTheme } from '../../admin/theme';
@@ -25,6 +26,8 @@ const SignupPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState('');
+  const [targetExams, setTargetExams] = useState<string[]>([]);
+  const [activeExams, setActiveExams] = useState<{_id: string, name: string}[]>([]);
   const [step, setStep] = useState<'SIGNUP' | 'OTP'>('SIGNUP');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,11 +38,23 @@ const SignupPage = () => {
   const { login } = useAuth();
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+  useEffect(() => {
+    fetch(`${apiUrl}/target-exams-user`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setActiveExams(data.data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch target exams', err));
+  }, [apiUrl]);
+
   const validateForm = () => {
     if (!name.trim()) return 'Name is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Invalid email address';
     if (!/^\d{10}$/.test(phone)) return 'Phone number must be exactly 10 digits';
     if (password.length < 6) return 'Password must be at least 6 characters';
+    if (targetExams.length === 0) return 'Please select at least one target exam';
     return null;
   };
 
@@ -60,7 +75,7 @@ const SignupPage = () => {
       const response = await fetch(`${apiUrl}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({ name, email, phone, password, targetExams }),
       });
 
       const data = await response.json();
@@ -285,6 +300,96 @@ const SignupPage = () => {
                   },
                 }}
               />
+              {/* Target Exams — chip-based skill picker */}
+              <Box sx={{ mt: 2 }}>
+                <Typography
+                  sx={{
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: '#475569',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    mb: 1.5,
+                  }}
+                >
+                  Target Exams *
+                  <Box component="span" sx={{ ml: 1, fontWeight: 400, color: '#94A3B8', textTransform: 'none', letterSpacing: 0 }}>
+                    (select at least one)
+                  </Box>
+                </Typography>
+
+                {activeExams.length === 0 ? (
+                  <Typography sx={{ fontSize: '0.82rem', color: '#94A3B8', py: 1 }}>
+                    No exams available yet.
+                  </Typography>
+                ) : (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      p: 1.5,
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '10px',
+                      bgcolor: '#F8FAFC',
+                      minHeight: 48,
+                    }}
+                  >
+                    {activeExams.map((exam) => {
+                      const selected = targetExams.includes(exam._id);
+                      return (
+                        <Box
+                          key={exam._id}
+                          onClick={() => {
+                            setTargetExams((prev) =>
+                              selected ? prev.filter((id) => id !== exam._id) : [...prev, exam._id]
+                            );
+                          }}
+                          sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            px: 1.5,
+                            py: 0.6,
+                            borderRadius: '20px',
+                            border: selected ? '1.5px solid #1D4ED8' : '1.5px solid #CBD5E1',
+                            bgcolor: selected ? '#EFF6FF' : '#fff',
+                            color: selected ? '#1D4ED8' : '#475569',
+                            fontSize: '0.82rem',
+                            fontWeight: selected ? 700 : 500,
+                            cursor: 'pointer',
+                            userSelect: 'none',
+                            transition: 'all 0.15s ease',
+                            boxShadow: selected ? '0 0 0 3px rgba(29,78,216,0.10)' : 'none',
+                            '&:hover': {
+                              borderColor: '#1D4ED8',
+                              bgcolor: selected ? '#DBEAFE' : '#F1F5F9',
+                            },
+                          }}
+                        >
+                          {selected && (
+                            <Box
+                              component="span"
+                              sx={{ fontSize: '0.72rem', lineHeight: 1, mr: 0.25 }}
+                            >
+                              ✓
+                            </Box>
+                          )}
+                          {exam.name}
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+
+                {targetExams.length > 0 && (
+                  <Typography
+                    sx={{ fontSize: '0.75rem', color: '#1D4ED8', fontWeight: 600, mt: 1 }}
+                  >
+                    {targetExams.length} exam{targetExams.length > 1 ? 's' : ''} selected
+                  </Typography>
+                )}
+              </Box>
               <Button
                 type="submit"
                 fullWidth

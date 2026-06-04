@@ -12,6 +12,7 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutlined';
+import PlaylistAddCheckOutlinedIcon from '@mui/icons-material/PlaylistAddCheckOutlined';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -19,6 +20,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import { useAuth } from '../../../context/AuthContext';
 
 interface UserProfile {
   _id: string;
@@ -28,6 +35,7 @@ interface UserProfile {
   dob?: string;
   role: string;
   isActive: boolean;
+  targetExams?: { _id: string; name: string }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -123,9 +131,22 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', phone: '', dob: '' });
+  const [editForm, setEditForm] = useState<{name: string; phone: string; dob: string; targetExams: string[]}>({ name: '', phone: '', dob: '', targetExams: [] });
   const [saving, setSaving] = useState(false);
+  const [activeExams, setActiveExams] = useState<{_id: string, name: string}[]>([]);
+  const { user } = useAuth();
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+  useEffect(() => {
+    fetch(`${apiUrl}/target-exams-user`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setActiveExams(data.data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch target exams', err));
+  }, [apiUrl]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -153,6 +174,7 @@ const ProfilePage = () => {
         name: profile.name,
         phone: profile.phone || '',
         dob: profile.dob ? profile.dob.split('T')[0] : '', // format for date input
+        targetExams: profile.targetExams ? profile.targetExams.map(e => e._id) : []
       });
       setEditOpen(true);
     }
@@ -282,6 +304,7 @@ const ProfilePage = () => {
         </Box>
         <FieldRow icon={<PersonOutlineIcon sx={{ fontSize: 17 }} />} label="Full Name" value={profile.name} />
         <FieldRow icon={<CakeOutlinedIcon sx={{ fontSize: 17 }} />} label="Date of Birth" value={profile.dob ? `${fmt(profile.dob)} (${calcAge(profile.dob)} yrs)` : undefined} />
+        <FieldRow icon={<PlaylistAddCheckOutlinedIcon sx={{ fontSize: 17 }} />} label="Target Exams" value={profile.targetExams?.length ? profile.targetExams.map(e => e.name).join(', ') : undefined} />
         <FieldRow
           icon={<CheckCircleOutlinedIcon sx={{ fontSize: 17 }} />}
           label="Account Status"
@@ -330,9 +353,11 @@ const ProfilePage = () => {
             <TextField
               label="Phone Number"
               fullWidth
+              disabled={user?.role === 'student'}
               value={editForm.phone}
               onChange={(e) => setEditForm({ ...editForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+              helperText={user?.role === 'student' ? 'Please contact admin to change your phone number.' : ''}
             />
             <TextField
               label="Date of Birth"
@@ -343,6 +368,36 @@ const ProfilePage = () => {
               onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
             />
+            {profile?.role === 'student' && (
+              <FormControl fullWidth>
+                <InputLabel id="edit-target-exams-label">Target Exams</InputLabel>
+                <Select
+                  labelId="edit-target-exams-label"
+                  multiple
+                  value={editForm.targetExams}
+                  onChange={(e) => {
+                    const { value } = e.target;
+                    setEditForm({ ...editForm, targetExams: typeof value === 'string' ? value.split(',') : value });
+                  }}
+                  input={<OutlinedInput label="Target Exams" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => {
+                        const exam = activeExams.find(e => e._id === value);
+                        return <Chip key={value} label={exam?.name || value} size="small" />;
+                      })}
+                    </Box>
+                  )}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+                >
+                  {activeExams.map((exam) => (
+                    <MenuItem key={exam._id} value={exam._id}>
+                      {exam.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 2, gap: 1 }}>

@@ -16,6 +16,7 @@ import {
     Home as HomeIcon,
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const drawerWidth = 260;
 
@@ -32,10 +33,13 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
     const location = useLocation();
     const navigate = useNavigate();
     const { logout } = useAuth();
+    const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
     const handleDrawerToggle = () => setMobileOpen(prev => !prev);
 
-    const handleLogout = () => {
+    const handleLogoutClick = () => setLogoutConfirmOpen(true);
+    const confirmLogout = () => {
+        setLogoutConfirmOpen(false);
         logout();
         navigate('/login');
     };
@@ -43,7 +47,7 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
     const drawerContent = (
         <Box
             sx={{
-                height: '100%',
+                minHeight: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'linear-gradient(180deg, #05101D 0%, #0A1628 100%)',
@@ -212,7 +216,7 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                     </Box>
                     <IconButton
                         size="small"
-                        onClick={handleLogout}
+                        onClick={handleLogoutClick}
                         sx={{
                             color: 'rgba(255,255,255,0.4)',
                             '&:hover': {
@@ -279,8 +283,7 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                     onClose={handleDrawerToggle}
                     ModalProps={{ keepMounted: true }}
                     sx={{
-                        display: { xs: 'block', sm: 'none' },
-                        '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+                        display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none', bgcolor: '#0A1628' },
                     }}
                 >
                     {drawerContent}
@@ -290,8 +293,7 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                 <Drawer
                     variant="permanent"
                     sx={{
-                        display: { xs: 'none', sm: 'block' },
-                        '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' },
+                        display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none', bgcolor: '#0A1628' },
                     }}
                     open
                 >
@@ -313,6 +315,16 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                 <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }} />
                 {children}
             </Box>
+
+            <ConfirmDialog 
+                open={logoutConfirmOpen} 
+                title="Logout" 
+                message="Are you sure you want to log out?" 
+                onConfirm={confirmLogout} 
+                onCancel={() => setLogoutConfirmOpen(false)} 
+                confirmColor="error" 
+                confirmText="Logout"
+            />
         </Box>
     );
 }

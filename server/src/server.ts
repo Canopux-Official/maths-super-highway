@@ -98,6 +98,9 @@ import landingPageRoutes from "./routes/landingPage.routes";
 import authRoutes from "./routes/auth.routes";
 import dashboardAdminRoutes from "./routes/dashboard.admin.routes";
 import dashboardUserRoutes from "./routes/dashboard.user.routes";
+import targetExamAdminRoutes from "./routes/targetExam.admin.routes";
+import targetExamUserRoutes from "./routes/targetExam.user.routes";
+import resultRoutes from "./routes/result.routes";
 
 const app = express();
 
@@ -213,6 +216,9 @@ app.use("/admin-manage-student", adminManageStudentRoutes);
 app.use("/landing-page", landingPageRoutes);
 app.use("/dashboard-admin", dashboardAdminRoutes);
 app.use("/dashboard-user", dashboardUserRoutes);
+app.use("/target-exams-admin", targetExamAdminRoutes);
+app.use("/target-exams-user", targetExamUserRoutes);
+app.use("/results", resultRoutes);
 
 // ------------------------------------------------------------------
 // 8. 404 HANDLER — catches any request that didn't match a route.

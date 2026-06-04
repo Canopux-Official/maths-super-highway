@@ -18,6 +18,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import FunctionsIcon from "@mui/icons-material/Functions";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const navLinks = [
     { label: "Home", href: "#hero" },
@@ -32,6 +33,13 @@ const Header: React.FC = () => {
     const [scrolled, setScrolled] = useState(false);
     const navigate: any = useNavigate();
     const { user, logout } = useAuth();
+    const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+
+    const confirmLogout = () => {
+        setLogoutConfirmOpen(false);
+        setDrawerOpen(false);
+        logout();
+    };
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -170,7 +178,7 @@ const Header: React.FC = () => {
                             {user && (
                                 <Button
                                     variant="outlined"
-                                    onClick={() => logout()}
+                                    onClick={() => setLogoutConfirmOpen(true)}
                                     sx={{
                                         ml: 1,
                                         borderColor: "rgba(255,255,255,0.3)",
@@ -291,10 +299,7 @@ const Header: React.FC = () => {
                             <Button
                                 fullWidth
                                 variant="outlined"
-                                onClick={() => {
-                                    logout();
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setLogoutConfirmOpen(true)}
                                 sx={{
                                     borderColor: "rgba(239, 68, 68, 0.4)",
                                     color: "#EF4444",
@@ -312,6 +317,16 @@ const Header: React.FC = () => {
                     )}
                 </List>
             </Drawer>
+
+            <ConfirmDialog 
+                open={logoutConfirmOpen} 
+                title="Logout" 
+                message="Are you sure you want to log out?" 
+                onConfirm={confirmLogout} 
+                onCancel={() => setLogoutConfirmOpen(false)} 
+                confirmColor="error" 
+                confirmText="Logout"
+            />
         </>
     );
 };

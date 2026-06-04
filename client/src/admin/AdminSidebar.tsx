@@ -18,8 +18,12 @@ import {
   AdminPanelSettings as AdminIcon,
   Person as PersonIcon,
   Home as HomeIcon,
+  PlaylistAddCheck as ExamIcon,
+  Flag as FlagIcon,
+  EmojiEvents as EmojiEventsIcon,
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const drawerWidth = 260;
 
@@ -27,7 +31,9 @@ const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin', description: 'Overview' },
   { text: 'Announcements',    icon: <HeadlineIcon />, path: '/admin/headlines', description: 'Live ticker' },
   { text: 'Course Curriculum',icon: <CourseIcon />,   path: '/admin/courses',   description: 'Manage content' },
-  { text: 'Directory',icon: <UserIcon />,     path: '/admin/users',     description: 'Manage users' },
+  { text: 'Target Exams',     icon: <FlagIcon />,     path: '/admin/target-exams', description: 'Manage target exams' },
+  { text: 'Results',          icon: <EmojiEventsIcon />, path: '/admin/results',   description: 'Manage results' },
+  { text: 'Directory',        icon: <UserIcon />,     path: '/admin/users',     description: 'Manage users' },
   { text: 'Account Profile',  icon: <PersonIcon />,   path: '/admin/profile',   description: 'My details' },
   { text: 'Back to Website',  icon: <HomeIcon />,     path: '/',                description: 'Landing page' },
 ];
@@ -37,12 +43,14 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const handleDrawerToggle = () => setMobileOpen(prev => !prev);
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogoutClick = () => setLogoutConfirmOpen(true);
+  const confirmLogout = () => { setLogoutConfirmOpen(false); logout(); navigate('/login'); };
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #05101D 0%, #0A1628 100%)' }}>
+    <Box sx={{ minHeight: '100%', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg, #05101D 0%, #0A1628 100%)' }}>
 
 
       {/* Logo */}
@@ -119,7 +127,7 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
             <Typography sx={{ fontSize: 10.5, color: 'rgba(255,255,255,0.35)', lineHeight: 1.3, fontFamily: "'Inter', sans-serif" }}>Administrator</Typography>
           </Box>
           <Tooltip title="Logout" placement="top">
-            <IconButton size="small" onClick={handleLogout} sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#EF4444', bgcolor: 'rgba(239,68,68,0.1)' }, transition: 'all 0.2s' }}>
+            <IconButton size="small" onClick={handleLogoutClick} sx={{ color: 'rgba(255,255,255,0.4)', '&:hover': { color: '#EF4444', bgcolor: 'rgba(239,68,68,0.1)' }, transition: 'all 0.2s' }}>
               <LogoutIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
@@ -160,13 +168,13 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{ keepMounted: true }}
-          sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' } }}
+          sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none', bgcolor: '#0A1628' } }}
         >
           {drawerContent}
         </Drawer>
         <Drawer
           variant="permanent"
-          sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none' } }}
+          sx={{ display: { xs: 'none', sm: 'block' }, '& .MuiDrawer-paper': { width: drawerWidth, border: 'none', bgcolor: '#0A1628' } }}
           open
         >
           {drawerContent}
@@ -186,6 +194,16 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
         <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }} />
         {children}
       </Box>
+
+      <ConfirmDialog 
+        open={logoutConfirmOpen} 
+        title="Logout" 
+        message="Are you sure you want to log out?" 
+        onConfirm={confirmLogout} 
+        onCancel={() => setLogoutConfirmOpen(false)} 
+        confirmColor="error" 
+        confirmText="Logout"
+      />
     </Box>
   );
 }

@@ -226,3 +226,123 @@ export const deleteCourse = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// GET /api/courses/enrolled-students/:id
+export const getEnrolledStudentsExport = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id as any)) {
+            res.status(400).json({ success: false, message: 'Invalid course ID' });
+            return;
+        }
+
+        const objectId = new mongoose.Types.ObjectId(id as any);
+
+        const result = await Course.aggregate([
+            // 1. Match the target course item
+            { $match: { _id: objectId } },
+
+            // 2. Recursively find ALL descendants in one query
+            {
+                $graphLookup: {
+                    from: 'courses',
+                    startWith: '$_id',
+                    connectFromField: '_id',
+                    connectToField: 'parentId',
+                    as: 'descendants',
+                    restrictSearchWithMatch: { isActive: true }
+                }
+            },
+
+            // 3. Build the final list of page IDs to query enrollments against:
+            {
+                $project: {
+                    itemType: 1,
+                    pageIds: {
+                        $cond: {
+                            if: { $eq: ['$itemType', 'page'] },
+                            then: ['$_id'],
+                            else: {
+                                $map: {
+                                    input: {
+                                        $filter: {
+                                            input: '$descendants',
+                                            as: 'desc',
+                                            cond: { $eq: ['$$desc.itemType', 'page'] }
+                                        }
+                                    },
+                                    as: 'page',
+                                    in: '$$page._id'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            // 4. Join with enrollments
+            {
+                $lookup: {
+                    from: 'enrollments',
+                    localField: 'pageIds',
+                    foreignField: 'course',
+                    as: 'enrollments'
+                }
+            },
+
+            // 5. Flatten the enrollments
+            { $unwind: '$enrollments' },
+
+            // 6. Group to get unique students
+            {
+                $group: {
+                    _id: '$enrollments.student'
+                }
+            },
+
+            // 7. Lookup user details
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+
+            // 8. Lookup target exams for the user
+            {
+                $lookup: {
+                    from: 'targetexams',
+                    localField: 'user.targetExams',
+                    foreignField: '_id',
+                    as: 'targetExamsDetails'
+                }
+            },
+
+            // 9. Format output
+            {
+                $project: {
+                    _id: '$user._id',
+                    name: '$user.name',
+                    email: '$user.email',
+                    phone: '$user.phone',
+                    role: '$user.role',
+                    isActive: '$user.isActive',
+                    createdAt: '$user.createdAt',
+                    targetExams: '$targetExamsDetails'
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (error: any) {
+        console.error('getEnrolledStudentsExport error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};

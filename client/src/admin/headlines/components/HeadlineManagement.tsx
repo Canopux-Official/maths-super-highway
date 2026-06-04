@@ -7,12 +7,18 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete, Link as LinkIcon, Campaign as CampaignIcon, FiberManualRecord as DotIcon, OpenInNew } from '@mui/icons-material';
 import { headlineService } from '../services/api';
+import ConfirmDialog from '../../../components/ConfirmDialog';
 
 const HeadlineManagement = () => {
     const [headlines, setHeadlines] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [form, setForm] = useState({ text: '', link: '', isLive: true });
+
+    const [confirmState, setConfirmState] = useState<{ open: boolean, title: string, message: string, action: (() => void) | null, color: "primary" | "error" | "warning" }>({
+        open: false, title: '', message: '', action: null, color: 'primary'
+    });
+    const handleCloseConfirm = () => setConfirmState({ ...confirmState, open: false });
 
     const loadHeadlines = async () => {
         const res = await headlineService.getAllHeadlines();
@@ -61,10 +67,17 @@ const HeadlineManagement = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Remove this announcement?')) {
-            const res = await headlineService.deleteHeadline(id);
-            if (res.success) loadHeadlines();
-        }
+        setConfirmState({
+            open: true,
+            title: 'Remove Announcement',
+            message: 'Are you sure you want to remove this announcement?',
+            color: 'error',
+            action: async () => {
+                const res = await headlineService.deleteHeadline(id);
+                if (res.success) loadHeadlines();
+                handleCloseConfirm();
+            }
+        });
     };
 
     const toggleLiveStatus = async (headline: any) => {
@@ -321,6 +334,15 @@ const HeadlineManagement = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ConfirmDialog 
+                open={confirmState.open} 
+                title={confirmState.title} 
+                message={confirmState.message} 
+                onConfirm={() => confirmState.action && confirmState.action()} 
+                onCancel={handleCloseConfirm} 
+                confirmColor={confirmState.color} 
+            />
         </Box>
     );
 };

@@ -5,7 +5,6 @@ export interface IEnrollment extends Document {
   course: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
-
 }
 
 const enrollmentSchema = new Schema<IEnrollment>(
