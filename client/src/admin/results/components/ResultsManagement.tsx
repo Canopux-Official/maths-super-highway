@@ -200,17 +200,20 @@ const ResultsManagement = () => {
             <input type="file" hidden accept="image/*" onChange={handleFileChange} />
           </Button>
           <TextField
+            sx={{ mt: 1 }}
             label="Title (Optional)"
             value={formData.title}
             onChange={e => setFormData({ ...formData, title: e.target.value })}
           />
           <TextField
+            sx={{ mt: 1 }}
             label="Order"
             type="number"
             value={formData.order}
             onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
           />
           <FormControlLabel
+            sx={{ mt: 1 }}
             control={<Switch checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} />}
             label="Active (Visible on Landing Page)"
           />
@@ -230,17 +233,20 @@ const ResultsManagement = () => {
           {editingResult && (
             <>
               <TextField
+                sx={{ mt: 1 }}
                 label="Title (Optional)"
                 value={editingResult.title}
                 onChange={e => setEditingResult({ ...editingResult, title: e.target.value })}
               />
               <TextField
+                sx={{ mt: 1 }}
                 label="Order"
                 type="number"
                 value={editingResult.order}
                 onChange={e => setEditingResult({ ...editingResult, order: parseInt(e.target.value) || 0 })}
               />
               <FormControlLabel
+                sx={{ mt: 1 }}
                 control={<Switch checked={editingResult.isActive} onChange={e => setEditingResult({ ...editingResult, isActive: e.target.checked })} />}
                 label="Active (Visible on Landing Page)"
               />
