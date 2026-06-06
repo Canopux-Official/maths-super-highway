@@ -35,7 +35,7 @@
 //                     }
 //                 })
 //             );
-            
+
 //             return {
 //                 courses: filteredFolders,
 //                 enrolledCounts: Object.fromEntries(countEntries)
@@ -196,6 +196,8 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useNavigate } from "react-router-dom";
 import type { Course } from "..";
 import { getAllCourses, getEnrolledStudents } from "../api";
+import { useAuth } from "../../context/AuthContext";
+
 
 // ─── Fallback image (a generic academic/book SVG data URI) ───────────────────
 const FALLBACK_IMG =
@@ -221,11 +223,14 @@ interface SignInModalProps {
     onSignIn: () => void;
 }
 
+
+
 const SignInModal: React.FC<SignInModalProps> = ({
     open,
     programName,
     onClose,
     onSignIn,
+    
 }) => (
     <Modal open={open} onClose={onClose} disableScrollLock>
         <Box
@@ -295,7 +300,7 @@ const SignInModal: React.FC<SignInModalProps> = ({
                     "&:hover": { bgcolor: "#13197a" },
                 }}
             >
-                Sign in
+                Sign In 
             </Button>
 
             <Button
@@ -403,6 +408,7 @@ const Courses: React.FC = () => {
     const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+    const {user, logout} = useAuth();
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -452,7 +458,14 @@ const Courses: React.FC = () => {
 
     const handleSignIn = () => {
         setModalOpen(false);
-        navigate("/login");
+        let redirectPath = "/login"
+        if (user?.role === "admin") { 
+            redirectPath = "/admin/courses"
+        }
+        else{
+            redirectPath = "/student/courses"
+        }
+        navigate(redirectPath);
     };
 
     const visibleCourses = courses.slice(0, MAX_VISIBLE);
