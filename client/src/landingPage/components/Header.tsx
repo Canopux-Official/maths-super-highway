@@ -99,7 +99,7 @@ const Header: React.FC = () => {
                                         letterSpacing: "-0.01em",
                                     }}
                                 >
-                                    Maths Super Highway
+                                    Math SuperHighway
                                 </Typography>
                                 <Typography
                                     sx={{
