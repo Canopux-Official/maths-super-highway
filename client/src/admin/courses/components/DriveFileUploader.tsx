@@ -19,6 +19,7 @@ import {
     serializeDriveFile,
 } from '../services/googleApiServices';
 import type { DriveFile } from '../services/googleApiServices';
+import UploadOverlay from '../../../components/UploadOverlay';
 
 // ── List files from Drive ─────────────────────────────────────────────────────
 const listDriveFiles = async (query?: string): Promise<DriveFile[]> => {
@@ -332,6 +333,8 @@ const DriveFileUploader: React.FC<DriveFileUploaderProps> = ({ value, onChange }
                     </Box>
                 </Box>
             </Collapse>
+
+            <UploadOverlay open={status === 'uploading' || status === 'signing-in'} />
         </Box>
     );
 };

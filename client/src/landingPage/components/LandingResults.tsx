@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, Container, CircularProgress } from '@mui/material';
+import { useEffect, useState, useCallback } from 'react';
+import { Box, Typography, Container, CircularProgress, IconButton } from '@mui/material';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 interface ResultImage {
   _id: string;
@@ -34,10 +36,14 @@ const LandingResults = () => {
     setCurrentIndex((prev) => (prev + 1) % results.length);
   }, [results.length]);
 
-  // Auto-cycle every 2.5s
+  const goPrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + results.length) % results.length);
+  }, [results.length]);
+
+  // Auto-cycle every 3.5s
   useEffect(() => {
     if (results.length <= 1) return;
-    const t = setInterval(goNext, 2500);
+    const t = setInterval(goNext, 3500);
     return () => clearInterval(t);
   }, [results.length, goNext]);
 
@@ -51,13 +57,99 @@ const LandingResults = () => {
 
   if (results.length === 0) return null;
 
+  // Helper: get index with wrapping
+  const getIndex = (offset: number) =>
+    (currentIndex + offset + results.length) % results.length;
+
+  // How many visible cards on each side
+  const visibleSide = results.length >= 5 ? 2 : results.length >= 3 ? 1 : 0;
+
+  // Build the visible card list: [far-left, left, center, right, far-right]
+  type CardPosition = {
+    index: number;
+    offset: number; // -2, -1, 0, 1, 2
+  };
+  const visibleCards: CardPosition[] = [];
+  for (let i = -visibleSide; i <= visibleSide; i++) {
+    visibleCards.push({ index: getIndex(i), offset: i });
+  }
+
+  // Style for each card based on offset
+  const getCardStyle = (offset: number) => {
+    const absOffset = Math.abs(offset);
+
+    if (absOffset === 0) {
+      return {
+        zIndex: 10,
+        x: 0,
+        scale: 1,
+        rotateY: 0,
+        opacity: 1,
+        filter: 'brightness(1)',
+      };
+    }
+    if (absOffset === 1) {
+      return {
+        zIndex: 5,
+        x: offset * 360,
+        scale: 0.82,
+        rotateY: offset * -35,
+        opacity: 0.85,
+        filter: 'brightness(0.7)',
+      };
+    }
+    // absOffset === 2
+    return {
+      zIndex: 2,
+      x: offset * 580,
+      scale: 0.65,
+      rotateY: offset * -45,
+      opacity: 0.5,
+      filter: 'brightness(0.5)',
+    };
+  };
+
+  // Mobile style (smaller translations)
+  const getCardStyleMobile = (offset: number) => {
+    const absOffset = Math.abs(offset);
+
+    if (absOffset === 0) {
+      return {
+        zIndex: 10,
+        x: 0,
+        scale: 1,
+        rotateY: 0,
+        opacity: 1,
+        filter: 'brightness(1)',
+      };
+    }
+    if (absOffset === 1) {
+      return {
+        zIndex: 5,
+        x: offset * 180,
+        scale: 0.75,
+        rotateY: offset * -30,
+        opacity: 0.7,
+        filter: 'brightness(0.65)',
+      };
+    }
+    return {
+      zIndex: 2,
+      x: offset * 280,
+      scale: 0.55,
+      rotateY: offset * -40,
+      opacity: 0.35,
+      filter: 'brightness(0.45)',
+    };
+  };
+
   return (
     <Box
       sx={{
         position: 'relative',
         background: 'linear-gradient(180deg, #05101D 0%, #0A1628 40%, #0D1F3C 100%)',
         overflow: 'hidden',
-        py: { xs: 10, md: 16 },
+        py: { xs: 8, md: 16 },
       }}
     >
       {/* Radial gold glow from center */}
@@ -93,10 +185,10 @@ const LandingResults = () => {
         }}
       />
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 2 }}>
 
         {/* ── Section Header ── */}
-        <Box sx={{ textAlign: 'center', mb: { xs: 6, md: 10 } }}>
+        <Box sx={{ textAlign: 'center', mb: { xs: 5, md: 8 } }}>
           <Box
             sx={{
               display: 'inline-flex',
@@ -174,215 +266,246 @@ const LandingResults = () => {
           </Typography>
         </Box>
 
-        {/* ── Main Carousel ── */}
+        {/* ── 3D Coverflow Carousel ── */}
         <Box
           sx={{
+            position: 'relative',
+            height: { xs: '450px', sm: '550px', md: '750px', lg: '850px' },
+            perspective: '1200px',
             display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: { xs: 4, md: 5 },
-            alignItems: 'flex-start',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {/* Featured Large Image */}
-          <Box
-            sx={{
-              flex: { xs: '1 1 auto', md: '0 0 65%' },
-              position: 'relative',
-            }}
-          >
-            {/* Glowing frame */}
-            <Box
-              sx={{
-                position: 'absolute',
-                inset: -3,
-                borderRadius: '22px',
-                background: 'linear-gradient(135deg, rgba(245,158,11,0.6), rgba(251,191,36,0.2), rgba(245,158,11,0.5))',
-                backgroundSize: '200% 200%',
-                animation: 'borderRotate 4s linear infinite',
-                '@keyframes borderRotate': {
-                  '0%': { backgroundPosition: '0% 50%' },
-                  '50%': { backgroundPosition: '100% 50%' },
-                  '100%': { backgroundPosition: '0% 50%' },
-                },
-                zIndex: 0,
-              }}
-            />
-            <Box
-              sx={{
-                position: 'relative',
-                zIndex: 1,
-                borderRadius: '20px',
-                overflow: 'hidden',
-                bgcolor: '#0A1628',
-                height: { xs: '260px', sm: '380px', md: '460px' },
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={currentIndex}
-                  src={results[currentIndex].imageUrl}
-                  alt={results[currentIndex].title || 'Student Result'}
-                  initial={{ opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.5 }}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    display: 'block',
-                  }}
-                />
-              </AnimatePresence>
-
-              {/* Bottom caption */}
-              {results[currentIndex].title && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    px: 3,
-                    py: 2.5,
-                    background: 'linear-gradient(to top, rgba(5,16,29,0.95) 0%, transparent 100%)',
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      color: '#FCD34D',
-                      fontWeight: 700,
-                      fontSize: '1.1rem',
-                      fontFamily: "'Sora', sans-serif",
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    🏆 {results[currentIndex].title}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-
-            {/* Progress bar */}
-            {results.length > 1 && (
-              <Box sx={{ mt: 2.5, display: 'flex', gap: 1 }}>
-                {results.map((_, idx) => (
-                  <Box
-                    key={idx}
-                    onClick={() => setCurrentIndex(idx)}
-                    sx={{
-                      flex: 1,
-                      height: 3,
-                      borderRadius: 2,
-                      bgcolor: idx === currentIndex ? '#F59E0B' : 'rgba(255,255,255,0.12)',
-                      cursor: 'pointer',
-                      transition: 'background 0.3s ease',
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {idx === currentIndex && (
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          inset: 0,
-                          bgcolor: '#F59E0B',
-                          animation: 'fillBar 2.5s linear forwards',
-                          '@keyframes fillBar': {
-                            '0%': { transform: 'scaleX(0)', transformOrigin: 'left' },
-                            '100%': { transform: 'scaleX(1)', transformOrigin: 'left' },
-                          },
-                        }}
-                      />
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
-
-          {/* Thumbnail strip (right side) */}
+          {/* Navigation Arrows */}
           {results.length > 1 && (
-            <Box
-              sx={{
-                flex: { xs: '1 1 auto', md: '0 0 calc(35% - 40px)' },
-                display: 'flex',
-                flexDirection: { xs: 'row', md: 'column' },
-                gap: 2,
-                height: { xs: 'auto', md: '460px' },
-                overflowX: { xs: 'auto', md: 'hidden' },
-                overflowY: { xs: 'hidden', md: 'auto' },
-                pb: { xs: 1, md: 0 },
-                // Hide scrollbar visually but keep functionality
-                '&::-webkit-scrollbar': { width: '4px', height: '4px' },
-                '&::-webkit-scrollbar-track': { background: 'transparent' },
-                '&::-webkit-scrollbar-thumb': { background: 'rgba(245,158,11,0.3)', borderRadius: '2px' },
-              }}
-            >
-              <Typography
+            <>
+              <IconButton
+                onClick={goPrev}
                 sx={{
-                  display: { xs: 'none', md: 'block' },
-                  color: 'rgba(255,255,255,0.3)',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  mb: 1,
-                  fontFamily: "'Inter', sans-serif",
+                  position: 'absolute',
+                  left: { xs: 0, md: -10 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 20,
+                  bgcolor: 'rgba(245,158,11,0.15)',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  color: '#FCD34D',
+                  backdropFilter: 'blur(8px)',
+                  '&:hover': {
+                    bgcolor: 'rgba(245,158,11,0.3)',
+                  },
+                  width: { xs: 36, md: 46 },
+                  height: { xs: 36, md: 46 },
                 }}
               >
-                All Results
-              </Typography>
-              {results.map((result, idx) => (
-                <Box
-                  key={result._id}
-                  component={motion.div}
-                  whileHover={{ scale: 1.03 }}
-                  onClick={() => setCurrentIndex(idx)}
-                  sx={{
-                    minWidth: { xs: '130px', md: 'auto' },
-                    flexShrink: 0,
-                    cursor: 'pointer',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    border: idx === currentIndex
-                      ? '2px solid #F59E0B'
-                      : '2px solid rgba(255,255,255,0.07)',
-                    bgcolor: '#0A1628',
-                    aspectRatio: '4/3',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'border 0.25s ease',
-                    opacity: idx === currentIndex ? 1 : 0.55,
-                    boxShadow: idx === currentIndex
-                      ? '0 0 16px rgba(245,158,11,0.4)'
-                      : 'none',
-                    position: 'relative',
-                  }}
-                >
-                  <img
-                    src={result.imageUrl}
-                    alt={result.title || 'Result'}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                  />
-                  {idx === currentIndex && (
+                <ArrowBackIosNewIcon sx={{ fontSize: { xs: 16, md: 20 } }} />
+              </IconButton>
+              <IconButton
+                onClick={goNext}
+                sx={{
+                  position: 'absolute',
+                  right: { xs: 0, md: -10 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 20,
+                  bgcolor: 'rgba(245,158,11,0.15)',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  color: '#FCD34D',
+                  backdropFilter: 'blur(8px)',
+                  '&:hover': {
+                    bgcolor: 'rgba(245,158,11,0.3)',
+                  },
+                  width: { xs: 36, md: 46 },
+                  height: { xs: 36, md: 46 },
+                }}
+              >
+                <ArrowForwardIosIcon sx={{ fontSize: { xs: 16, md: 20 } }} />
+              </IconButton>
+            </>
+          )}
+
+          {/* Cards */}
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            <AnimatePresence mode="popLayout">
+              {visibleCards.map(({ index, offset }) => {
+                const desktopStyle = getCardStyle(offset);
+                const mobileStyle = getCardStyleMobile(offset);
+
+                return (
+                  <motion.div
+                    key={`${results[index]._id}-${offset}`}
+                    initial={{
+                      opacity: 0,
+                      x: offset > 0 ? 500 : -500,
+                      rotateY: offset > 0 ? -60 : 60,
+                      scale: 0.5,
+                    }}
+                    animate={{
+                      opacity: desktopStyle.opacity,
+                      x: desktopStyle.x,
+                      rotateY: desktopStyle.rotateY,
+                      scale: desktopStyle.scale,
+                      zIndex: desktopStyle.zIndex,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.5,
+                    }}
+                    transition={{
+                      duration: 0.6,
+                      ease: [0.25, 0.46, 0.45, 0.94],
+                    }}
+                    onClick={() => {
+                      if (offset !== 0) setCurrentIndex(index);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '50%',
+                      cursor: offset !== 0 ? 'pointer' : 'default',
+                      transformStyle: 'preserve-3d',
+                    }}
+                  >
+                    {/* Responsive wrapper that applies different transforms for mobile */}
                     <Box
                       sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'rgba(245,158,11,0.08)',
+                        width: { xs: '300px', sm: '400px', md: '520px', lg: '620px' },
+                        height: { xs: '380px', sm: '500px', md: '650px', lg: '780px' },
+                        transform: {
+                          xs: `translate(-50%, -50%) translateX(${mobileStyle.x - desktopStyle.x}px)`,
+                          md: 'translate(-50%, -50%)',
+                        },
+                        borderRadius: '24px',
+                        overflow: 'hidden',
+                        bgcolor: '#0A1628',
+                        border: offset === 0
+                          ? '2px solid rgba(245,158,11,0.6)'
+                          : '1px solid rgba(255,255,255,0.08)',
+                        boxShadow: offset === 0
+                          ? '0 0 40px rgba(245,158,11,0.25), 0 20px 60px rgba(0,0,0,0.5)'
+                          : '0 10px 30px rgba(0,0,0,0.4)',
+                        transition: 'border 0.3s ease, box-shadow 0.3s ease',
                       }}
-                    />
-                  )}
-                </Box>
-              ))}
-            </Box>
-          )}
+                    >
+                      <img
+                        src={results[index].imageUrl}
+                        alt={results[index].title || 'Student Result'}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          display: 'block',
+                        }}
+                        draggable={false}
+                      />
+
+                      {/* Title overlay on center card */}
+                      {offset === 0 && results[index].title && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            px: 2.5,
+                            py: 2,
+                            background: 'linear-gradient(to top, rgba(5,16,29,0.95) 0%, transparent 100%)',
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: '#FCD34D',
+                              fontWeight: 700,
+                              fontSize: { xs: '0.85rem', md: '1rem' },
+                              fontFamily: "'Sora', sans-serif",
+                              letterSpacing: '-0.01em',
+                            }}
+                          >
+                            🏆 {results[index].title}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {/* Gold sheen overlay on center card */}
+                      {offset === 0 && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(135deg, rgba(245,158,11,0.05) 0%, transparent 50%, rgba(245,158,11,0.03) 100%)',
+                            pointerEvents: 'none',
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </Box>
         </Box>
+
+        {/* Progress bar */}
+        {results.length > 1 && (
+          <Box sx={{ mt: { xs: 3, md: 5 }, display: 'flex', gap: 1, maxWidth: '500px', mx: 'auto' }}>
+            {results.map((_, idx) => (
+              <Box
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                sx={{
+                  flex: 1,
+                  height: 3,
+                  borderRadius: 2,
+                  bgcolor: idx === currentIndex ? '#F59E0B' : 'rgba(255,255,255,0.12)',
+                  cursor: 'pointer',
+                  transition: 'background 0.3s ease',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {idx === currentIndex && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      inset: 0,
+                      bgcolor: '#F59E0B',
+                      animation: 'fillBar 3.5s linear forwards',
+                      '@keyframes fillBar': {
+                        '0%': { transform: 'scaleX(0)', transformOrigin: 'left' },
+                        '100%': { transform: 'scaleX(1)', transformOrigin: 'left' },
+                      },
+                    }}
+                  />
+                )}
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        {/* Counter */}
+        {results.length > 1 && (
+          <Typography
+            sx={{
+              textAlign: 'center',
+              mt: 2,
+              color: 'rgba(255,255,255,0.35)',
+              fontSize: '0.8rem',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              letterSpacing: '0.05em',
+            }}
+          >
+            {currentIndex + 1} / {results.length}
+          </Typography>
+        )}
       </Container>
     </Box>
   );

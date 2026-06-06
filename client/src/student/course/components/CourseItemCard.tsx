@@ -12,6 +12,7 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import ArticleIcon from "@mui/icons-material/Article";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import { motion } from "framer-motion";
 
 // ─── Fallback SVG data URI ────────────────────────────────────────────────────
 const FALLBACK_IMG =
@@ -134,6 +135,12 @@ const CourseItemCard: React.FC<Props> = ({
 
     return (
         <Card
+            component={motion.div}
+            layout
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
             elevation={0}
             sx={{
                 width: {

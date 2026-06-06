@@ -1048,6 +1048,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { ChartExtension, InsertChartButton } from './ChartExtension';
 import { courseService } from '../../services/api';
+import UploadOverlay from '../../../../components/UploadOverlay';
 
 // ─── FontSize extension ──────────────────────────────────────────────────────
 const FontSize = Extension.create({
@@ -1560,6 +1561,8 @@ const Editor = ({ value, onChange, apiBaseUrl = '' }: EditorProps) => {
                     {editor.getText().length} chars
                 </Box>
             </Box>
+
+            <UploadOverlay open={uploadingImage} />
         </Box>
     );
 };

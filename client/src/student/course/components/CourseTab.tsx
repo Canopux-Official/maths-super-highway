@@ -333,6 +333,7 @@ import ArticleIcon from '@mui/icons-material/Article';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import HomeIcon from '@mui/icons-material/Home';
 import { useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 
 import { courseService } from '../services/api';
 import CoursePageDetail from './CoursePageDetails';
@@ -652,18 +653,20 @@ const AllCoursesTab: React.FC = () => {
             justifyContent: 'flex-start',
           }}
         >
-          {items.map((item) => (
-            <CourseItemCard
-              key={item._id}
-              item={item}
-              enrolledCount={enrolledCounts[item._id] ?? null}
-              onClick={() =>
-                item.itemType === 'folder'
-                  ? handleFolderClick(item)
-                  : handlePageClick(item)
-              }
-            />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {items.map((item) => (
+              <CourseItemCard
+                key={item._id}
+                item={item}
+                enrolledCount={enrolledCounts[item._id] ?? null}
+                onClick={() =>
+                  item.itemType === 'folder'
+                    ? handleFolderClick(item)
+                    : handlePageClick(item)
+                }
+              />
+            ))}
+          </AnimatePresence>
         </Box>
       )}
     </Box>

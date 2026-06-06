@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import { parseDriveFile } from '../services/googleApiServices';
 import type { CourseItem } from './types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CourseTableProps {
     items: CourseItem[];
@@ -72,12 +73,18 @@ const MobileItemCard: React.FC<{
 
     return (
         <Card
+            component={motion.div}
+            layout
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
             variant="outlined"
             sx={{
                 borderRadius: 2,
                 mb: 1.5,
                 '&:hover': { boxShadow: 3, borderColor: 'primary.main' },
-                transition: 'all 0.15s',
+                transition: 'box-shadow 0.15s, border-color 0.15s',
             }}
         >
             <CardActionArea onClick={() => onItemClick(item)} sx={{ p: 0 }}>
@@ -166,17 +173,19 @@ const CourseTable: React.FC<CourseTableProps> = ({
                         <Typography variant="body2">No items here yet.</Typography>
                     </Box>
                 )}
-                {items.map(item => (
-                    <MobileItemCard
-                        key={item._id}
-                        item={item}
-                        enrolledCount={enrolledCounts[item._id]}
-                        onItemClick={onItemClick}
-                        onEdit={onEdit}
-                        onDelete={onDelete}
-                        onExport={onExport}
-                    />
-                ))}
+                <AnimatePresence mode="popLayout">
+                    {items.map((item, i) => (
+                        <MobileItemCard
+                            key={item._id}
+                            item={item}
+                            enrolledCount={enrolledCounts[item._id]}
+                            onItemClick={onItemClick}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            onExport={onExport}
+                        />
+                    ))}
+                </AnimatePresence>
             </Box>
         );
     }
@@ -219,8 +228,9 @@ const CourseTable: React.FC<CourseTableProps> = ({
                             </TableCell>
                         </TableRow>
                     )}
-                    {items.map((item) => {
-                        const fileLabel = (() => {
+                    <AnimatePresence mode="popLayout">
+                        {items.map((item) => {
+                            const fileLabel = (() => {
                             if (item.itemType === 'folder') {
                                 return item.content?.length
                                     ? (item.content.length > 40 ? `${item.content.slice(0, 40)}…` : item.content)
@@ -232,6 +242,12 @@ const CourseTable: React.FC<CourseTableProps> = ({
 
                         return (
                             <TableRow
+                                component={motion.tr}
+                                layout
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
                                 key={item._id}
                                 hover
                                 onClick={() => onItemClick(item)}
@@ -297,6 +313,7 @@ const CourseTable: React.FC<CourseTableProps> = ({
                             </TableRow>
                         );
                     })}
+                    </AnimatePresence>
                 </TableBody>
             </Table>
         </TableContainer>

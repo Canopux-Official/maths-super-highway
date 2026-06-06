@@ -139,17 +139,9 @@ const Hero: React.FC = () => {
                         justifyContent: "center",
                     }}
                 >
-                    <Box
-                        sx={{
-                            display: "grid",
-                            gridTemplateColumns: hasResults ? { xs: "1fr", md: "1fr 1fr" } : "1fr",
-                            gap: { xs: 6, md: 8 },
-                            alignItems: "center",
-                            width: "100%",
-                        }}
-                    >
+                    <Box sx={{ width: "100%" }}>
                         {/* ── LEFT: Hero content ── */}
-                        <Box sx={{ textAlign: hasResults ? 'left' : 'center', mx: hasResults ? 0 : 'auto', maxWidth: hasResults ? 'none' : 600 }}>
+                        <Box sx={{ textAlign: 'center', mx: 'auto', maxWidth: 700 }}>
                             {/* Under construction banner */}
                             <Box
                                 sx={{
@@ -224,8 +216,8 @@ const Hero: React.FC = () => {
                                     color: "rgba(255,255,255,0.65)",
                                     fontSize: { xs: "0.95rem", md: "1.05rem" },
                                     lineHeight: 1.8, mb: 4.5,
-                                    maxWidth: hasResults ? 480 : 560,
-                                    mx: hasResults ? 0 : 'auto',
+                                    maxWidth: 560,
+                                    mx: 'auto',
                                     fontFamily: "'Inter', sans-serif",
                                 }}
                             >
@@ -233,7 +225,7 @@ const Hero: React.FC = () => {
                             </Typography>
 
                             {/* CTAs */}
-                            <Stack sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1.75, justifyContent: hasResults ? 'flex-start' : 'center' }}>
+                            <Stack sx={{ flexDirection: { xs: "column", sm: "row" }, gap: 1.75, justifyContent: 'center' }}>
                                 <Button
                                     variant="contained"
                                     endIcon={<ArrowForwardIcon />}
@@ -265,103 +257,195 @@ const Hero: React.FC = () => {
                             </Stack>
                         </Box>
 
-                        {/* ── RIGHT: Results carousel ── */}
+                        {/* ── FULL-WIDTH: 3D Landscape Results Carousel ── */}
                         {hasResults && (
-                            <Box sx={{ position: "relative" }}>
+                            <Box sx={{ position: "relative", mt: { xs: 5, md: 7 } }}>
                                 {/* Section label */}
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, mb: 2 }}>
+                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, mb: 3 }}>
                                     <EmojiEventsIcon sx={{ color: "#06B6D4", fontSize: 20 }} />
                                     <Typography sx={{ color: "#22D3EE", fontWeight: 700, fontSize: "0.85rem", letterSpacing: "0.14em", textTransform: "uppercase", fontFamily: "'Inter', sans-serif" }}>
                                         Hall of Excellence
                                     </Typography>
                                 </Box>
 
-                                {/* Glowing border frame */}
+                                {/* 3D Landscape Carousel Container */}
                                 <Box
                                     sx={{
-                                        position: "absolute",
-                                        top: 28, left: -3, right: -3, bottom: -3,
-                                        borderRadius: "22px",
-                                        background: "linear-gradient(135deg, rgba(6,182,212,0.6), rgba(34,211,238,0.15), rgba(6,182,212,0.5))",
-                                        backgroundSize: "200% 200%",
-                                        animation: "borderRotate 4s linear infinite",
-                                        "@keyframes borderRotate": {
-                                            "0%": { backgroundPosition: "0% 50%" },
-                                            "50%": { backgroundPosition: "100% 50%" },
-                                            "100%": { backgroundPosition: "0% 50%" },
-                                        },
-                                        zIndex: 0,
-                                    }}
-                                />
-
-                                {/* Image box */}
-                                <Box
-                                    sx={{
-                                        position: "relative", zIndex: 1,
-                                        borderRadius: "20px", overflow: "hidden",
-                                        bgcolor: "#0A1628",
-                                        height: { xs: "240px", sm: "320px", md: "380px" },
-                                        display: "flex", alignItems: "center", justifyContent: "center",
+                                        position: "relative",
+                                        // Height = card height + breathing room
+                                        height: { xs: "220px", sm: "300px", md: "380px" },
+                                        perspective: "1200px",
+                                        // Clip side cards neatly at the edges
+                                        overflow: "hidden",
+                                        // Horizontal padding so arrows don't overlap cards
+                                        px: { xs: 5, md: 7 },
                                     }}
                                 >
-                                    <AnimatePresence mode="wait">
-                                        <motion.img
-                                            key={currentIndex}
-                                            src={results[currentIndex].imageUrl}
-                                            alt={results[currentIndex].title || "Student Result"}
-                                            initial={{ opacity: 0, scale: 1.04 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.97 }}
-                                            transition={{ duration: 0.45 }}
-                                            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
-                                        />
+                                    {/* Carousel Cards — back-to-front DOM order = correct stacking */}
+                                    <AnimatePresence initial={false}>
+                                    {(() => {
+                                        const CARD_W = 560;
+                                        const CARD_H = 340;
+                                        const SIDE_SCALE = 0.68;
+                                        const SIDE_X = CARD_W * 0.60;
+                                        const visibleSide = results.length >= 3 ? 1 : 0;
+
+                                        // Render order: sides first (behind in DOM), center last (on top)
+                                        const offsets: number[] = [];
+                                        if (visibleSide >= 1) { offsets.push(1); offsets.push(-1); }
+                                        offsets.push(0);
+
+                                        return offsets.map((offset) => {
+                                            const index = (currentIndex + offset + results.length) % results.length;
+                                            const result = results[index];
+                                            const isCenter = offset === 0;
+                                            const xPos    = isCenter ? 0 : offset * SIDE_X;
+                                            const yPos    = isCenter ? -8 : 12;
+                                            const scale   = isCenter ? 1 : SIDE_SCALE;
+                                            const rotateY = isCenter ? 0 : offset * -38;
+                                            const opacity = isCenter ? 1 : 0.55;
+
+                                            // New card enters from the direction it comes from
+                                            const initX = offset > 0 ? SIDE_X * 1.8 : offset < 0 ? -SIDE_X * 1.8 : 0;
+
+                                            return (
+                                                <motion.div
+                                                    // KEY BY IMAGE IDENTITY so Framer Motion tracks
+                                                    // each card as it slides between positions
+                                                    key={result._id}
+                                                    initial={{ x: initX, opacity: 0, scale: 0.5, rotateY: offset * -55 }}
+                                                    animate={{ x: xPos, y: yPos, scale, rotateY, opacity }}
+                                                    exit={{ opacity: 0, scale: 0.4, transition: { duration: 0.2 } }}
+                                                    transition={{
+                                                        x:       { type: "spring", stiffness: 320, damping: 30, mass: 0.8 },
+                                                        y:       { type: "spring", stiffness: 280, damping: 24, mass: 0.8 },
+                                                        scale:   { type: "spring", stiffness: 300, damping: 28 },
+                                                        rotateY: { type: "spring", stiffness: 260, damping: 32 },
+                                                        opacity: { duration: 0.3, ease: "easeInOut" },
+                                                    }}
+                                                    whileHover={!isCenter ? {
+                                                        scale: SIDE_SCALE * 1.06,
+                                                        y: yPos - 6,
+                                                        opacity: 0.78,
+                                                        transition: { type: "spring", stiffness: 400, damping: 22 },
+                                                    } : {}}
+                                                    whileTap={!isCenter ? { scale: SIDE_SCALE * 0.96 } : {}}
+                                                    onClick={() => { if (!isCenter) setCurrentIndex(index); }}
+                                                    style={{
+                                                        position: "absolute",
+                                                        left: "50%",
+                                                        top: "50%",
+                                                        marginLeft: `${-CARD_W / 2}px`,
+                                                        marginTop:  `${-CARD_H / 2}px`,
+                                                        cursor: isCenter ? "default" : "pointer",
+                                                        transformOrigin: "center center",
+                                                    }}
+                                                >
+                                                    <Box sx={{
+                                                        width:  { xs: "280px", sm: "420px", md: `${CARD_W}px` },
+                                                        height: { xs: "170px", sm: "255px", md: `${CARD_H}px` },
+                                                        borderRadius: "16px",
+                                                        overflow: "hidden",
+                                                        bgcolor: "#081320",
+                                                        border: isCenter
+                                                            ? "2px solid rgba(6,182,212,0.7)"
+                                                            : "1px solid rgba(255,255,255,0.07)",
+                                                        boxShadow: isCenter
+                                                            ? "0 0 40px rgba(6,182,212,0.35), 0 24px 60px rgba(0,0,0,0.7)"
+                                                            : "0 8px 24px rgba(0,0,0,0.6)",
+                                                        filter: isCenter ? "brightness(1)" : "brightness(0.55) saturate(0.7)",
+                                                        transition: "border 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease",
+                                                        position: "relative",
+                                                    }}>
+                                                        <img
+                                                            src={result.imageUrl}
+                                                            alt={result.title || "Student Result"}
+                                                            style={{
+                                                                width: "100%", height: "100%",
+                                                                objectFit: "contain", display: "block",
+                                                                backgroundColor: "#081320",
+                                                            }}
+                                                            draggable={false}
+                                                        />
+                                                        {isCenter && result.title && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, y: 10 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: 0.25, duration: 0.4, ease: "easeOut" }}
+                                                                style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}
+                                                            >
+                                                                <Box sx={{
+                                                                    px: 2.5, py: 1.5,
+                                                                    background: "linear-gradient(to top, rgba(5,16,29,0.95) 0%, transparent 100%)",
+                                                                }}>
+                                                                    <Typography sx={{ color: "#22D3EE", fontWeight: 700, fontSize: { xs: "0.75rem", md: "0.95rem" }, fontFamily: "'Sora', sans-serif" }}>
+                                                                        ⭐ {result.title}
+                                                                    </Typography>
+                                                                </Box>
+                                                            </motion.div>
+                                                        )}
+                                                    </Box>
+                                                </motion.div>
+                                            );
+                                        });
+                                    })()}
                                     </AnimatePresence>
 
-                                    {/* Caption overlay */}
-                                    {results[currentIndex].title && (
-                                        <Box
-                                            sx={{
-                                                position: "absolute", bottom: 0, left: 0, right: 0, px: 2.5, py: 2,
-                                                background: "linear-gradient(to top, rgba(5,16,29,0.95) 0%, transparent 100%)",
-                                            }}
-                                        >
-                                            <Typography sx={{ color: "#22D3EE", fontWeight: 700, fontSize: "0.95rem", fontFamily: "'Sora', sans-serif" }}>
-                                                ⭐ {results[currentIndex].title}
-                                            </Typography>
-                                        </Box>
-                                    )}
-
-                                    {/* Arrows */}
+                                    {/* Navigation arrows with press animation */}
                                     {results.length > 1 && (
                                         <>
-                                            <Box
+                                            <motion.div
+                                                whileHover={{ scale: 1.12 }}
+                                                whileTap={{ scale: 0.88 }}
+                                                transition={{ type: "spring", stiffness: 500, damping: 22 }}
                                                 onClick={goPrev}
-                                                sx={{
-                                                    position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
-                                                    width: 32, height: 32, borderRadius: "50%",
-                                                    bgcolor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-                                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                                    cursor: "pointer", color: "white",
-                                                    "&:hover": { bgcolor: "rgba(139,92,246,0.45)" },
-                                                    transition: "background 0.2s",
+                                                style={{
+                                                    position: "absolute",
+                                                    left: "12px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    zIndex: 20,
+                                                    cursor: "pointer",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: "42px",
+                                                    height: "42px",
+                                                    borderRadius: "50%",
+                                                    background: "rgba(6,182,212,0.18)",
+                                                    border: "1px solid rgba(6,182,212,0.35)",
+                                                    backdropFilter: "blur(8px)",
+                                                    color: "#22D3EE",
                                                 }}
                                             >
-                                                <ChevronLeftIcon sx={{ fontSize: 18 }} />
-                                            </Box>
-                                            <Box
+                                                <ChevronLeftIcon sx={{ fontSize: 22 }} />
+                                            </motion.div>
+                                            <motion.div
+                                                whileHover={{ scale: 1.12 }}
+                                                whileTap={{ scale: 0.88 }}
+                                                transition={{ type: "spring", stiffness: 500, damping: 22 }}
                                                 onClick={goNext}
-                                                sx={{
-                                                    position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                                                    width: 32, height: 32, borderRadius: "50%",
-                                                    bgcolor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-                                                    display: "flex", alignItems: "center", justifyContent: "center",
-                                                    cursor: "pointer", color: "white",
-                                                    "&:hover": { bgcolor: "rgba(139,92,246,0.45)" },
-                                                    transition: "background 0.2s",
+                                                style={{
+                                                    position: "absolute",
+                                                    right: "12px",
+                                                    top: "50%",
+                                                    transform: "translateY(-50%)",
+                                                    zIndex: 20,
+                                                    cursor: "pointer",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    width: "42px",
+                                                    height: "42px",
+                                                    borderRadius: "50%",
+                                                    background: "rgba(6,182,212,0.18)",
+                                                    border: "1px solid rgba(6,182,212,0.35)",
+                                                    backdropFilter: "blur(8px)",
+                                                    color: "#22D3EE",
                                                 }}
                                             >
-                                                <ChevronRightIcon sx={{ fontSize: 18 }} />
-                                            </Box>
+                                                <ChevronRightIcon sx={{ fontSize: 22 }} />
+                                            </motion.div>
                                         </>
                                     )}
                                 </Box>

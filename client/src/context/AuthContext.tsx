@@ -27,11 +27,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedToken = localStorage.getItem('authToken');
     if (storedToken) {
       try {
-        const decoded = jwtDecode<UserPayload>(storedToken);
-        // We could also check if token is expired here
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUser(decoded);
-        setToken(storedToken);
+        const decoded = jwtDecode<UserPayload & { exp?: number }>(storedToken);
+        // Check if token is expired
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+          console.error('Token is expired');
+          localStorage.removeItem('authToken');
+        } else {
+          setUser(decoded);
+          setToken(storedToken);
+        }
       } catch {
         console.error('Invalid token found in local storage');
         localStorage.removeItem('authToken');

@@ -1046,6 +1046,7 @@
 // export default Courses;
 
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Box, Typography, Button, Breadcrumbs, Link, Stack,
     Alert, Snackbar, useMediaQuery, useTheme
@@ -1060,6 +1061,7 @@ import CourseTable from './CourseTable';
 import type { ConfirmState, CourseFormState, CourseItem, PageDetails } from './types';
 import PageDetailView from './PageDetailView';
 import CourseFormDialog from './CourseFormDialog';
+import UploadOverlay from '../../../components/UploadOverlay';
 
 // ─── Default form state ────────────────────────────────────────────────────────
 const defaultForm: CourseFormState = {
@@ -1365,26 +1367,44 @@ const Courses: React.FC = () => {
             </Stack>
 
             {/* ── Main view ── */}
-            {!selectedPage ? (
-                <CourseTable
-                    items={items}
-                    parentId={parentId}
-                    enrolledCounts={enrolledCounts}
-                    onItemClick={handleItemClick}
-                    onBack={handleBack}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onExport={handleExportCourseStudents}
-                />
-            ) : (
-                <PageDetailView
-                    page={selectedPage}
-                    onBack={() => setSelectedPage(null)}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onExport={handleExportCourseStudents}
-                />
-            )}
+            <AnimatePresence mode="wait">
+                {!selectedPage ? (
+                    <motion.div
+                        key="course-table"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <CourseTable
+                            items={items}
+                            parentId={parentId}
+                            enrolledCounts={enrolledCounts}
+                            onItemClick={handleItemClick}
+                            onBack={handleBack}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onExport={handleExportCourseStudents}
+                        />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="page-detail"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <PageDetailView
+                            page={selectedPage}
+                            onBack={() => setSelectedPage(null)}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onExport={handleExportCourseStudents}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* ── Create / Edit Dialog ── */}
             <CourseFormDialog
@@ -1425,6 +1445,9 @@ const Courses: React.FC = () => {
                     {toast.message}
                 </Alert>
             </Snackbar>
+
+            {/* ── Uploading Overlay ── */}
+            <UploadOverlay open={isUploading} />
         </Box>
     );
 };

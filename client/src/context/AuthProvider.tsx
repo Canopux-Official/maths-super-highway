@@ -7,7 +7,12 @@ const getInitialAuthState = (): { user: UserPayload | null; token: string | null
   const storedToken = localStorage.getItem('authToken');
   if (storedToken) {
     try {
-      const user = jwtDecode<UserPayload>(storedToken);
+      const user = jwtDecode<UserPayload & { exp?: number }>(storedToken);
+      if (user.exp && user.exp * 1000 < Date.now()) {
+        console.error('Token is expired on load');
+        localStorage.removeItem('authToken');
+        return { user: null, token: null };
+      }
       return { user, token: storedToken };
     } catch {
       localStorage.removeItem('authToken');

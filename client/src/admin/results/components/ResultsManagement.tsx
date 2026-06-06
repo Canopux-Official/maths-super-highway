@@ -9,7 +9,8 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import axios from 'axios';
+import apiClient from '../../../context/api/apiClient';
+import UploadOverlay from '../../../components/UploadOverlay';
 
 interface ResultImage {
   _id: string;
@@ -32,13 +33,10 @@ const ResultsManagement = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [editingResult, setEditingResult] = useState<ResultImage | null>(null);
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const fetchResults = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/results/admin`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-      });
+      const res = await apiClient.get(`/results/admin`);
       setResults(res.data.data);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch results');
@@ -81,9 +79,8 @@ const ResultsManagement = () => {
     data.append('isActive', formData.isActive.toString());
 
     try {
-      await axios.post(`${apiUrl}/results/admin`, data, {
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+      await apiClient.post(`/results/admin`, data, {
+        headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -102,9 +99,7 @@ const ResultsManagement = () => {
     if (!editingResult) return;
     setUploading(true);
     try {
-      await axios.put(`${apiUrl}/results/admin/${editingResult._id}`, editingResult, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-      });
+      await apiClient.put(`/results/admin/${editingResult._id}`, editingResult);
       setOpenEdit(false);
       setEditingResult(null);
       fetchResults();
@@ -118,9 +113,7 @@ const ResultsManagement = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this result image?")) return;
     try {
-      await axios.delete(`${apiUrl}/results/admin/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
-      });
+      await apiClient.delete(`/results/admin/${id}`);
       fetchResults();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to delete result');
@@ -133,8 +126,8 @@ const ResultsManagement = () => {
         <Typography variant="h5" sx={{ fontWeight: 800, fontFamily: "'Sora', sans-serif", color: '#0A1628' }}>
           Results Management
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setOpenAdd(true)}
           sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}
@@ -154,10 +147,10 @@ const ResultsManagement = () => {
           {results.map((result) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result._id}>
               <Paper sx={{ p: 2, borderRadius: '12px', overflow: 'hidden', border: '1px solid #E2E8F0', position: 'relative' }}>
-                <Box sx={{ 
-                  height: 200, 
-                  backgroundImage: `url(${result.imageUrl})`, 
-                  backgroundSize: 'contain', 
+                <Box sx={{
+                  height: 200,
+                  backgroundImage: `url(${result.imageUrl})`,
+                  backgroundSize: 'contain',
                   backgroundRepeat: 'no-repeat',
                   backgroundPosition: 'center',
                   bgcolor: '#F8FAFC',
@@ -206,19 +199,19 @@ const ResultsManagement = () => {
             {selectedFile ? selectedFile.name : 'Select Image'}
             <input type="file" hidden accept="image/*" onChange={handleFileChange} />
           </Button>
-          <TextField 
-            label="Title (Optional)" 
-            value={formData.title} 
-            onChange={e => setFormData({...formData, title: e.target.value})} 
+          <TextField
+            label="Title (Optional)"
+            value={formData.title}
+            onChange={e => setFormData({ ...formData, title: e.target.value })}
           />
-          <TextField 
-            label="Order" 
+          <TextField
+            label="Order"
             type="number"
-            value={formData.order} 
-            onChange={e => setFormData({...formData, order: parseInt(e.target.value) || 0})} 
+            value={formData.order}
+            onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
           />
           <FormControlLabel
-            control={<Switch checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} />}
+            control={<Switch checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} />}
             label="Active (Visible on Landing Page)"
           />
         </DialogContent>
@@ -236,19 +229,19 @@ const ResultsManagement = () => {
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
           {editingResult && (
             <>
-              <TextField 
-                label="Title (Optional)" 
-                value={editingResult.title} 
-                onChange={e => setEditingResult({...editingResult, title: e.target.value})} 
+              <TextField
+                label="Title (Optional)"
+                value={editingResult.title}
+                onChange={e => setEditingResult({ ...editingResult, title: e.target.value })}
               />
-              <TextField 
-                label="Order" 
+              <TextField
+                label="Order"
                 type="number"
-                value={editingResult.order} 
-                onChange={e => setEditingResult({...editingResult, order: parseInt(e.target.value) || 0})} 
+                value={editingResult.order}
+                onChange={e => setEditingResult({ ...editingResult, order: parseInt(e.target.value) || 0 })}
               />
               <FormControlLabel
-                control={<Switch checked={editingResult.isActive} onChange={e => setEditingResult({...editingResult, isActive: e.target.checked})} />}
+                control={<Switch checked={editingResult.isActive} onChange={e => setEditingResult({ ...editingResult, isActive: e.target.checked })} />}
                 label="Active (Visible on Landing Page)"
               />
             </>
@@ -262,25 +255,7 @@ const ResultsManagement = () => {
         </DialogActions>
       </Dialog>
       {/* Uploading Overlay */}
-      <Backdrop
-        sx={{ 
-          color: '#fff', 
-          zIndex: (theme) => Math.max(theme.zIndex.drawer, theme.zIndex.modal) + 2000, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: 2,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)'
-        }}
-        open={uploading}
-      >
-        <CircularProgress color="inherit" size={60} thickness={4} />
-        <Typography variant="h5" sx={{ fontWeight: 700, fontFamily: "'Sora', sans-serif" }}>
-          Uploading... Please wait
-        </Typography>
-        <Typography variant="body1" sx={{ opacity: 0.8, fontFamily: "'Inter', sans-serif" }}>
-          Do not refresh or close this page. This might take a moment.
-        </Typography>
-      </Backdrop>
+      <UploadOverlay open={uploading} />
     </Box>
   );
 };
