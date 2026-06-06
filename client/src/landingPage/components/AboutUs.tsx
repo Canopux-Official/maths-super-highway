@@ -150,7 +150,7 @@ const AboutUs: React.FC = () => {
                                 fontFamily: "'Inter', sans-serif",
                             }}
                         >
-                            Maths Super Highway was founded with a singular belief: every student has the potential to master mathematics when given the right environment, method, and mentorship.
+                            Math SuperHighway was founded with a singular belief: every student has the potential to master mathematics when given the right environment, method, and mentorship.
                         </Typography>
                         <Typography
                             variant="body1"

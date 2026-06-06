@@ -68,7 +68,7 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                             textTransform: 'uppercase',
                         }}
                     >
-                        Maths
+                        Math
                     </Typography>
                     <Typography
                         sx={{
@@ -81,7 +81,7 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                             lineHeight: 1,
                         }}
                     >
-                        Super Highway
+                        SuperHighway
                     </Typography>
                 </Box>
             </Box>

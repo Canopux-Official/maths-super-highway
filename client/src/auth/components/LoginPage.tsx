@@ -197,7 +197,7 @@ const LoginPage = () => {
                   letterSpacing: '-0.01em',
                 }}
               >
-                Maths Super Highway
+                Math SuperHighway
               </Typography>
               <Typography
                 sx={{
@@ -493,7 +493,7 @@ const LoginPage = () => {
 
               <Box sx={{ textAlign: 'center', mt: 1 }}>
                 <Typography variant="body2" sx={{ color: '#64748B', fontFamily: "'Inter', sans-serif" }}>
-                  New to Maths Super Highway?{' '}
+                  New to Math SuperHighway?{' '}
                   <Link
                     to="/signup"
                     style={{

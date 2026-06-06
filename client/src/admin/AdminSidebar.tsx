@@ -58,10 +58,10 @@ export default function AdminSidebar({ children }: { children: React.ReactNode }
         <img src="/transparentLogo.png" alt="Logo" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
         <Box>
           <Typography sx={{ color: 'white', fontSize: 13, fontWeight: 700, fontFamily: "'Sora', sans-serif", letterSpacing: '0.04em', lineHeight: 1.2, textTransform: 'uppercase' }}>
-            Maths
+            Math
           </Typography>
           <Typography sx={{ color: '#06B6D4', fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif", letterSpacing: '0.12em', textTransform: 'uppercase', lineHeight: 1 }}>
-            Super Highway
+            SuperHighway
           </Typography>
         </Box>
       </Box>

@@ -44,7 +44,7 @@ const getEmailTemplate = (otp: string, isResend: boolean, currentAttempts: numbe
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; background-color: #ffffff;">
       <div style="background-color: #2e447dff; padding: 30px 20px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">Maths Superhighway</h1>
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">Math Superhighway</h1>
         <p style="color: #E8F5E9; margin: 5px 0 0; font-size: 14px;">Master Mathematics with ease</p>
       </div>
 
@@ -73,7 +73,7 @@ const getEmailTemplate = (otp: string, isResend: boolean, currentAttempts: numbe
 
       <div style="background-color: #f5f5f5; padding: 15px; text-align: center; border-top: 1px solid #eeeeee;">
         <p style="color: #888888; font-size: 12px; margin: 0;">
-          &copy; ${new Date().getFullYear()} Maths Superhighway. All rights reserved.
+          &copy; ${new Date().getFullYear()} Math Superhighway. All rights reserved.
         </p>
       </div>
     </div>
@@ -119,7 +119,7 @@ export const sendOtp = async (
     });
 
     await transporter.sendMail({
-      from: `"Maths Super Highway Auth" <${process.env.MAIL_USER}>`,
+      from: `"Math SuperHighway Auth" <${process.env.MAIL_USER}>`,
       to: email,
       subject: "Your Login Verification Code",
       html: getEmailTemplate(otp, false, 0),
@@ -194,7 +194,7 @@ export const resendOtpInternal = async (email: string) => {
     await existingOtp.save();
 
     await transporter.sendMail({
-      from: `"Maths Superhighway Auth" <${process.env.MAIL_USER}>`,
+      from: `"Math SuperHighway Auth" <${process.env.MAIL_USER}>`,
       to: email,
       subject: "Your New Verification Code",
       html: getEmailTemplate(otp, true, existingOtp.attempts),

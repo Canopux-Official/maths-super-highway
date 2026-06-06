@@ -528,7 +528,7 @@ const Testimonials: React.FC = () => {
 
           <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}>
             <Typography sx={{ color: "#64748B", fontSize: { xs: "0.9rem", md: "1.05rem" }, maxWidth: 460, mx: "auto", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
-              Hear how Maths Super Highway has transformed the mathematical journeys of our students.
+              Hear how Math SuperHighway has transformed the mathematical journeys of our students.
             </Typography>
             <Box sx={{ display: "flex", justifyContent: "center", mt: 2.5 }}>
               <Box sx={{ width: 48, height: 3, borderRadius: "2px", background: "linear-gradient(135deg, #06B6D4, #1D4ED8)" }} />

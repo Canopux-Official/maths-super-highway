@@ -128,7 +128,7 @@ const Footer: React.FC = () => {
                                         lineHeight: 1.15,
                                     }}
                                 >
-                                    Maths Super Highway
+                                    Math SuperHighway
                                 </Typography>
                                 <Typography
                                     sx={{
@@ -291,7 +291,7 @@ const Footer: React.FC = () => {
                                 },
                                 {
                                     icon: <EmailIcon sx={{ fontSize: 16, color: "#06B6D4" }} />,
-                                    content: "hello@mathssuperhighway.com",
+                                    content: "hello@mathsuperhighway.com",
                                 },
                             ].map((item, i) => (
                                 <Box key={i} sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
@@ -396,7 +396,7 @@ const Footer: React.FC = () => {
                             fontSize: "0.775rem",
                         }}
                     >
-                        © {new Date().getFullYear()} Maths Super Highway. All rights reserved.
+                        © {new Date().getFullYear()} Math SuperHighway. All rights reserved.
                     </Typography>
                     <Stack direction="row" spacing={2.5}>
                         {["Privacy Policy", "Terms of Use", "Cookie Policy"].map((item) => (

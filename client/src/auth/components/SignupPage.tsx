@@ -174,7 +174,7 @@ const SignupPage = () => {
               fontSize: { xs: '2.4rem', sm: '3rem', md: '3.75rem' },
             }}
           >
-            Maths Super <br /> Highway
+            Math Super<br />Highway
           </Typography>
           <Typography
             variant="h5"
