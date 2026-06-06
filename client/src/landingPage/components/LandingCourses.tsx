@@ -174,7 +174,7 @@
 // export default Courses;
 
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Typography,
@@ -193,7 +193,6 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import GridViewRoundedIcon from "@mui/icons-material/GridViewRounded";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import type { Course } from "..";
 import { getAllCourses, getEnrolledStudents } from "../api";
@@ -400,44 +399,51 @@ const Courses: React.FC = () => {
     const navigate = useNavigate();
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedProgram, setSelectedProgram] = useState<string | undefined>();
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number>>({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
-    const {
-        data: { courses, enrolledCounts } = { courses: [], enrolledCounts: {} },
-        isLoading: loading,
-        error,
-    } = useQuery({
-        queryKey: ["landingCourses"],
-        queryFn: async () => {
-            const res = await getAllCourses();
-            const courseData = Array.isArray(res)
-                ? res
-                : (res as any).data || [];
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                setLoading(true);
+                const res = await getAllCourses();
+                const courseData = Array.isArray(res)
+                    ? res
+                    : (res as any).data || [];
 
-            const filteredFolders = courseData.filter(
-                (item: Course) => item.itemType === "folder"
-            );
+                const filteredFolders = courseData.filter(
+                    (item: Course) => item.itemType === "folder"
+                );
 
-            const countEntries = await Promise.all(
-                filteredFolders.map(async (course: Course) => {
-                    try {
-                        const data = await getEnrolledStudents(course._id);
-                        const count =
-                            typeof data === "number"
-                                ? data
-                                : data?.data?.enrolledCount ?? 0;
-                        return [course._id, count] as [string, number];
-                    } catch {
-                        return [course._id, 0] as [string, number];
-                    }
-                })
-            );
+                const countEntries = await Promise.all(
+                    filteredFolders.map(async (course: Course) => {
+                        try {
+                            const data = await getEnrolledStudents(course._id);
+                            const count =
+                                typeof data === "number"
+                                    ? data
+                                    : data?.data?.enrolledCount ?? 0;
+                            return [course._id, count] as [string, number];
+                        } catch {
+                            return [course._id, 0] as [string, number];
+                        }
+                    })
+                );
 
-            return {
-                courses: filteredFolders,
-                enrolledCounts: Object.fromEntries(countEntries),
-            };
-        },
-    });
+                setCourses(filteredFolders);
+                setEnrolledCounts(Object.fromEntries(countEntries));
+            } catch (err) {
+                console.error("Error fetching courses:", err);
+                setError(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCourses();
+    }, []);
 
     const openSignIn = (programName?: string) => {
         setSelectedProgram(programName);
