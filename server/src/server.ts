@@ -161,16 +161,16 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 // ------------------------------------------------------------------
 app.set("trust proxy", 1); // Vercel sits behind a proxy layer
 
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many requests. Please try again in 15 minutes.",
-  },
-});
+// const globalLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 200,
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   message: {
+//     success: false,
+//     message: "Too many requests. Please try again in 15 minutes.",
+//   },
+// });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -183,7 +183,7 @@ const authLimiter = rateLimit({
   },
 });
 
-app.use(globalLimiter); // applied to every route
+// app.use(globalLimiter); // applied to every route
 
 // ------------------------------------------------------------------
 // 6. DB MIDDLEWARE — connect before every request.

@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import mongoose, { Types } from 'mongoose';
 import Course, { ICourse } from '../models/courses';
 import Enrollment from '../models/enrollment';
+import cloudinary from '../config/cloudinary';
+import axios from 'axios';
 
 // --- Interfaces for Standardized Responses ---
 
@@ -27,14 +29,26 @@ const buildTree = (items: ICourse[], parentId: Types.ObjectId | null = null): ob
         });
 };
 
-const collectDescendantIds = async (parentId: Types.ObjectId): Promise<Types.ObjectId[]> => {
-    const children = await Course.find({ parentId }).select('_id').lean();
-    const ids: Types.ObjectId[] = children.map((c) => c._id as Types.ObjectId);
+const collectDescendantIdsAndImages = async (parentId: Types.ObjectId): Promise<{ ids: Types.ObjectId[], publicIds: string[] }> => {
+    const children = await Course.find({ parentId }).select('_id thumbnail').lean();
+
+    let ids: Types.ObjectId[] = children.map((c) => c._id as Types.ObjectId);
+    let publicIds: string[] = children
+        .filter((c: any) => c.thumbnail && c.thumbnail.publicId)
+        .map((c: any) => c.thumbnail.publicId);
+
     for (const child of children) {
-        const nested = await collectDescendantIds(child._id as Types.ObjectId);
-        ids.push(...nested);
+        const nested = await collectDescendantIdsAndImages(child._id as Types.ObjectId);
+        ids.push(...nested.ids);
+        publicIds.push(...nested.publicIds);
     }
-    return ids;
+    return { ids, publicIds };
+};
+
+// Retaining old helper signature just in case it's used elsewhere, pointing it to the new robust version
+const collectDescendantIds = async (parentId: Types.ObjectId): Promise<Types.ObjectId[]> => {
+    const result = await collectDescendantIdsAndImages(parentId);
+    return result.ids;
 };
 
 // --- Controllers ---
@@ -107,9 +121,10 @@ export const getAdminPageDetails = async (req: Request, res: Response) => {
 };
 
 // POST /api/courses
+// UPDATED: Now expects a thumbnail object containing { url, publicId } from request body
 export const createCourse = async (req: Request, res: Response) => {
     try {
-        const { title, content, parentId, itemType } = req.body;
+        const { title, content, parentId, itemType, thumbnail } = req.body;
 
         if (parentId) {
             const parent = await Course.findById(parentId);
@@ -118,10 +133,7 @@ export const createCourse = async (req: Request, res: Response) => {
             }
 
             const allowedChildren: Record<string, string[]> = {
-                // A Folder can hold other Folders or final Pages (Infinite Nesting)
                 folder: ['folder', 'page'],
-
-                // A Page is a leaf node; it cannot have children
                 page: [],
             };
 
@@ -139,6 +151,7 @@ export const createCourse = async (req: Request, res: Response) => {
             content,
             parentId: parentId ?? null,
             itemType,
+            thumbnail: thumbnail ?? { url: '', publicId: '' } // Save thumbnail reference
         });
 
         return res.status(201).json({
@@ -151,11 +164,67 @@ export const createCourse = async (req: Request, res: Response) => {
     }
 };
 
+// use to upload images
+export const uploadCourseImage = async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.file) {
+            res.status(400).json({ success: false, message: 'No image file provided' });
+            return;
+        }
+
+        // multer-storage-cloudinary attaches these to req.file
+        const file = req.file as Express.Multer.File & {
+            path: string; // Cloudinary secure_url
+            filename: string; // Cloudinary public_id
+        };
+
+        res.status(200).json({
+            success: true,
+            url: file.path,      // Cloudinary secure_url — insert as <img src>
+            publicId: file.filename,  // Cloudinary public_id — needed to delete later
+        });
+    } catch (error: any) {
+        console.error('uploadCourseImage error:', error);
+        res.status(500).json({ success: false, message: error.message ?? 'Upload failed' });
+    }
+};
+
+
+// use to delete the images
+export const deleteCourseImage = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const publicId = decodeURIComponent(req.params.publicId as any);
+
+        if (!publicId) {
+            res.status(400).json({ success: false, message: 'publicId is required' });
+            return;
+        }
+
+        const result = await cloudinary.uploader.destroy(publicId, {
+            resource_type: 'image',
+            invalidate: true, // purge from Cloudinary CDN cache
+        });
+
+        // result.result is 'ok' on success, 'not found' if already deleted
+        if (result.result === 'ok') {
+            res.status(200).json({ success: true, message: 'Image deleted' });
+        } else if (result.result === 'not found') {
+            // Treat as success — idempotent delete
+            res.status(200).json({ success: true, message: 'Image not found (already deleted)' });
+        } else {
+            res.status(500).json({ success: false, message: `Cloudinary returned: ${result.result}` });
+        }
+    } catch (error: any) {
+        console.error('deleteCourseImage error:', error);
+        res.status(500).json({ success: false, message: error.message ?? 'Delete failed' });
+    }
+};
+
 // PATCH /api/courses/:id
 export const updateCourse = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { title, content, parentId, itemType } = req.body;
+        const { title, content, parentId, itemType, thumbnail } = req.body;
 
         const existing = await Course.findById(id);
         if (!existing) {
@@ -181,6 +250,16 @@ export const updateCourse = async (req: Request, res: Response) => {
             }
         }
 
+        // If a new thumbnail is supplied and it's different from the current one, clean up the old one from Cloudinary
+        const existingThumbnail = (existing as any).thumbnail;
+        if (thumbnail && existingThumbnail && existingThumbnail.publicId && existingThumbnail.publicId !== thumbnail.publicId) {
+            try {
+                await cloudinary.uploader.destroy(existingThumbnail.publicId, { resource_type: 'image', invalidate: true });
+            } catch (cloudErr) {
+                console.error(`Failed to delete orphaned image ${existingThumbnail.publicId}:`, cloudErr);
+            }
+        }
+
         const updated = await Course.findByIdAndUpdate(
             id,
             {
@@ -188,6 +267,7 @@ export const updateCourse = async (req: Request, res: Response) => {
                     ...(title !== undefined && { title }),
                     ...(content !== undefined && { content }),
                     ...(itemType !== undefined && { itemType }),
+                    ...(thumbnail !== undefined && { thumbnail }),
                     parentId: parentId !== undefined ? (parentId ?? null) : existing.parentId,
                 },
             },
@@ -212,15 +292,34 @@ export const deleteCourse = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Course not found' });
         }
 
-        const descendants = await collectDescendantIds(existing._id as Types.ObjectId);
-        const allIds = [existing._id as Types.ObjectId, ...descendants];
+        // 1. Gather all descendant database IDs and their Cloudinary image public IDs
+        //  Fixed Line (Notice the colon syntax `publicIds: publicIdsToClean`)
+        const { ids: descendantIds, publicIds: publicIdsToClean } = await collectDescendantIdsAndImages(existing._id as Types.ObjectId);
+        const allCourseIds = [existing._id as Types.ObjectId, ...descendantIds];
 
-        await Course.deleteMany({ _id: { $in: allIds } });
+        // Include the target root course's image if it has one
+        const rootThumbnail = (existing as any).thumbnail;
+        if (rootThumbnail && rootThumbnail.publicId) {
+            publicIdsToClean.push(rootThumbnail.publicId);
+        }
+
+        // 2. Clean up files from Cloudinary storage asynchronously
+        if (publicIdsToClean.length > 0) {
+            // Using Promise.allSettled guarantees that even if one cloud image fail fails, it won't crash the database deletion process.
+            await Promise.allSettled(
+                publicIdsToClean.map(publicId =>
+                    cloudinary.uploader.destroy(publicId, { resource_type: 'image', invalidate: true })
+                )
+            );
+        }
+
+        // 3. Remove records from MongoDB
+        await Course.deleteMany({ _id: { $in: allCourseIds } });
 
         return res.status(200).json({
             success: true,
-            message: `Deleted ${allIds.length} item(s) successfully`,
-            data: { deletedCount: allIds.length },
+            message: `Deleted ${allCourseIds.length} item(s) and associated media successfully`,
+            data: { deletedCount: allCourseIds.length },
         });
     } catch (error: any) {
         return res.status(500).json({ success: false, message: error.message });
@@ -344,5 +443,96 @@ export const getEnrolledStudentsExport = async (req: Request, res: Response): Pr
     } catch (error: any) {
         console.error('getEnrolledStudentsExport error:', error);
         res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+
+export const streamDrivePdf = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    try {
+        const { fileId } = req.params;
+
+        if (!fileId) {
+            res.status(400).json({
+                success: false,
+                message: 'fileId is required'
+            });
+            return;
+        }
+
+        const driveUrl =
+            `https://drive.google.com/uc?export=download&id=${fileId}`;
+
+        const response = await axios({
+            method: 'GET',
+            url: driveUrl,
+            responseType: 'stream',
+            timeout: 30000,
+            maxRedirects: 5,
+            validateStatus: (status) =>
+                status >= 200 && status < 400
+        });
+
+        res.setHeader(
+            'Content-Type',
+            String(response.headers['content-type'] || 'application/pdf')
+        );
+
+        const contentLength = response.headers['content-length'];
+        if (contentLength) {
+            res.setHeader('Content-Length', String(contentLength));
+        }
+
+        res.setHeader(
+            'Cache-Control',
+            'public, max-age=3600'
+        );
+
+        response.data.pipe(res);
+
+        response.data.on('error', (err: Error) => {
+            console.error('PDF stream error:', err);
+
+            if (!res.headersSent) {
+                res.status(500).json({
+                    success: false,
+                    message: 'Failed to stream PDF'
+                });
+            }
+        });
+    } catch (error: any) {
+        console.error('streamDrivePdf error:', error);
+
+        if (error.code === 'ECONNABORTED') {
+            res.status(504).json({
+                success: false,
+                message: 'Google Drive timeout'
+            });
+            return;
+        }
+
+        if (error.response?.status === 404) {
+            res.status(404).json({
+                success: false,
+                message: 'File not found'
+            });
+            return;
+        }
+
+        if (error.response?.status === 403) {
+            res.status(403).json({
+                success: false,
+                message:
+                    'Google Drive denied access. Make sure the file is public.'
+            });
+            return;
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Unable to fetch PDF'
+        });
     }
 };

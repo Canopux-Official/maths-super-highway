@@ -3,6 +3,10 @@ export interface Course {
   title: string;
   content: string;
   itemType: string;
+  thumbnail? :{
+    url: string;
+    publicId: string;
+  }
 }
 
 

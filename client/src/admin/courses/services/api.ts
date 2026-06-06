@@ -66,7 +66,7 @@ export const courseService = {
         const res = await apiClient.patch(`/courses-admin/update/${id}`, data);
         return res.data;
     },
-     
+
 
     getEnrolledStudents: async (id: string) => {
         const response = await apiClient.get(`/courses-admin/enrolled-count/${id}`);
@@ -76,5 +76,34 @@ export const courseService = {
     exportCourseStudents: async (id: string) => {
         const response = await apiClient.get(`/courses-admin/enrolled-students/${id}`);
         return response.data;
-    }
+    },
+    uploadImage: async (file: File): Promise<{ success: boolean; url: string; publicId: string }> => {
+        const formData = new FormData();
+        // Ensure 'image' matches exactly what your backend middleware (like multer) expects
+        formData.append('image', file);
+
+        const response = await apiClient.post('/courses-admin/upload-image', formData);
+        // ^ Removed the headers object entirely. Let Axios handle it automatically.
+
+        return response.data;
+    },
+
+    // Delete an image from Cloudinary by its publicId.
+    // publicId comes from the data-public-id attribute stored on the <img> tag.
+    deleteImage: async (publicId: string): Promise<{ success: boolean; message: string }> => {
+        const response = await apiClient.delete(
+            `/courses-admin/image/${encodeURIComponent(publicId)}`
+        );
+        return response.data;
+    },
+    getPdfBlobUrl: async (fileId: string): Promise<string> => {
+        const response = await apiClient.get(
+            `/courses-admin/stream/pdf/${fileId}`,
+            {
+                responseType: 'blob',
+            }
+        );
+
+        return URL.createObjectURL(response.data);
+    },
 };

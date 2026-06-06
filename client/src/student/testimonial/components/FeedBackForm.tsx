@@ -159,8 +159,8 @@ const FeedbackForm: React.FC<Props> = ({ courseId, onSubmitSuccess }) => {
                 rows={3}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                slotProps={{ htmlInput: { maxLength: 500 } }}
-                helperText={`${message.length} / 500`}
+                slotProps={{ htmlInput: { maxLength: 100 } }}
+                helperText={`${message.length} / 100`}
                 size="small"
                 sx={{
                     "& .MuiOutlinedInput-root": {

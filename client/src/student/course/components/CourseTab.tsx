@@ -2,11 +2,11 @@
 // import {
 //   Box,
 //   Typography,
-//   CircularProgress,
 //   Alert,
 //   Breadcrumbs,
 //   Link,
 //   Chip,
+//   Skeleton,
 // } from "@mui/material";
 // import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 // import ArticleIcon from "@mui/icons-material/Article";
@@ -23,6 +23,11 @@
 //   parentId: string | null;
 //   isActive: boolean;
 //   order: number;
+//   content: string;
+//   thumbnail?: {
+//     url: string;
+//     publicId: string;
+//   };
 // }
 
 // interface BreadcrumbEntry {
@@ -30,20 +35,44 @@
 //   title: string;
 // }
 
+// const CARD_WIDTH = {
+//   xs: "100%",
+//   sm: "calc(50% - 12px)",
+//   md: "calc(33.333% - 16px)",
+// };
+
 // const AllCoursesTab: React.FC = () => {
 //   const [items, setItems] = useState<CourseItem[]>([]);
 //   const [loading, setLoading] = useState(true);
 //   const [error, setError] = useState("");
 //   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
-//   const [currentFolder, setCurrentFolder] = useState<string>("root");
+//   const [_, setCurrentFolder] = useState<string>("root");
 //   const [selectedPage, setSelectedPage] = useState<string | null>(null);
+//   const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number | null>>({});
 
 //   const loadItems = useCallback(async (folderId: string) => {
 //     setLoading(true);
 //     setError("");
 //     try {
 //       const res = await courseService.getSubItems(folderId);
-//       setItems(res.data || []);
+//       const courseItems: CourseItem[] = res.data || [];
+//       setItems(courseItems);
+
+//       const initial: Record<string, null> = {};
+//       courseItems.forEach(i => { initial[i._id] = null; });
+//       setEnrolledCounts(initial);
+
+//       const counts = await Promise.all(
+//         courseItems.map(item =>
+//           courseService.getEnrolledStudents(item._id)
+//             .then(r => ({ id: item._id, count: r.success ? r.data.enrolledCount : 0 }))
+//             .catch(() => ({ id: item._id, count: 0 }))
+//         )
+//       );
+//       const countMap: Record<string, number> = {};
+//       counts.forEach(({ id, count }) => { countMap[id] = count; });
+//       setEnrolledCounts(countMap);
+
 //     } catch {
 //       setError("Failed to load courses. Please try again.");
 //     } finally {
@@ -84,8 +113,7 @@
 //   };
 
 //   const handleBackFromPage = () => {
-//     const newCrumbs = breadcrumbs.slice(0, -1);
-//     setBreadcrumbs(newCrumbs);
+//     setBreadcrumbs((prev) => prev.slice(0, -1));
 //     setSelectedPage(null);
 //   };
 
@@ -100,121 +128,189 @@
 //     );
 //   }
 
+//   const folderCount = items.filter((i) => i.itemType === "folder").length;
+//   const pageCount = items.filter((i) => i.itemType === "page").length;
+
 //   return (
-//     <Box>
-//       {/* Breadcrumbs */}
-//       <Box sx={{ mb: 3 }}>
+//     <Box sx={{ py: { xs: 1, sm: 2 } }}>
+
+//       {/* ── Mobile-Responsive Breadcrumbs ── */}
+//       <Box
+//         sx={{
+//           mb: { xs: 2, sm: 3 },
+//           p: { xs: 1.2, sm: 1.5 },
+//           bgcolor: "#f7f8fa",
+//           borderRadius: 2,
+//           border: "1px solid #efefef",
+//           overflowX: "auto", // Allows touch scrolling for ultra-deep folder lines
+//           whiteSpace: "nowrap",
+//           WebkitOverflowScrolling: "touch",
+//           "&::-webkit-scrollbar": { display: "none" }, // Clean clutter-free UI look
+//         }}
+//       >
 //         <Breadcrumbs
-//           separator={<NavigateNextIcon fontSize="small" />}
-//           sx={{ "& .MuiBreadcrumbs-li": { display: "flex", alignItems: "center" } }}
+//           // Collapses dynamic lines automatically on tiny screen monitors
+//           maxItems={3} 
+//           itemsAfterCollapse={2}
+//           itemsBeforeCollapse={1}
+//           separator={<NavigateNextIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: "#bbb" }} />}
+//           sx={{ 
+//             flexWrap: "nowrap",
+//             "& .MuiBreadcrumbs-li": { display: "inline-flex", alignItems: "center" } 
+//           }}
 //         >
 //           <Link
 //             component="button"
-//             underline="hover"
+//             underline="none"
 //             onClick={() => handleBreadcrumbClick(-1)}
 //             sx={{
 //               display: "flex",
 //               alignItems: "center",
 //               gap: 0.5,
-//               color: breadcrumbs.length === 0 ? "text.primary" : "text.secondary",
-//               fontWeight: breadcrumbs.length === 0 ? 600 : 400,
-//               fontSize: "0.875rem",
+//               color: breadcrumbs.length === 0 ? "#1A237E" : "text.secondary",
+//               fontWeight: breadcrumbs.length === 0 ? 700 : 400,
+//               fontSize: { xs: "0.78rem", sm: "0.82rem" },
 //               background: "none",
 //               border: "none",
 //               cursor: "pointer",
 //               p: 0,
+//               "&:hover": { color: "#1A237E" },
 //             }}
 //           >
-//             <HomeIcon sx={{ fontSize: 16 }} />
+//             <HomeIcon sx={{ fontSize: { xs: 14, sm: 15 } }} />
 //             All Courses
 //           </Link>
+
 //           {breadcrumbs.map((crumb, idx) => (
 //             <Link
 //               key={crumb.id}
 //               component="button"
-//               underline="hover"
+//               underline="none"
 //               onClick={() => handleBreadcrumbClick(idx)}
 //               sx={{
-//                 color: idx === breadcrumbs.length - 1 ? "text.primary" : "text.secondary",
-//                 fontWeight: idx === breadcrumbs.length - 1 ? 600 : 400,
-//                 fontSize: "0.875rem",
+//                 display: "flex",
+//                 alignItems: "center",
+//                 gap: 0.5,
+//                 color: idx === breadcrumbs.length - 1 ? "#1A237E" : "text.secondary",
+//                 fontWeight: idx === breadcrumbs.length - 1 ? 700 : 400,
+//                 fontSize: { xs: "0.78rem", sm: "0.82rem" },
 //                 background: "none",
 //                 border: "none",
 //                 cursor: "pointer",
 //                 p: 0,
+//                 maxWidth: { xs: "120px", sm: "220px" }, // Prevents long single titles from busting layout grids
+//                 overflow: "hidden",
+//                 textOverflow: "ellipsis",
+//                 whiteSpace: "nowrap",
+//                 "&:hover": { color: "#1A237E" },
 //               }}
 //             >
+//               {idx < breadcrumbs.length - 1 && (
+//                 <FolderOpenIcon sx={{ fontSize: { xs: 13, sm: 14 } }} />
+//               )}
 //               {crumb.title}
 //             </Link>
 //           ))}
 //         </Breadcrumbs>
 //       </Box>
 
-//       {/* Stats chips */}
-//       {!loading && !error && (
-//         <Box sx={{ display: "flex", gap: 1, mb: 3, flexWrap: "wrap" }}>
-//           <Chip
-//             icon={<FolderOpenIcon sx={{ fontSize: 14 }} />}
-//             label={`${items.filter((i) => i.itemType === "folder").length} Folders`}
-//             size="small"
-//             sx={{ bgcolor: "action.hover", fontSize: "0.75rem" }}
-//           />
-//           <Chip
-//             icon={<ArticleIcon sx={{ fontSize: 14 }} />}
-//             label={`${items.filter((i) => i.itemType === "page").length} Pages`}
-//             size="small"
-//             sx={{ bgcolor: "action.hover", fontSize: "0.75rem" }}
-//           />
+//       {/* ── Stats Chips ── */}
+//       {!loading && !error && items.length > 0 && (
+//         <Box sx={{ display: "flex", gap: 1, mb: { xs: 2, sm: 3 }, flexWrap: "wrap" }}>
+//           {folderCount > 0 && (
+//             <Chip
+//               icon={<FolderOpenIcon sx={{ fontSize: "13px !important", color: "#1A237E !important" }} />}
+//               label={`${folderCount} Folder${folderCount !== 1 ? "s" : ""}`}
+//               size="small"
+//               sx={{
+//                 bgcolor: "#E8EAF6",
+//                 color: "#1A237E",
+//                 fontWeight: 600,
+//                 fontSize: "0.7rem",
+//                 border: "none",
+//               }}
+//             />
+//           )}
+//           {pageCount > 0 && (
+//             <Chip
+//               icon={<ArticleIcon sx={{ fontSize: "13px !important", color: "#2E7D32 !important" }} />}
+//               label={`${pageCount} Page${pageCount !== 1 ? "s" : ""}`}
+//               size="small"
+//               sx={{
+//                 bgcolor: "#E8F5E9",
+//                 color: "#2E7D32",
+//                 fontWeight: 600,
+//                 fontSize: "0.7rem",
+//                 border: "none",
+//               }}
+//             />
+//           )}
 //         </Box>
 //       )}
 
+//       {/* ── Responsive Skeleton Layout Loading ── */}
 //       {loading && (
-//         <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-//           <CircularProgress size={32} />
+//         <Box sx={{ display: "flex", flexWrap: "wrap", gap: { xs: 2, sm: 3 } }}>
+//           {[1, 2, 3].map((i) => (
+//             <Skeleton
+//               key={i}
+//               variant="rectangular"
+//               sx={{ 
+//                 width: CARD_WIDTH, 
+//                 // Matches layout configurations of the dynamic mobile cards
+//                 height: { xs: 290, sm: 240 }, 
+//                 borderRadius: 3 
+//               }}
+//             />
+//           ))}
 //         </Box>
 //       )}
 
+//       {/* ── Error ── */}
 //       {error && (
-//         <Alert severity="error" sx={{ mb: 2 }}>
+//         <Alert
+//           severity="error"
+//           sx={{ mb: 2, borderRadius: 2, fontSize: { xs: "0.8rem", sm: "1rem" } }}
+//           onClose={() => setError("")}
+//         >
 //           {error}
 //         </Alert>
 //       )}
 
+//       {/* ── Empty State ── */}
 //       {!loading && !error && items.length === 0 && (
-//         <Box
-//           sx={{
-//             textAlign: "center",
-//             py: 8,
-//             color: "text.secondary",
-//           }}
-//         >
-//           <FolderOpenIcon sx={{ fontSize: 40, mb: 1, opacity: 0.4 }} />
-//           <Typography variant="body2">No items found in this folder.</Typography>
+//         <Box sx={{ textAlign: "center", py: { xs: 6, sm: 10 }, color: "text.secondary" }}>
+//           <FolderOpenIcon sx={{ fontSize: { xs: 36, sm: 44 }, mb: 1.5, opacity: 0.3 }} />
+//           <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: "0.85rem", sm: "1rem" } }}>
+//             This folder is empty
+//           </Typography>
+//           <Typography variant="caption" sx={{ display: "block", px: 2 }}>
+//             No folders or pages have been added yet.
+//           </Typography>
 //         </Box>
 //       )}
 
+//       {/* ── Adaptive Card Grid Layout ── */}
 //       {!loading && !error && items.length > 0 && (
-//         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, justifyContent: "flex-start" }}>
+//         <Box 
+//           sx={{ 
+//             display: "flex", 
+//             flexWrap: "wrap", 
+//             gap: { xs: 2, sm: 3 }, 
+//             justifyContent: "flex-start" 
+//           }}
+//         >
 //           {items.map((item) => (
-//             <Box
+//             <CourseItemCard
 //               key={item._id}
-//               sx={{
-//                 width: {
-//                   xs: "100%",
-//                   sm: "calc(50% - 8px)",
-//                   md: "calc(33.333% - 11px)",
-//                 },
-//               }}
-//             >
-//               <CourseItemCard
-//                 item={item}
-//                 onClick={() =>
-//                   item.itemType === "folder"
-//                     ? handleFolderClick(item)
-//                     : handlePageClick(item)
-//                 }
-//               />
-//             </Box>
+//               item={item}
+//               enrolledCount={enrolledCounts[item._id] ?? null}
+//               onClick={() =>
+//                 item.itemType === "folder"
+//                   ? handleFolderClick(item)
+//                   : handlePageClick(item)
+//               }
+//             />
 //           ))}
 //         </Box>
 //       )}
@@ -224,7 +320,7 @@
 
 // export default AllCoursesTab;
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -233,23 +329,25 @@ import {
   Link,
   Chip,
   Skeleton,
-} from "@mui/material";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
-import ArticleIcon from "@mui/icons-material/Article";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import HomeIcon from "@mui/icons-material/Home";
-import { courseService } from "../services/api";
-import CoursePageDetail from "./CoursePageDetails";
-import CourseItemCard from "./CourseItemCard";
+} from '@mui/material';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import ArticleIcon from '@mui/icons-material/Article';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import HomeIcon from '@mui/icons-material/Home';
+
+import { courseService } from '../services/api';
+import CoursePageDetail from './CoursePageDetails';
+import CourseItemCard from './CourseItemCard';
 
 interface CourseItem {
   _id: string;
   title: string;
-  itemType: "folder" | "page";
+  itemType: 'folder' | 'page';
   parentId: string | null;
   isActive: boolean;
   order: number;
   content: string;
+  thumbnail?: { url: string; publicId: string };
 }
 
 interface BreadcrumbEntry {
@@ -257,68 +355,52 @@ interface BreadcrumbEntry {
   title: string;
 }
 
-const CARD_WIDTH = {
-  xs: "100%",
-  sm: "calc(50% - 12px)",
-  md: "calc(33.333% - 16px)",
-};
-
 const AllCoursesTab: React.FC = () => {
   const [items, setItems] = useState<CourseItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
-  const [_, setCurrentFolder] = useState<string>("root");
+  const [, setCurrentFolder] = useState<string>('root');
   const [selectedPage, setSelectedPage] = useState<string | null>(null);
   const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number | null>>({});
 
-  // const loadItems = useCallback(async (folderId: string) => {
-  //   setLoading(true);
-  //   setError("");
-  //   try {
-  //     const res = await courseService.getSubItems(folderId);
-  //     setItems(res.data || []);
-  //   } catch {
-  //     setError("Failed to load courses. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
-
   const loadItems = useCallback(async (folderId: string) => {
     setLoading(true);
-    setError("");
+    setError('');
     try {
       const res = await courseService.getSubItems(folderId);
       const courseItems: CourseItem[] = res.data || [];
       setItems(courseItems);
 
-      // Seed all as null (loading state) immediately so cards show skeletons
+      // Initialise counts to null (skeleton state)
       const initial: Record<string, null> = {};
-      courseItems.forEach(i => { initial[i._id] = null; });
+      courseItems.forEach((i) => { initial[i._id] = null; });
       setEnrolledCounts(initial);
 
-      // Fetch all counts in parallel
+      // Fetch all enrolled counts in parallel
       const counts = await Promise.all(
-        courseItems.map(item =>
-          courseService.getEnrolledStudents(item._id)
-            .then(r => ({ id: item._id, count: r.success ? r.data.enrolledCount : 0 }))
+        courseItems.map((item) =>
+          courseService
+            .getEnrolledStudents(item._id)
+            .then((r) => ({ id: item._id, count: r.success ? r.data.enrolledCount : 0 }))
             .catch(() => ({ id: item._id, count: 0 }))
         )
       );
       const countMap: Record<string, number> = {};
       counts.forEach(({ id, count }) => { countMap[id] = count; });
       setEnrolledCounts(countMap);
-
-    } catch {
-      setError("Failed to load courses. Please try again.");
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          'Failed to load courses. Please check your connection and try again.'
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadItems("root");
+    loadItems('root');
   }, [loadItems]);
 
   const handleFolderClick = (item: CourseItem) => {
@@ -336,13 +418,12 @@ const AllCoursesTab: React.FC = () => {
   const handleBreadcrumbClick = (index: number) => {
     if (index === -1) {
       setBreadcrumbs([]);
-      setCurrentFolder("root");
+      setCurrentFolder('root');
       setSelectedPage(null);
-      loadItems("root");
+      loadItems('root');
     } else {
       const target = breadcrumbs[index];
-      const newCrumbs = breadcrumbs.slice(0, index + 1);
-      setBreadcrumbs(newCrumbs);
+      setBreadcrumbs(breadcrumbs.slice(0, index + 1));
       setSelectedPage(null);
       setCurrentFolder(target.id);
       loadItems(target.id);
@@ -354,6 +435,7 @@ const AllCoursesTab: React.FC = () => {
     setSelectedPage(null);
   };
 
+  // ── Page detail view ───────────────────────────────────────────
   if (selectedPage) {
     return (
       <CoursePageDetail
@@ -365,45 +447,59 @@ const AllCoursesTab: React.FC = () => {
     );
   }
 
-  const folderCount = items.filter((i) => i.itemType === "folder").length;
-  const pageCount = items.filter((i) => i.itemType === "page").length;
+  const folderCount = items.filter((i) => i.itemType === 'folder').length;
+  const pageCount = items.filter((i) => i.itemType === 'page').length;
 
   return (
-    <Box sx={{ py: 2 }}>
+    <Box sx={{ py: { xs: 1, sm: 2 } }}>
 
       {/* ── Breadcrumbs ── */}
       <Box
         sx={{
-          mb: 3,
-          p: 1.5,
-          bgcolor: "#f7f8fa",
+          mb: { xs: 2, sm: 3 },
+          px: { xs: 1.2, sm: 1.5 },
+          py: 1,
+          bgcolor: '#f7f8fa',
           borderRadius: 2,
-          border: "1px solid #efefef",
+          border: '1px solid #efefef',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
         <Breadcrumbs
-          separator={<NavigateNextIcon sx={{ fontSize: 16, color: "#bbb" }} />}
-          sx={{ "& .MuiBreadcrumbs-li": { display: "flex", alignItems: "center" } }}
+          maxItems={3}
+          itemsAfterCollapse={2}
+          itemsBeforeCollapse={1}
+          separator={
+            <NavigateNextIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: '#bbb' }} />
+          }
+          sx={{
+            flexWrap: 'nowrap',
+            whiteSpace: 'nowrap',
+            '& .MuiBreadcrumbs-li': { display: 'inline-flex', alignItems: 'center' },
+          }}
         >
           <Link
             component="button"
             underline="none"
             onClick={() => handleBreadcrumbClick(-1)}
             sx={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 0.5,
-              color: breadcrumbs.length === 0 ? "#1A237E" : "text.secondary",
+              color: breadcrumbs.length === 0 ? '#1A237E' : 'text.secondary',
               fontWeight: breadcrumbs.length === 0 ? 700 : 400,
-              fontSize: "0.82rem",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
+              fontSize: { xs: '0.78rem', sm: '0.82rem' },
+              fontFamily: "'DM Sans', sans-serif",
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
               p: 0,
-              "&:hover": { color: "#1A237E" },
+              '&:hover': { color: '#1A237E' },
             }}
           >
-            <HomeIcon sx={{ fontSize: 15 }} />
+            <HomeIcon sx={{ fontSize: { xs: 14, sm: 15 } }} />
             All Courses
           </Link>
 
@@ -414,21 +510,26 @@ const AllCoursesTab: React.FC = () => {
               underline="none"
               onClick={() => handleBreadcrumbClick(idx)}
               sx={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
                 gap: 0.5,
-                color: idx === breadcrumbs.length - 1 ? "#1A237E" : "text.secondary",
+                color: idx === breadcrumbs.length - 1 ? '#1A237E' : 'text.secondary',
                 fontWeight: idx === breadcrumbs.length - 1 ? 700 : 400,
-                fontSize: "0.82rem",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
+                fontSize: { xs: '0.78rem', sm: '0.82rem' },
+                fontFamily: "'DM Sans', sans-serif",
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
                 p: 0,
-                "&:hover": { color: "#1A237E" },
+                maxWidth: { xs: '120px', sm: '220px' },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                '&:hover': { color: '#1A237E' },
               }}
             >
               {idx < breadcrumbs.length - 1 && (
-                <FolderOpenIcon sx={{ fontSize: 14 }} />
+                <FolderOpenIcon sx={{ fontSize: { xs: 13, sm: 14 } }} />
               )}
               {crumb.title}
             </Link>
@@ -436,35 +537,31 @@ const AllCoursesTab: React.FC = () => {
         </Breadcrumbs>
       </Box>
 
-      {/* ── Stats chips (only when loaded) ── */}
+      {/* ── Stats chips ── */}
       {!loading && !error && items.length > 0 && (
-        <Box sx={{ display: "flex", gap: 1, mb: 3, flexWrap: "wrap" }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: { xs: 2, sm: 3 }, flexWrap: 'wrap' }}>
           {folderCount > 0 && (
             <Chip
-              icon={<FolderOpenIcon sx={{ fontSize: "14px !important", color: "#1A237E !important" }} />}
-              label={`${folderCount} Folder${folderCount !== 1 ? "s" : ""}`}
+              icon={
+                <FolderOpenIcon
+                  sx={{ fontSize: '13px !important', color: '#1A237E !important' }}
+                />
+              }
+              label={`${folderCount} Folder${folderCount !== 1 ? 's' : ''}`}
               size="small"
-              sx={{
-                bgcolor: "#E8EAF6",
-                color: "#1A237E",
-                fontWeight: 600,
-                fontSize: "0.72rem",
-                border: "none",
-              }}
+              sx={{ bgcolor: '#E8EAF6', color: '#1A237E', fontWeight: 600, fontSize: '0.7rem' }}
             />
           )}
           {pageCount > 0 && (
             <Chip
-              icon={<ArticleIcon sx={{ fontSize: "14px !important", color: "#2E7D32 !important" }} />}
-              label={`${pageCount} Page${pageCount !== 1 ? "s" : ""}`}
+              icon={
+                <ArticleIcon
+                  sx={{ fontSize: '13px !important', color: '#2E7D32 !important' }}
+                />
+              }
+              label={`${pageCount} Page${pageCount !== 1 ? 's' : ''}`}
               size="small"
-              sx={{
-                bgcolor: "#E8F5E9",
-                color: "#2E7D32",
-                fontWeight: 600,
-                fontSize: "0.72rem",
-                border: "none",
-              }}
+              sx={{ bgcolor: '#E8F5E9', color: '#2E7D32', fontWeight: 600, fontSize: '0.7rem' }}
             />
           )}
         </Box>
@@ -472,12 +569,16 @@ const AllCoursesTab: React.FC = () => {
 
       {/* ── Skeleton loading ── */}
       {loading && (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 2, sm: 3 } }}>
           {[1, 2, 3].map((i) => (
             <Skeleton
               key={i}
               variant="rectangular"
-              sx={{ width: CARD_WIDTH, height: 110, borderRadius: 3 }}
+              sx={{
+                width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' },
+                height: { xs: 290, sm: 240 },
+                borderRadius: '14px',
+              }}
             />
           ))}
         </Box>
@@ -487,8 +588,8 @@ const AllCoursesTab: React.FC = () => {
       {error && (
         <Alert
           severity="error"
-          sx={{ mb: 2, borderRadius: 2 }}
-          onClose={() => setError("")}
+          sx={{ mb: 2, borderRadius: 2, fontSize: { xs: '0.8rem', sm: '1rem' } }}
+          onClose={() => setError('')}
         >
           {error}
         </Alert>
@@ -496,12 +597,14 @@ const AllCoursesTab: React.FC = () => {
 
       {/* ── Empty state ── */}
       {!loading && !error && items.length === 0 && (
-        <Box sx={{ textAlign: "center", py: 10, color: "text.secondary" }}>
-          <FolderOpenIcon sx={{ fontSize: 44, mb: 1.5, opacity: 0.3 }} />
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <Box sx={{ textAlign: 'center', py: { xs: 6, sm: 10 }, color: 'text.secondary' }}>
+          <FolderOpenIcon sx={{ fontSize: { xs: 36, sm: 44 }, mb: 1.5, opacity: 0.3 }} />
+          <Typography
+            sx={{ fontWeight: 600, fontSize: { xs: '0.85rem', sm: '1rem' } }}
+          >
             This folder is empty
           </Typography>
-          <Typography variant="caption">
+          <Typography variant="caption" sx={{ display: 'block', px: 2 }}>
             No folders or pages have been added yet.
           </Typography>
         </Box>
@@ -509,14 +612,21 @@ const AllCoursesTab: React.FC = () => {
 
       {/* ── Card grid ── */}
       {!loading && !error && items.length > 0 && (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3, justifyContent: "flex-start" }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: { xs: 2, sm: 3 },
+            justifyContent: 'flex-start',
+          }}
+        >
           {items.map((item) => (
             <CourseItemCard
               key={item._id}
               item={item}
               enrolledCount={enrolledCounts[item._id] ?? null}
               onClick={() =>
-                item.itemType === "folder"
+                item.itemType === 'folder'
                   ? handleFolderClick(item)
                   : handlePageClick(item)
               }

@@ -22,5 +22,15 @@ export const courseService = {
   getEnrolledStudents: async (id: string) => {
     const response = await apiClient.get(`/courses-user/enrolled-count/${id}`);
     return response.data;
-  }
+  },
+  getPdfBlobUrl: async (fileId: string): Promise<string> => {
+    const response = await apiClient.get(
+      `/courses-user/stream/pdf/${fileId}`,
+      {
+        responseType: 'blob',
+      }
+    );
+
+    return URL.createObjectURL(response.data);
+  },
 };
