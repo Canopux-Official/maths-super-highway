@@ -1046,8 +1046,8 @@ import {
 } from '@mui/icons-material';
 import React, { useState, useCallback, useRef } from 'react';
 import { TextStyle } from '@tiptap/extension-text-style';
-import { ChartExtension, InsertChartButton } from './other/ChartExtension';
-import { courseService } from '../services/api';
+import { ChartExtension, InsertChartButton } from './ChartExtension';
+import { courseService } from '../../services/api';
 
 // ─── FontSize extension ──────────────────────────────────────────────────────
 const FontSize = Extension.create({
