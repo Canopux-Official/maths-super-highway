@@ -148,7 +148,7 @@ const Hero: React.FC = () => {
                         {/* ── LEFT: Hero content ── */}
                         <Box sx={{ textAlign: 'center', mx: 'auto', maxWidth: 700 }}>
                             {/* Under construction banner */}
-                            <Box
+                            {/* <Box
                                 sx={{
                                     mb: 3, display: "inline-flex", alignItems: "center", gap: 1.25,
                                     bgcolor: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.4)",
@@ -164,7 +164,7 @@ const Hero: React.FC = () => {
                                 <Typography sx={{ color: "#FCA5A5", fontWeight: 600, fontSize: { xs: "0.68rem", md: "0.75rem" }, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                                     Website under construction — demo content
                                 </Typography>
-                            </Box>
+                            </Box> */}
 
                             {/* Live badge */}
                             <Box

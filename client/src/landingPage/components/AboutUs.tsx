@@ -17,14 +17,14 @@ const values = [
     {
         icon: <VerifiedIcon fontSize="small" />,
         title: "Proven Pedagogy",
-        description: "Our teaching methodology is built on years of research and results. We combine conceptual clarity with rigorous practice.",
+        description: "Our teaching methodology addresses all the learning styles: auditory, visual, kinesthetic",
         color: "#1D4ED8",
         bg: "rgba(29,78,216,0.07)",
     },
     {
         icon: <TrendingUpIcon fontSize="small" />,
         title: "Result-Oriented",
-        description: "Every curriculum decision is driven by outcomes. Our students consistently outperform at boards, JEE, and Olympiads.",
+        description: "Every curriculum decision is driven by outcomes. Our students consistently outperform at their assessments.",
         color: "#06B6D4",
         bg: "rgba(6,182,212,0.08)",
     },
@@ -150,7 +150,7 @@ const AboutUs: React.FC = () => {
                                 fontFamily: "'Inter', sans-serif",
                             }}
                         >
-                            Math SuperHighway was founded with a singular belief: every student has the potential to master mathematics when given the right environment, method, and mentorship.
+                            Mathematics is more than a subject—it is a way of thinking. My mission is to help students develop the confidence, clarity, and problem-solving skills they need to excel in school and beyond.
                         </Typography>
                         <Typography
                             variant="body1"
@@ -161,11 +161,14 @@ const AboutUs: React.FC = () => {
                                 fontFamily: "'Inter', sans-serif",
                             }}
                         >
-                            Our faculty brings together alumni from IITs, NITs, and leading universities — passionate educators who blend deep expertise with empathetic teaching.
+                            I am an IIT Bombay graduate, an IB-trained Mathematics educator, a Cambridge Assessment Specialist, and have completed the Cambridge Online Extension Training for A-Level Mathematics (9709). Over the years, I have taught students from leading international schools across India, including Woodstock School, Mussoorie, Pathways World School, Aravali, and JBCN International School, Mumbai.
+                            I specialize in IBDP Mathematics (AA & AI), Cambridge IGCSE and A-Level Mathematics, AP Calculus, and AP Statistics. My teaching focuses on building deep conceptual understanding, developing effective problem-solving strategies, and preparing students to perform with confidence in high-stakes examinations.
+                            Whether you're aiming for top grades, preparing for university admissions, or looking to strengthen your mathematical foundation, every lesson is designed to make learning engaging, structured, and results-oriented.
+                            Master Mathematics. Think Clearly. Solve Confidently. Open Doors to Opportunity.
                         </Typography>
 
                         {/* Timeline */}
-                        <Typography
+                        {/* <Typography
                             variant="subtitle1"
                             sx={{
                                 fontWeight: 700,
@@ -177,12 +180,12 @@ const AboutUs: React.FC = () => {
                             }}
                         >
                             Our Journey
-                        </Typography>
+                        </Typography> */}
 
-                        <Stack spacing={0}>
+                        {/* <Stack spacing={0}>
                             {milestones.map((m, i) => (
                                 <Box key={m.year} sx={{ display: "flex", gap: 2.5 }}>
-                                    {/* Timeline track */}
+
                                     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                                         <Box
                                             sx={{
@@ -242,7 +245,7 @@ const AboutUs: React.FC = () => {
                                     </Box>
                                 </Box>
                             ))}
-                        </Stack>
+                        </Stack> */}
                     </Box>
 
                     {/* ── Right Column: Mission + Values ── */}
