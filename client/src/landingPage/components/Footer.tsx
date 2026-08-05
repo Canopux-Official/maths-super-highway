@@ -243,11 +243,11 @@ const Footer: React.FC = () => {
                             {[
                                 {
                                     icon: <LocationOnIcon sx={{ fontSize: 16, color: "#06B6D4", mt: 0.2 }} />,
-                                    content: <>Plot No. 42, Saheed Nagar,<br />Bhubaneswar, Odisha — 751007</>,
+                                    content: <>Flat 404, 4th Floor, Bldg 30A, Manish Lotus CHS, Manish Nagar, JP Road,<br />Andheri West, Mumbai, Maharashtra 400058</>,
                                 },
                                 {
                                     icon: <PhoneIcon sx={{ fontSize: 16, color: "#06B6D4" }} />,
-                                    content: "+91 98765 43210",
+                                    content: "+91 98702 15815",
                                 },
                                 {
                                     icon: <EmailIcon sx={{ fontSize: 16, color: "#06B6D4" }} />,
