@@ -27,13 +27,6 @@ const quickLinks = [
     { label: "About Us", href: "#about" },
 ];
 
-const programs = [
-    "Foundation Mathematics",
-    "Secondary Mathematics",
-    "JEE / Competitive Maths",
-    "Olympiad Preparation",
-];
-
 const socials = [
     { icon: <YouTubeIcon sx={{ fontSize: 18 }} />, label: "YouTube", href: "#", color: "#FF0000" },
     { icon: <FacebookIcon sx={{ fontSize: 18 }} />, label: "Facebook", href: "#", color: "#1877F2" },
@@ -108,7 +101,7 @@ const Footer: React.FC = () => {
                         gridTemplateColumns: {
                             xs: "1fr",
                             sm: "repeat(2, 1fr)",
-                            md: "2fr 1fr 1fr 1.6fr",
+                            md: "2fr 1fr 1.6fr",
                         },
                         gap: { xs: 5, md: 6 },
                     }}
@@ -227,39 +220,6 @@ const Footer: React.FC = () => {
                                 >
                                     {l.label}
                                 </Link>
-                            ))}
-                        </Stack>
-                    </Box>
-
-                    {/* Programs */}
-                    <Box>
-                        <Typography
-                            sx={{
-                                color: "#fff",
-                                fontWeight: 700,
-                                mb: 2.5,
-                                letterSpacing: "0.08em",
-                                textTransform: "uppercase",
-                                fontSize: "0.72rem",
-                                fontFamily: "'Inter', sans-serif",
-                            }}
-                        >
-                            Programs
-                        </Typography>
-                        <Stack spacing={1.25}>
-                            {programs.map((p) => (
-                                <Typography
-                                    key={p}
-                                    variant="body2"
-                                    sx={{
-                                        color: "rgba(255,255,255,0.5)",
-                                        fontSize: "0.875rem",
-                                        fontFamily: "'Inter', sans-serif",
-                                        lineHeight: 1.4,
-                                    }}
-                                >
-                                    {p}
-                                </Typography>
                             ))}
                         </Stack>
                     </Box>

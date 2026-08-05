@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Box,
     Container,
@@ -12,6 +12,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 const values = [
     {
@@ -82,6 +83,8 @@ const SectionLabel: React.FC<{ text: string }> = ({ text }) => (
 );
 
 const AboutUs: React.FC = () => {
+    const [expanded, setExpanded] = useState(false);
+
     return (
         <Box
             id="about"
@@ -152,20 +155,67 @@ const AboutUs: React.FC = () => {
                         >
                             Mathematics is more than a subject—it is a way of thinking. My mission is to help students develop the confidence, clarity, and problem-solving skills they need to excel in school and beyond.
                         </Typography>
-                        <Typography
-                            variant="body1"
-                            sx={{
-                                color: "#475569",
-                                lineHeight: 1.9,
-                                mb: 5,
-                                fontFamily: "'Inter', sans-serif",
-                            }}
-                        >
-                            I am an IIT Bombay graduate, an IB-trained Mathematics educator, a Cambridge Assessment Specialist, and have completed the Cambridge Online Extension Training for A-Level Mathematics (9709). Over the years, I have taught students from leading international schools across India, including Woodstock School, Mussoorie, Pathways World School, Aravali, and JBCN International School, Mumbai.
-                            I specialize in IBDP Mathematics (AA & AI), Cambridge IGCSE and A-Level Mathematics, AP Calculus, and AP Statistics. My teaching focuses on building deep conceptual understanding, developing effective problem-solving strategies, and preparing students to perform with confidence in high-stakes examinations.
-                            Whether you're aiming for top grades, preparing for university admissions, or looking to strengthen your mathematical foundation, every lesson is designed to make learning engaging, structured, and results-oriented.
-                            Master Mathematics. Think Clearly. Solve Confidently. Open Doors to Opportunity.
-                        </Typography>
+                        <Box sx={{ mb: 5 }}>
+                            <Box
+                                sx={{
+                                    display: "-webkit-box",
+                                    overflow: "hidden",
+                                    WebkitBoxOrient: "vertical",
+                                    WebkitLineClamp: expanded ? "unset" : 3,
+                                    transition: "all 0.3s ease",
+                                }}
+                            >
+                                <Typography
+                                    component="span"
+                                    variant="body1"
+                                    sx={{
+                                        color: "#475569",
+                                        lineHeight: 1.9,
+                                        fontFamily: "'Inter', sans-serif",
+                                    }}
+                                >
+                                    I am an IIT Bombay graduate, an IB-trained Mathematics educator, a Cambridge Assessment Specialist, and have completed the Cambridge Online Extension Training for A-Level Mathematics (9709). Over the years, I have taught students from leading international schools across India, including Woodstock School, Mussoorie, Pathways World School, Aravali, and JBCN International School, Mumbai.{" "}
+                                    I specialize in IBDP Mathematics (AA & AI), Cambridge IGCSE and A-Level Mathematics, AP Calculus, and AP Statistics. My teaching focuses on building deep conceptual understanding, developing effective problem-solving strategies, and preparing students to perform with confidence in high-stakes examinations.{" "}
+                                    Whether you're aiming for top grades, preparing for university admissions, or looking to strengthen your mathematical foundation, every lesson is designed to make learning engaging, structured, and results-oriented.{" "}
+                                    Master Mathematics. Think Clearly. Solve Confidently. Open Doors to Opportunity.
+                                </Typography>
+                            </Box>
+
+                            <Box
+                                onClick={() => setExpanded((prev) => !prev)}
+                                sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    mt: 1.5,
+                                    cursor: "pointer",
+                                    userSelect: "none",
+                                    "&:hover .read-more-label": {
+                                        color: "#1D4ED8",
+                                    },
+                                }}
+                            >
+                                <Typography
+                                    className="read-more-label"
+                                    sx={{
+                                        color: "#1D4ED8",
+                                        fontWeight: 700,
+                                        fontSize: "0.85rem",
+                                        fontFamily: "'Inter', sans-serif",
+                                    }}
+                                >
+                                    {expanded ? "Read Less" : "Read More"}
+                                </Typography>
+                                <KeyboardArrowDownIcon
+                                    sx={{
+                                        fontSize: 18,
+                                        color: "#1D4ED8",
+                                        transition: "transform 0.25s ease",
+                                        transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                                    }}
+                                />
+                            </Box>
+                        </Box>
 
                         {/* Timeline */}
                         {/* <Typography
