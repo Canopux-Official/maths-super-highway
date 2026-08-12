@@ -391,7 +391,7 @@ const Thumbnail: React.FC<ThumbProps> = ({ cover, index }) => {
 
 const Courses: React.FC = () => {
     const [path, setPath] = useState<DemoNode[]>([]);
-    const skipScrollOnMount = useRef(true);
+    // const skipScrollOnMount = useRef(true);
 
     const currentLevel: DemoNode[] = useMemo(() => {
         if (path.length === 0) return DEMO_DATA;
@@ -399,23 +399,23 @@ const Courses: React.FC = () => {
     }, [path]);
 
     // Keep Academic Catalogue in view when drilling into / out of programme levels.
-    useEffect(() => {
-        if (skipScrollOnMount.current) {
-            skipScrollOnMount.current = false;
-            return;
-        }
+    // useEffect(() => {
+    //     if (skipScrollOnMount.current) {
+    //         skipScrollOnMount.current = false;
+    //         return;
+    //     }
 
-        const section = document.getElementById("courses");
-        if (!section) return;
+    //     const section = document.getElementById("courses");
+    //     if (!section) return;
 
-        const headerOffset = 88; // sticky AppBar clearance
-        const top = section.getBoundingClientRect().top + window.scrollY - headerOffset;
+    //     const headerOffset = 88; // sticky AppBar clearance
+    //     const top = section.getBoundingClientRect().top + window.scrollY - headerOffset;
 
-        window.scrollTo({
-            top: Math.max(0, top),
-            behavior: "smooth",
-        });
-    }, [path]);
+    //     window.scrollTo({
+    //         top: Math.max(0, top),
+    //         behavior: "smooth",
+    //     });
+    // }, [path]);
 
     const handleExplore = (node: DemoNode) => {
         if (node.children && node.children.length > 0) {
