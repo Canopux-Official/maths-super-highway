@@ -1,0 +1,65 @@
+IBDP Mathematics [IBDP]
+  IBDP Analysis and Approaches HL & SL [HL, SL, AA]
+    CalcQuest [15 h] :: 15-Hour programme to achieve the “LIMITS” of success. Includes Limits, continuity, First principles, Tangents and normals, Derivatives of exponential, logarithmic and trigonometric functions, Chain rule, product rule, quotient rule, Second derivative, Optimisation, Points of inflection, Related rates of change, L’Hopital’s rule, Implicit differentiation
+    AreaQuest [20 h] :: 20-hour programme “INTEGRAL” for your success. Includes Integration as anti-differentiation, Integration using different methods (partial fractions, substitution, trigonometric substitution, reverse chain rule, integration by parts), Area under a curve, Area between curves, Volume of revolution, Definite integration, McLaurin series, Differential equations, Kinematics
+    x-Factor [15 h] :: 15-hour programme to solve complex problems. Includes Estimation, Binomial expansion, Complex numbers (complex roots of polynomials and integers, Argand diagram, DeMoivre’s theorem), Mathematical induction, deductive proof, Counter-example, Contradiction, Permutations and combinations, AP, GP, sum to infinity, Sigma notation, Compound interest and depreciation, Augmented matrix (echelon form, row reduction, unique/infinite/no solution)
+    f(x) Unlocked [10 h] :: 10-hour programme to make you a mathematical relationship expert. Includes Graphs of functions, Transformation of graphs, Composite functions, inverse functions and their graphs, Linear functions, Quadratic functions, Exponential and logarithmic functions, Modulus function, Rational functions, Equations/inequalities involving modulus
+    GeoVibe [10 h] :: 10-hour programme for spatial reasoning. Includes 3D geometry, SOH-CAH-TOA, Sine rule, cosine rule, Ambiguous case, Trigonometric functions, Compound angles and double angles, Vectors (dot product, cross product, lines, planes and intersections)
+    DataSpeaks [15 h] :: 15-hour programme to turn data into decisions. Includes Data types, collection and description, Mean, median, mode, standard deviation, Data representation (histogram, cumulative frequency table, box-and-whiskers plot, 5-number summary), Scatter plot, correlation and regression, Simple probability, joint probability and conditional probability, Decision tree, Venn diagram and table of outcomes, Normal distribution, binomial distribution and their E(X) and Var(X), Z scores, Bayes theorem, Discrete random variable, Linear transformation of a discrete random variable
+    Math 360 [120 h] :: Everything IBDP Mathematics AA HL. One COMPLETE course covering ALL topics and IA.
+  IBDP Applications and Interpretation HL & SL [HL, SL, AI]
+    DataSpeaks [25 h] :: 25-hr programme to turn data into decisions. Includes Types of data, data collection and representation, Calculation of mean, median, quartiles, IQR, percentiles, mode and standard deviation, Scatter plot, correlation and regression, Probability terminology and calculations, Probability distributions and calculation, Discrete random variable, Inferential statistics
+    CalcQuest [10 h] :: 10-hour programme to MAXIMIZE your success. Includes Finding derivatives of functions, Derivative as gradient, Tangents and normals, AreaQuest integration calculus programme
+    AreaQuest [15 h] :: 15-hour integral calculus programme. Includes Trapezoidal rule, Integration by inspection, substitution, reverse chain rule, Definite integration, Area under a curve, Area between curves, Volume of revolution, Slope field, Euler’s method, Numerical method for coupled differential equations, Solving differential equations by separation of variables, Phase portrait, Kinematics
+    x-Factor [15 h] :: 15-hour programme for the SIGMA person in you. Includes Estimation, AP, GP, sum to infinity, Sigma notation, Financial mathematics (compound interest, depreciation, amortization, annuity, effect of inflation), Matrices (matrix algebra, eigen vectors, diagonalisation, Markov Chain), Complex number (Cartesian, polar, exponential form, geometry, Argand diagram, De Moivre’s theorem, addition of sinusoidal functions)
+    f(x) Unlocked [15 h] :: 15-hour programme including Functions (domain, range, restrictions, vertical/horizontal line test, inverse functions), Graphs of functions and features, Transformation of graphs, Modelling with linear, quadratic, cubic, direct/inverse variation, exponential, logarithmic, trigonometric, logistic, and piecewise functions
+    GeoVibe [10 h] :: 10-hour programme including 3D geometry, SOH-CAH-TOA, Sine rule, cosine rule, bearings, Vectors, Graph theory (trails, circuits, cycles, Eulerian, Hamiltonian, MST algorithms, Chinese postman, Travelling salesman)
+    Math 360 [120 h] :: Everything IBDP Mathematics AI HL. One COMPLETE course covering ALL topics and IA.
+    Digital fluency workshop [5 h] :: 5-hour programme to make you tech-savvy. Includes Problem solving with TiNSpire/Casio fx CG 50, GeoGebra, Wolfram-Alpha, Online triangle calculators
+  IBDP IA/EE Help [IBDP]
+    IA/EE guidance :: Comprehensive IA and EE guidance and support
+    GeoGebra :: Online tool support
+    Wolfram-Alpha :: Computational knowledge engine support
+    Online triangle calculators :: Tool support for triangle calculations
+MYP Mathematics [MYP]
+  MYP 4/5 Extended Mathematics for e-Assessment [MYP4, MYP5, Extended]
+    Number and Algebra [15 h] :: Number systems, standard form, laws of exponents/logarithms, surds, algebraic manipulation, inequalities, linear programming, direct/inverse variation, equations, sequences and series
+    Functions [15 h] :: Domain, range, graphs of functions and features, properties of linear, quadratic, cubic, exponential, trigonometric, logarithmic and rational functions, transformations, graph theory
+    Geometry and trigonometry [15 h] :: Coordinate geometry, transformations on a plane, volume and surface area, Pythagoras theorem, t-ratios and identities, unit circle, radians, equation of a circle, circle theorems, vectors
+    Statistics and Probability [15 h] :: Types of data, sampling methods, representation of data, scatter plot, correlation, regression, mean, median, mode, standard deviation, variance, probability calculations, factorials, permutations and combinations, covariance
+CIE AS and A-Level Mathematics [CIE, A-Level]
+  CIE AS and A-Level Further Mathematics 9231 [9231, Further Math]
+    Further Pure Mathematics Paper 1 :: Roots of polynomials, function and graphs, summation of series, matrices and eigen vectors, polar coordinates, vectors, mathematical induction
+    Further Pure Mathematics Paper 2 :: Hyperbolic function, matrices, differentiation, integration, complex numbers, differential equations
+    Further Mechanics Paper 3 :: Projectile motion, equilibrium of rigid bodies, circular motion, Hooke’s law, linear motion under a variable force, momentum
+    Further Probability and Statistics :: Continuous random variable, inference using normal and t distribution, chi-square tests, non-parametric tests, probability generating function
+    Abundant resources :: Past papers and continuous feedback
+    Bootcamp [30 h] :: Targeted intensive review
+    Targeted exam practice [40 h] :: Exam-focused practice questions
+  CIE AS and A-Level Mathematics 9709 [9709, Math]
+    Pure Mathematics Paper 1 :: Quadratics, functions, coordinate geometry, circular measure, trigonometry, series, differentiation, integration
+    Pure Mathematics Paper 2 :: Algebra, logarithmic and exponential functions, trigonometry, differentiation, integration, numerical solution of equations
+    Pure Mathematics Paper 3 :: Algebra, logarithmic and exponential functions, trigonometry, differentiation, integration, numerical solution of equations, vectors, differential equations, complex numbers
+    Mechanics Paper 4 :: Forces and equilibrium, kinematics of motion in a straight line, momentum, Newton’s laws of motion, energy, work and power
+    Probability and Statistics Paper 5 :: Representation of data, permutations and combinations, probability, discrete random variable, normal distribution
+    Probability and Statistics Paper 6 :: Poisson distribution, linear combination of random variables, continuous random variable, sampling and estimation, hypothesis tests
+    Abundant resources :: Past papers and continuous feedback
+    Bootcamp [30 h] :: Targeted intensive review
+    Targeted exam practice [40 h] :: Exam-focused practice questions
+IGCSE Mathematics [IGCSE]
+  IGCSE Additional Mathematics 0606 [0606, Add Math]
+    Comprehensive course [80 h] :: Functions, quadratic functions, factors of polynomials, equations, inequalities and graphs, simultaneous equations, logarithmic and exponential functions, straight line graphs, coordinate geometry of the circle, circular measure, trigonometry, permutations and combinations, series, vectors, calculus
+    Abundant resources :: Past papers and continuous feedback
+    Bootcamp [30 h] :: Targeted intensive review
+    Targeted exam practice [40 h] :: Exam-focused practice questions
+  IGCSE Mathematics 0580 [0580, Math]
+    Comprehensive course [100 h] :: Core and Extended mathematics curriculum coverage
+    Bootcamp [30 h] :: Targeted intensive review
+    Targeted exam practice [40 h] :: Exam-focused practice questions
+AP Mathematics [AP]
+  AP Calculus AB/BC [Calculus, AB, BC]
+    Comprehensive course [100 h] :: Unit 1 Limits and continuity, Unit 2 Differentiation, Unit 3 Composite, implicit and inverse functions, Unit 4 Derivatives in context, Unit 5 Analytical application of differentiation, Unit 6 Integration, Unit 7 Differential equations, Unit 8 Applications of integration, Unit 9 Parametric equations (BC), Unit 10 Infinite sequences and series (BC)
+    Accelerated Course [50 h] :: Fast-paced AP Calculus coverage
+    Targeted exam practice [30 h] :: Exam-focused practice questions
+  AP Statistics [Statistics]
+    Comprehensive course [100 h] :: Unit 1 One-Variable data, Unit 2 Two-Variable data, Unit 3 Data collection, Unit 4 Probability, Unit 5 Sampling distribution, Unit 6 Inference for categorical data proportions, Unit 7 Inference for quantitative data, Unit 8 Chi-Square Test, Unit 9 Inference for quantitative data slope

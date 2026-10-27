@@ -1,36 +1,29 @@
 import { Router } from 'express';
-import { validateCreateCourse, validateMongoId, validateUpdateCourse } from '../validation/course.validation';
-import { createCourse, deleteCourse, getAdminPageDetails, getAdminSubItems, updateCourse, getEnrolledStudentsExport, uploadCourseImage, deleteCourseImage, streamDrivePdf } from '../controllers/courses.admin.controller';
+import {
+    handleValidation, validateCreateCourse, validateMongoId, validateMoveCourse, validateReorder, validateUpdateCourse,
+} from '../validation/course.validation';
+import {
+    createCourse, deleteCourse, getAdminTree, getDeletePreview, getEnrolledStudentsExport,
+    getSelectionCounts, moveCourse, reorderCourse, updateCourse,
+} from '../controllers/courses.admin.controller';
 import { verifyAuth, verifyRole } from '../middlewares/auth.middleware';
 import { getEnrolledCount } from '../controllers/courses.user.controller';
-import upload from '../middlewares/upload.middleware';
 
 const router = Router();
+const admin = [verifyAuth, verifyRole(['admin'])];
 
-// GET /api/courses          → full nested tree
-router.get('/:id',verifyAuth,verifyRole((["admin"])), getAdminSubItems);
+router.get('/tree', ...admin, getAdminTree);
+router.get('/stats', ...admin, getSelectionCounts);
 
-// GET /api/courses/:id      → single course with immediate children
-router.get('/getpage/:id', verifyAuth,verifyRole((["admin"])),validateMongoId, getAdminPageDetails);
+router.post('/create', ...admin, validateCreateCourse, handleValidation, createCourse);
+router.patch('/update/:id', ...admin, validateUpdateCourse, handleValidation, updateCourse);
+router.patch('/move/:id', ...admin, validateMoveCourse, handleValidation, moveCourse);
+router.patch('/reorder/:id', ...admin, validateReorder, handleValidation, reorderCourse);
 
-// POST /api/courses         → create
-router.post('/create',verifyAuth,verifyRole(["admin"]), validateCreateCourse, createCourse);
+router.get('/delete-preview/:id', ...admin, validateMongoId, handleValidation, getDeletePreview);
+router.delete('/delete/:id', ...admin, validateMongoId, handleValidation, deleteCourse);
 
-// PATCH /api/courses/:id    → update / move
-router.patch('/update/:id',verifyAuth,verifyRole(["admin"]), validateUpdateCourse, updateCourse);
-
-// DELETE /api/courses/:id   → hard delete course + all descendants
-router.delete('/delete/:id',verifyAuth,verifyRole(["admin"]), validateMongoId, deleteCourse);
-
-router.get('/enrolled-count/:id',verifyAuth,verifyRole(["admin"]),validateMongoId,getEnrolledCount);
-router.get('/enrolled-students/:id',verifyAuth,verifyRole(["admin"]),validateMongoId,getEnrolledStudentsExport);
-
-// use to upload images
-router.post('/upload-image',verifyAuth,verifyRole(["admin"]),upload.single('image'), uploadCourseImage);
-
-// use to delete upload images
-router.delete('/image/:publicId',verifyAuth,verifyRole(["admin"]), deleteCourseImage);
-
-router.get('/stream/pdf/:fileId',verifyAuth,verifyRole(["admin"]),streamDrivePdf );
+router.get('/enrolled-count/:id', ...admin, validateMongoId, handleValidation, getEnrolledCount);
+router.get('/enrolled-students/:id', ...admin, validateMongoId, handleValidation, getEnrolledStudentsExport);
 
 export default router;

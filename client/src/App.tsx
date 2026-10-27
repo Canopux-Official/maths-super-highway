@@ -39,84 +39,84 @@ function App() {
   if (import.meta.env.VITE_ENVIRONMENT == 'development') {
     return (
       <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={
-              <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <Box>
-                  <Header />
-                  <Hero />
-                  <LandingCourses />
-                  <Testimonials />
-                  <AboutUs />
-                  <Footer />
-                </Box>
-              </ThemeProvider>
-            } />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <Box>
+                <Header />
+                <Hero />
+                <LandingCourses />
+                <Testimonials />
+                <AboutUs />
+                <Footer />
+              </Box>
+            </ThemeProvider>
+          } />
 
-            <Route path="/login" element={
-              <ThemeProvider theme={mathTheme}>
-                <CssBaseline />
-                <LoginPage />
-              </ThemeProvider>
-            } />
+          <Route path="/login" element={
+            <ThemeProvider theme={mathTheme}>
+              <CssBaseline />
+              <LoginPage />
+            </ThemeProvider>
+          } />
 
-            <Route path="/signup" element={
-              <ThemeProvider theme={mathTheme}>
-                <CssBaseline />
-                <SignupPage />
-              </ThemeProvider>
-            } />
+          <Route path="/signup" element={
+            <ThemeProvider theme={mathTheme}>
+              <CssBaseline />
+              <SignupPage />
+            </ThemeProvider>
+          } />
 
-            {/* Admin Routes */}
-            <Route path="/admin/*" element={
-              <ThemeProvider theme={mathTheme}>
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminSidebar>
-                    <Routes>
-                      <Route path="headlines" element={<HeadlineManagement />} />
-                      <Route path="courses" element={<Courses />} />
-                      <Route path="users" element={<UserManagement />} />
-                      <Route path="users/:id" element={<UserDetails />} />
-                      <Route path="target-exams" element={<TargetExamManagement />} />
-                      <Route path="results" element={<ResultsManagement />} />
-                      <Route path="/" element={<AdminDashboard />} />
-                      <Route path="profile" element={<ProfilePage />} />
-                    </Routes>
-                  </AdminSidebar>
-                </ProtectedRoute>
-              </ThemeProvider>
-            } />
+          {/* Admin Routes */}
+          <Route path="/admin/*" element={
+            <ThemeProvider theme={mathTheme}>
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSidebar>
+                  <Routes>
+                    <Route path="headlines" element={<HeadlineManagement />} />
+                    <Route path="courses" element={<Courses />} />
+                    <Route path="users" element={<UserManagement />} />
+                    <Route path="users/:id" element={<UserDetails />} />
+                    <Route path="target-exams" element={<TargetExamManagement />} />
+                    <Route path="results" element={<ResultsManagement />} />
+                    <Route path="/" element={<AdminDashboard />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                  </Routes>
+                </AdminSidebar>
+              </ProtectedRoute>
+            </ThemeProvider>
+          } />
 
-            {/* Student Routes */}
-            <Route path="/student/*" element={
-              <ThemeProvider theme={mathTheme}>
-                <ProtectedRoute allowedRoles={['student']}>
-                  <StudentSidebar>
-                    <Routes>
-                      <Route path="enrolled-courses" element={<EnrolledCoursesTab />} />
-                      <Route path="courses" element={<AllCoursesTab />} />
-                      <Route path="profile" element={<ProfilePage />} />
-                      <Route path="/" element={<UserDashboard userId={user?.userId || ''} />} />
-                    </Routes>
-                  </StudentSidebar>
-                </ProtectedRoute>
-              </ThemeProvider>
-            } />
+          {/* Student Routes */}
+          <Route path="/student/*" element={
+            <ThemeProvider theme={mathTheme}>
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentSidebar>
+                  <Routes>
+                    <Route path="enrolled-courses" element={<EnrolledCoursesTab />} />
+                    <Route path="courses" element={<AllCoursesTab />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="/" element={<UserDashboard userId={user?.userId || ''} />} />
+                  </Routes>
+                </StudentSidebar>
+              </ProtectedRoute>
+            </ThemeProvider>
+          } />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Router>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
     )
   }
   else {
     return (
       <Router>
-          <Routes>
-            <Route path="*" element={<CommingSoonPage />} />
-          </Routes>
-        </Router>
+        <Routes>
+          <Route path="*" element={<CommingSoonPage />} />
+        </Routes>
+      </Router>
     )
   }
 

@@ -37,7 +37,7 @@ export const userDashboard = async (req: Request, res: Response) => {
                 .limit(5)
                 .populate({
                     path: "course",
-                    select: "title content itemType isActive",
+                    select: "title tags isActive",
                 }),
 
             // Testimonial stats: count + average rating

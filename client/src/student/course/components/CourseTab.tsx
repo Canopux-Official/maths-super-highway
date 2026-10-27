@@ -1,676 +1,127 @@
-// import React, { useEffect, useState, useCallback } from 'react';
-// import {
-//   Box,
-//   Typography,
-//   Alert,
-//   Breadcrumbs,
-//   Link,
-//   Chip,
-//   Skeleton,
-// } from '@mui/material';
-// import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-// import ArticleIcon from '@mui/icons-material/Article';
-// import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-// import HomeIcon from '@mui/icons-material/Home';
-
-// import { courseService } from '../services/api';
-// import CoursePageDetail from './CoursePageDetails';
-// import CourseItemCard from './CourseItemCard';
-
-// interface CourseItem {
-//   _id: string;
-//   title: string;
-//   itemType: 'folder' | 'page';
-//   parentId: string | null;
-//   isActive: boolean;
-//   order: number;
-//   content: string;
-//   thumbnail?: { url: string; publicId: string };
-// }
-
-// interface BreadcrumbEntry {
-//   id: string;
-//   title: string;
-// }
-
-// const AllCoursesTab: React.FC = () => {
-//   const [items, setItems] = useState<CourseItem[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState('');
-//   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
-//   const [, setCurrentFolder] = useState<string>('root');
-//   const [selectedPage, setSelectedPage] = useState<string | null>(null);
-//   const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number | null>>({});
-
-//   const loadItems = useCallback(async (folderId: string) => {
-//     setLoading(true);
-//     setError('');
-//     try {
-//       const res = await courseService.getSubItems(folderId);
-//       const courseItems: CourseItem[] = res.data || [];
-//       setItems(courseItems);
-
-//       // Initialise counts to null (skeleton state)
-//       const initial: Record<string, null> = {};
-//       courseItems.forEach((i) => { initial[i._id] = null; });
-//       setEnrolledCounts(initial);
-
-//       // Fetch all enrolled counts in parallel
-//       const counts = await Promise.all(
-//         courseItems.map((item) =>
-//           courseService
-//             .getEnrolledStudents(item._id)
-//             .then((r) => ({ id: item._id, count: r.success ? r.data.enrolledCount : 0 }))
-//             .catch(() => ({ id: item._id, count: 0 }))
-//         )
-//       );
-//       const countMap: Record<string, number> = {};
-//       counts.forEach(({ id, count }) => { countMap[id] = count; });
-//       setEnrolledCounts(countMap);
-//     } catch (err: any) {
-//       setError(
-//         err?.response?.data?.message ||
-//           'Failed to load courses. Please check your connection and try again.'
-//       );
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     loadItems('root');
-//   }, [loadItems]);
-
-//   const handleFolderClick = (item: CourseItem) => {
-//     setBreadcrumbs((prev) => [...prev, { id: item._id, title: item.title }]);
-//     setCurrentFolder(item._id);
-//     setSelectedPage(null);
-//     loadItems(item._id);
-//   };
-
-//   const handlePageClick = (item: CourseItem) => {
-//     setBreadcrumbs((prev) => [...prev, { id: item._id, title: item.title }]);
-//     setSelectedPage(item._id);
-//   };
-
-//   const handleBreadcrumbClick = (index: number) => {
-//     if (index === -1) {
-//       setBreadcrumbs([]);
-//       setCurrentFolder('root');
-//       setSelectedPage(null);
-//       loadItems('root');
-//     } else {
-//       const target = breadcrumbs[index];
-//       setBreadcrumbs(breadcrumbs.slice(0, index + 1));
-//       setSelectedPage(null);
-//       setCurrentFolder(target.id);
-//       loadItems(target.id);
-//     }
-//   };
-
-//   const handleBackFromPage = () => {
-//     setBreadcrumbs((prev) => prev.slice(0, -1));
-//     setSelectedPage(null);
-//   };
-
-//   // ── Page detail view ───────────────────────────────────────────
-//   if (selectedPage) {
-//     return (
-//       <CoursePageDetail
-//         pageId={selectedPage}
-//         onBack={handleBackFromPage}
-//         breadcrumbs={breadcrumbs}
-//         onBreadcrumbClick={handleBreadcrumbClick}
-//       />
-//     );
-//   }
-
-//   const folderCount = items.filter((i) => i.itemType === 'folder').length;
-//   const pageCount = items.filter((i) => i.itemType === 'page').length;
-
-//   return (
-//     <Box sx={{ py: { xs: 1, sm: 2 } }}>
-
-//       {/* ── Breadcrumbs ── */}
-//       <Box
-//         sx={{
-//           mb: { xs: 2, sm: 3 },
-//           px: { xs: 1.2, sm: 1.5 },
-//           py: 1,
-//           bgcolor: '#f7f8fa',
-//           borderRadius: 2,
-//           border: '1px solid #efefef',
-//           overflowX: 'auto',
-//           WebkitOverflowScrolling: 'touch',
-//           '&::-webkit-scrollbar': { display: 'none' },
-//         }}
-//       >
-//         <Breadcrumbs
-//           maxItems={3}
-//           itemsAfterCollapse={2}
-//           itemsBeforeCollapse={1}
-//           separator={
-//             <NavigateNextIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: '#bbb' }} />
-//           }
-//           sx={{
-//             flexWrap: 'nowrap',
-//             whiteSpace: 'nowrap',
-//             '& .MuiBreadcrumbs-li': { display: 'inline-flex', alignItems: 'center' },
-//           }}
-//         >
-//           <Link
-//             component="button"
-//             underline="none"
-//             onClick={() => handleBreadcrumbClick(-1)}
-//             sx={{
-//               display: 'flex',
-//               alignItems: 'center',
-//               gap: 0.5,
-//               color: breadcrumbs.length === 0 ? '#1A237E' : 'text.secondary',
-//               fontWeight: breadcrumbs.length === 0 ? 700 : 400,
-//               fontSize: { xs: '0.78rem', sm: '0.82rem' },
-//               fontFamily: "'DM Sans', sans-serif",
-//               background: 'none',
-//               border: 'none',
-//               cursor: 'pointer',
-//               p: 0,
-//               '&:hover': { color: '#1A237E' },
-//             }}
-//           >
-//             <HomeIcon sx={{ fontSize: { xs: 14, sm: 15 } }} />
-//             All Courses
-//           </Link>
-
-//           {breadcrumbs.map((crumb, idx) => (
-//             <Link
-//               key={crumb.id}
-//               component="button"
-//               underline="none"
-//               onClick={() => handleBreadcrumbClick(idx)}
-//               sx={{
-//                 display: 'flex',
-//                 alignItems: 'center',
-//                 gap: 0.5,
-//                 color: idx === breadcrumbs.length - 1 ? '#1A237E' : 'text.secondary',
-//                 fontWeight: idx === breadcrumbs.length - 1 ? 700 : 400,
-//                 fontSize: { xs: '0.78rem', sm: '0.82rem' },
-//                 fontFamily: "'DM Sans', sans-serif",
-//                 background: 'none',
-//                 border: 'none',
-//                 cursor: 'pointer',
-//                 p: 0,
-//                 maxWidth: { xs: '120px', sm: '220px' },
-//                 overflow: 'hidden',
-//                 textOverflow: 'ellipsis',
-//                 whiteSpace: 'nowrap',
-//                 '&:hover': { color: '#1A237E' },
-//               }}
-//             >
-//               {idx < breadcrumbs.length - 1 && (
-//                 <FolderOpenIcon sx={{ fontSize: { xs: 13, sm: 14 } }} />
-//               )}
-//               {crumb.title}
-//             </Link>
-//           ))}
-//         </Breadcrumbs>
-//       </Box>
-
-//       {/* ── Stats chips ── */}
-//       {!loading && !error && items.length > 0 && (
-//         <Box sx={{ display: 'flex', gap: 1, mb: { xs: 2, sm: 3 }, flexWrap: 'wrap' }}>
-//           {folderCount > 0 && (
-//             <Chip
-//               icon={
-//                 <FolderOpenIcon
-//                   sx={{ fontSize: '13px !important', color: '#1A237E !important' }}
-//                 />
-//               }
-//               label={`${folderCount} Folder${folderCount !== 1 ? 's' : ''}`}
-//               size="small"
-//               sx={{ bgcolor: '#E8EAF6', color: '#1A237E', fontWeight: 600, fontSize: '0.7rem' }}
-//             />
-//           )}
-//           {pageCount > 0 && (
-//             <Chip
-//               icon={
-//                 <ArticleIcon
-//                   sx={{ fontSize: '13px !important', color: '#2E7D32 !important' }}
-//                 />
-//               }
-//               label={`${pageCount} Page${pageCount !== 1 ? 's' : ''}`}
-//               size="small"
-//               sx={{ bgcolor: '#E8F5E9', color: '#2E7D32', fontWeight: 600, fontSize: '0.7rem' }}
-//             />
-//           )}
-//         </Box>
-//       )}
-
-//       {/* ── Skeleton loading ── */}
-//       {loading && (
-//         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 2, sm: 3 } }}>
-//           {[1, 2, 3].map((i) => (
-//             <Skeleton
-//               key={i}
-//               variant="rectangular"
-//               sx={{
-//                 width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' },
-//                 height: { xs: 290, sm: 240 },
-//                 borderRadius: '14px',
-//               }}
-//             />
-//           ))}
-//         </Box>
-//       )}
-
-//       {/* ── Error ── */}
-//       {error && (
-//         <Alert
-//           severity="error"
-//           sx={{ mb: 2, borderRadius: 2, fontSize: { xs: '0.8rem', sm: '1rem' } }}
-//           onClose={() => setError('')}
-//         >
-//           {error}
-//         </Alert>
-//       )}
-
-//       {/* ── Empty state ── */}
-//       {!loading && !error && items.length === 0 && (
-//         <Box sx={{ textAlign: 'center', py: { xs: 6, sm: 10 }, color: 'text.secondary' }}>
-//           <FolderOpenIcon sx={{ fontSize: { xs: 36, sm: 44 }, mb: 1.5, opacity: 0.3 }} />
-//           <Typography
-//             sx={{ fontWeight: 600, fontSize: { xs: '0.85rem', sm: '1rem' } }}
-//           >
-//             This folder is empty
-//           </Typography>
-//           <Typography variant="caption" sx={{ display: 'block', px: 2 }}>
-//             No folders or pages have been added yet.
-//           </Typography>
-//         </Box>
-//       )}
-
-//       {/* ── Card grid ── */}
-//       {!loading && !error && items.length > 0 && (
-//         <Box
-//           sx={{
-//             display: 'flex',
-//             flexWrap: 'wrap',
-//             gap: { xs: 2, sm: 3 },
-//             justifyContent: 'flex-start',
-//           }}
-//         >
-//           {items.map((item) => (
-//             <CourseItemCard
-//               key={item._id}
-//               item={item}
-//               enrolledCount={enrolledCounts[item._id] ?? null}
-//               onClick={() =>
-//                 item.itemType === 'folder'
-//                   ? handleFolderClick(item)
-//                   : handlePageClick(item)
-//               }
-//             />
-//           ))}
-//         </Box>
-//       )}
-//     </Box>
-//   );
-// };
-
-// export default AllCoursesTab;
-
-import React, { useEffect, useState, useCallback } from 'react';
+import { useMemo, useState } from 'react';
 import {
-  Box,
-  Typography,
-  Alert,
-  Breadcrumbs,
-  Link,
-  Chip,
-  Skeleton,
+  Alert, Box, Button, Checkbox, Chip, Drawer, MenuItem, Paper, Stack, TextField, Tooltip, Typography,
 } from '@mui/material';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import ArticleIcon from '@mui/icons-material/Article';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import HomeIcon from '@mui/icons-material/Home';
-import { useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { courseService } from '../services/api';
-import CoursePageDetail from './CoursePageDetails';
-import CourseItemCard from './CourseItemCard';
+import { courseService, type Selection } from '../services/api';
+import { buildTree, collectAllIds, collectLeafIds, collectTags, filterTree, isLeaf, pathTo, type TreeNode } from '../../../utils/courseTree';
+import CurriculumTree from '../../../admin/courses/components/CurriCulumTree';
 
-interface CourseItem {
-  _id: string;
-  title: string;
-  itemType: 'folder' | 'page';
-  parentId: string | null;
-  isActive: boolean;
-  order: number;
-  content: string;
-  thumbnail?: { url: string; publicId: string };
-}
+const SEL_KEY = ['my-selections'];
 
-interface BreadcrumbEntry {
-  id: string;
-  title: string;
-}
+export default function CourseTab() {
+  const qc = useQueryClient();
+  // The tree is the same for everyone; selections are per student. Two small, separate calls.
+  const { data: flat = [], isLoading, error } = useQuery({ queryKey: ['user-tree'], queryFn: courseService.getTree, refetchOnWindowFocus: true });
+  const { data: selections = [] } = useQuery({ queryKey: SEL_KEY, queryFn: courseService.getMySelections });
 
-// Shape of the navigation state passed from EnrolledCoursesTab
-interface LocationState {
-  openPageId?: string | null;
-  openFolderId?: string | null;
-  openTitle?: string;
-}
+  const tree = useMemo(() => buildTree(flat), [flat]);
+  const allTags = useMemo(() => collectTags(tree), [tree]);
+  const selected = useMemo(() => new Set(selections.map((s) => s.courseId)), [selections]);
 
-const AllCoursesTab: React.FC = () => {
-  const [items, setItems] = useState<CourseItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbEntry[]>([]);
-  const [, setCurrentFolder] = useState<string>('root');
-  const [selectedPage, setSelectedPage] = useState<string | null>(null);
-  const [enrolledCounts, setEnrolledCounts] = useState<Record<string, number | null>>({});
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState('');
+  const [tag, setTag] = useState('');
+  const [viewing, setViewing] = useState<TreeNode | null>(null);
+  const [problem, setProblem] = useState('');
 
-  const location = useLocation();
+  const filtering = !!(query.trim() || tag);
+  const visible = useMemo(() => filterTree(tree, query, tag), [tree, query, tag]);
+  const shownExpanded = useMemo(() => (filtering ? new Set(collectAllIds(visible)) : expanded), [filtering, visible, expanded]);
 
-  const loadItems = useCallback(async (folderId: string) => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await courseService.getSubItems(folderId);
-      const courseItems: CourseItem[] = res.data || [];
-      setItems(courseItems);
+  // Optimistic: the tick appears at once and rolls back if the server says no
+  const change = useMutation({
+    mutationFn: (p: { add?: string[]; remove?: string[] }) => courseService.updateSelections(p),
+    onMutate: async ({ add = [], remove = [] }) => {
+      await qc.cancelQueries({ queryKey: SEL_KEY });
+      const prev = qc.getQueryData<Selection[]>(SEL_KEY) ?? [];
+      const removed = new Set(remove);
+      const next = [
+        ...prev.filter((s) => !removed.has(s.courseId)),
+        ...add.filter((id) => !prev.some((s) => s.courseId === id)).map((id) => ({ courseId: id, needsReview: false })),
+      ];
+      qc.setQueryData(SEL_KEY, next);
+      return { prev };
+    },
+    onError: (e: any, _v, ctx) => {
+      if (ctx) qc.setQueryData(SEL_KEY, ctx.prev);
+      setProblem(e?.response?.data?.message ?? 'Could not save your selection');
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: SEL_KEY }),
+  });
 
-      // Initialise counts to null (skeleton state)
-      const initial: Record<string, null> = {};
-      courseItems.forEach((i) => { initial[i._id] = null; });
-      setEnrolledCounts(initial);
-
-      // Fetch all enrolled counts in parallel
-      const counts = await Promise.all(
-        courseItems.map((item) =>
-          courseService
-            .getEnrolledStudents(item._id)
-            .then((r) => ({ id: item._id, count: r.success ? r.data.enrolledCount : 0 }))
-            .catch(() => ({ id: item._id, count: 0 }))
-        )
-      );
-      const countMap: Record<string, number> = {};
-      counts.forEach(({ id, count }) => { countMap[id] = count; });
-      setEnrolledCounts(countMap);
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-          'Failed to load courses. Please check your connection and try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // ── Initial load ──────────────────────────────────────────────
-  useEffect(() => {
-    loadItems('root');
-  }, [loadItems]);
-
-  // ── Deep-link: open item from EnrolledCoursesTab navigation ──
-  useEffect(() => {
-    const state = location.state as LocationState | null;
-    if (!state) return;
-
-    if (state.openPageId) {
-      // Jump straight into the page detail view
-      setBreadcrumbs(
-        state.openTitle ? [{ id: state.openPageId, title: state.openTitle }] : []
-      );
-      setCurrentFolder('root');
-      setSelectedPage(state.openPageId);
-    } else if (state.openFolderId) {
-      // Navigate into the folder
-      setBreadcrumbs(
-        state.openTitle ? [{ id: state.openFolderId, title: state.openTitle }] : []
-      );
-      setCurrentFolder(state.openFolderId);
-      setSelectedPage(null);
-      loadItems(state.openFolderId);
-    }
-  }, [location.state, loadItems]);
-
-  const handleFolderClick = (item: CourseItem) => {
-    setBreadcrumbs((prev) => [...prev, { id: item._id, title: item.title }]);
-    setCurrentFolder(item._id);
-    setSelectedPage(null);
-    loadItems(item._id);
+  const toggleNode = (n: TreeNode) => {
+    const leaves = collectLeafIds(n);
+    const all = leaves.every((id: any) => selected.has(id));
+    change.mutate(all ? { remove: leaves } : { add: leaves.filter((id: any) => !selected.has(id)) })
   };
-
-  const handlePageClick = (item: CourseItem) => {
-    setBreadcrumbs((prev) => [...prev, { id: item._id, title: item.title }]);
-    setSelectedPage(item._id);
-  };
-
-  const handleBreadcrumbClick = (index: number) => {
-    if (index === -1) {
-      setBreadcrumbs([]);
-      setCurrentFolder('root');
-      setSelectedPage(null);
-      loadItems('root');
-    } else {
-      const target = breadcrumbs[index];
-      setBreadcrumbs(breadcrumbs.slice(0, index + 1));
-      setSelectedPage(null);
-      setCurrentFolder(target.id);
-      loadItems(target.id);
-    }
-  };
-
-  const handleBackFromPage = () => {
-    setBreadcrumbs((prev) => prev.slice(0, -1));
-    setSelectedPage(null);
-  };
-
-  // ── Page detail view ───────────────────────────────────────────
-  if (selectedPage) {
-    return (
-      <CoursePageDetail
-        pageId={selectedPage}
-        onBack={handleBackFromPage}
-        breadcrumbs={breadcrumbs}
-        onBreadcrumbClick={handleBreadcrumbClick}
-      />
-    );
-  }
-
-  const folderCount = items.filter((i) => i.itemType === 'folder').length;
-  const pageCount = items.filter((i) => i.itemType === 'page').length;
+  const toggleExpand = (id: string) =>
+    setExpanded((s) => { const x = new Set(s); x.has(id) ? x.delete(id) : x.add(id); return x; });
 
   return (
-    <Box sx={{ py: { xs: 1, sm: 2 } }}>
+    <Box sx={{ p: { xs: 1, md: 3 } }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2, alignItems: { sm: 'center' } }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, flex: 1 }}>All Courses</Typography>
+        <TextField size="small" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <TextField size="small" select label="Tag" value={tag} onChange={(e) => setTag(e.target.value)} sx={{ minWidth: 130 }}>
+          <MenuItem value="">All tags</MenuItem>
+          {allTags.map((t: any) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+        </TextField>
+        <Button onClick={() => setExpanded(new Set(collectAllIds(tree)))}>Expand all</Button>
+        <Button onClick={() => setExpanded(new Set())}>Collapse all</Button>
+      </Stack>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        Tick the topics you want. They are added to “My Superhighway”. Ticking a parent selects everything inside it.
+      </Typography>
 
-      {/* ── Breadcrumbs ── */}
-      <Box
-        sx={{
-          mb: { xs: 2, sm: 3 },
-          px: { xs: 1.2, sm: 1.5 },
-          py: 1,
-          bgcolor: '#f7f8fa',
-          borderRadius: 2,
-          border: '1px solid #efefef',
-          overflowX: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          '&::-webkit-scrollbar': { display: 'none' },
-        }}
-      >
-        <Breadcrumbs
-          maxItems={3}
-          itemsAfterCollapse={2}
-          itemsBeforeCollapse={1}
-          separator={
-            <NavigateNextIcon sx={{ fontSize: { xs: 14, sm: 16 }, color: '#bbb' }} />
-          }
-          sx={{
-            flexWrap: 'nowrap',
-            whiteSpace: 'nowrap',
-            '& .MuiBreadcrumbs-li': { display: 'inline-flex', alignItems: 'center' },
-          }}
-        >
-          <Link
-            component="button"
-            underline="none"
-            onClick={() => handleBreadcrumbClick(-1)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              color: breadcrumbs.length === 0 ? '#1A237E' : 'text.secondary',
-              fontWeight: breadcrumbs.length === 0 ? 700 : 400,
-              fontSize: { xs: '0.78rem', sm: '0.82rem' },
-              fontFamily: "'DM Sans', sans-serif",
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              p: 0,
-              '&:hover': { color: '#1A237E' },
-            }}
-          >
-            <HomeIcon sx={{ fontSize: { xs: 14, sm: 15 } }} />
-            All Courses
-          </Link>
+      {problem && <Alert severity="error" onClose={() => setProblem('')} sx={{ mb: 1 }}>{problem}</Alert>}
+      {error && <Alert severity="error">Could not load courses.</Alert>}
 
-          {breadcrumbs.map((crumb, idx) => (
-            <Link
-              key={crumb.id}
-              component="button"
-              underline="none"
-              onClick={() => handleBreadcrumbClick(idx)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                color: idx === breadcrumbs.length - 1 ? '#1A237E' : 'text.secondary',
-                fontWeight: idx === breadcrumbs.length - 1 ? 700 : 400,
-                fontSize: { xs: '0.78rem', sm: '0.82rem' },
-                fontFamily: "'DM Sans', sans-serif",
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                p: 0,
-                maxWidth: { xs: '120px', sm: '220px' },
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                '&:hover': { color: '#1A237E' },
-              }}
-            >
-              {idx < breadcrumbs.length - 1 && (
-                <FolderOpenIcon sx={{ fontSize: { xs: 13, sm: 14 } }} />
-              )}
-              {crumb.title}
-            </Link>
-          ))}
-        </Breadcrumbs>
-      </Box>
-
-      {/* ── Stats chips ── */}
-      {!loading && !error && items.length > 0 && (
-        <Box sx={{ display: 'flex', gap: 1, mb: { xs: 2, sm: 3 }, flexWrap: 'wrap' }}>
-          {folderCount > 0 && (
-            <Chip
-              icon={
-                <FolderOpenIcon
-                  sx={{ fontSize: '13px !important', color: '#1A237E !important' }}
-                />
-              }
-              label={`${folderCount} Folder${folderCount !== 1 ? 's' : ''}`}
-              size="small"
-              sx={{ bgcolor: '#E8EAF6', color: '#1A237E', fontWeight: 600, fontSize: '0.7rem' }}
-            />
-          )}
-          {pageCount > 0 && (
-            <Chip
-              icon={
-                <ArticleIcon
-                  sx={{ fontSize: '13px !important', color: '#2E7D32 !important' }}
-                />
-              }
-              label={`${pageCount} Page${pageCount !== 1 ? 's' : ''}`}
-              size="small"
-              sx={{ bgcolor: '#E8F5E9', color: '#2E7D32', fontWeight: 600, fontSize: '0.7rem' }}
-            />
-          )}
-        </Box>
-      )}
-
-      {/* ── Skeleton loading ── */}
-      {loading && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 2, sm: 3 } }}>
-          {[1, 2, 3].map((i) => (
-            <Skeleton
-              key={i}
-              variant="rectangular"
-              sx={{
-                width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' },
-                height: { xs: 290, sm: 240 },
-                borderRadius: '14px',
-              }}
-            />
-          ))}
-        </Box>
-      )}
-
-      {/* ── Error ── */}
-      {error && (
-        <Alert
-          severity="error"
-          sx={{ mb: 2, borderRadius: 2, fontSize: { xs: '0.8rem', sm: '1rem' } }}
-          onClose={() => setError('')}
-        >
-          {error}
-        </Alert>
-      )}
-
-      {/* ── Empty state ── */}
-      {!loading && !error && items.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: { xs: 6, sm: 10 }, color: 'text.secondary' }}>
-          <FolderOpenIcon sx={{ fontSize: { xs: 36, sm: 44 }, mb: 1.5, opacity: 0.3 }} />
-          <Typography
-            sx={{ fontWeight: 600, fontSize: { xs: '0.85rem', sm: '1rem' } }}
-          >
-            This folder is empty
-          </Typography>
-          <Typography variant="caption" sx={{ display: 'block', px: 2 }}>
-            No folders or pages have been added yet.
-          </Typography>
-        </Box>
-      )}
-
-      {/* ── Card grid ── */}
-      {!loading && !error && items.length > 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: { xs: 2, sm: 3 },
-            justifyContent: 'flex-start',
-          }}
-        >
-          <AnimatePresence mode="popLayout">
-            {items.map((item) => (
-              <CourseItemCard
-                key={item._id}
-                item={item}
-                enrolledCount={enrolledCounts[item._id] ?? null}
-                onClick={() =>
-                  item.itemType === 'folder'
-                    ? handleFolderClick(item)
-                    : handlePageClick(item)
-                }
+      <Paper variant="outlined">
+        {isLoading && <Typography sx={{ p: 2 }}>Loading…</Typography>}
+        {!isLoading && !visible.length && <Typography sx={{ p: 2 }} color="text.secondary">Nothing to show.</Typography>}
+        <CurriculumTree
+          nodes={visible}
+          expanded={shownExpanded}
+          onToggle={toggleExpand}
+          onTitleClick={setViewing}
+          renderLeading={(n) => {
+            const leaves = collectLeafIds(n);
+            const count = leaves.filter((id) => selected.has(id)).length;
+            return (
+              <Checkbox
+                size="small"
+                checked={count === leaves.length}
+                indeterminate={count > 0 && count < leaves.length}
+                onChange={() => toggleNode(n)}
+                title={isLeaf(n) ? 'Add to My Superhighway' : 'Select / unselect everything inside'}
               />
-            ))}
-          </AnimatePresence>
-        </Box>
-      )}
+            );
+          }}
+          renderActions={(n: any) => (
+            <Button size="small" startIcon={<VisibilityIcon fontSize="small" />} onClick={() => setViewing(n)}>View</Button>
+          )}
+        />
+      </Paper>
+
+      <Drawer anchor="right" open={!!viewing} onClose={() => setViewing(null)}>
+        {viewing && (
+          <Box sx={{ width: { xs: 300, sm: 400 }, p: 3 }}>
+            <Typography variant="caption" color="text.secondary">{pathTo(flat, viewing._id).slice(0, -1).join(' › ') || 'Top level'}</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>{viewing.title}</Typography>
+            <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+              {viewing.tags.map((t: any) => <Chip key={t} label={t} size="small" />)}
+            </Stack>
+            <Typography sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>{viewing.description || 'No description yet.'}</Typography>
+            {!isLeaf(viewing) && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{collectLeafIds(viewing).length} topic(s) inside.</Typography>}
+            <Button variant="contained" onClick={() => toggleNode(viewing)}>
+              {collectLeafIds(viewing).every((id: any) => selected.has(id)) ? 'Remove from My Superhighway' : 'Add to My Superhighway'}
+            </Button>
+          </Box>
+        )}
+      </Drawer>
     </Box>
   );
-};
-
-export default AllCoursesTab;
+}

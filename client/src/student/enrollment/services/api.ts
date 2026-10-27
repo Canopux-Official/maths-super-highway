@@ -1,22 +1,3 @@
-
-import apiClient from "../../../context/api/apiClient";
-
-
-export const enrollmentService = {
-  enrollInCourse: async (courseId: string) => {
-    const res = await apiClient.post(`/enrollment/enroll`, { courseId });
-    return res.data;
-  },
-
-  unenrollFromCourse: async (courseId: string) => {
-    const res = await apiClient.delete(`/enrollment/unenroll`, {
-      data: { courseId },
-    });
-    return res.data;
-  },
-
-  checkEnrollment: async (courseId: string) => {
-    const res = await apiClient.get(`/enrollment/check-enrollment/${courseId}`);
-    return res.data;
-  },
-};
+// Selections now live in student/course/services/api.ts.
+// Kept as a thin alias so old imports keep compiling.
+export { courseService as enrollmentService } from '../../course/services/api';
