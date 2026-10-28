@@ -6,7 +6,7 @@ import Enrollment from '../models/enrollment';
 import User from '../models/user';
 
 export const FEEDBACK_LIMIT = 5;
-export const LANDING_MIN_AVG = 4.5;
+export const LANDING_MIN_AVG = 4.2;
 export const LANDING_MIN_COUNT = 3;
 
 const fail = (res: Response, status: number, message: string) =>

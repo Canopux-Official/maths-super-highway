@@ -308,7 +308,9 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: { xs: 2, sm: 3, md: 4 },
+                    minWidth: 0,
+                    overflowX: 'hidden',
+                    p: { xs: 1.5, sm: 3, md: 4 },
                     bgcolor: '#F8FAFC',
                     minHeight: '100vh',
                     width: { xs: '100%', sm: `calc(100% - ${drawerWidth}px)` },

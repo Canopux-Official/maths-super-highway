@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
     Alert, Autocomplete, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel,
-    IconButton, MenuItem, Paper, Snackbar, Stack, Switch, TextField, Tooltip, Typography,
+    IconButton, MenuItem, Paper, Snackbar, Stack, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -40,6 +40,9 @@ const subtreeIds = (flat: FlatNode[], id: string): Set<string> => {
 
 export default function CoursePage() {
     const qc = useQueryClient();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     const { data: flat = [], isLoading, error } = useQuery({ queryKey: ['admin-tree'], queryFn: courseService.getTree });
     const { data: counts = {} } = useQuery({ queryKey: ['admin-selection-counts'], queryFn: courseService.getSelectionCounts });
 
@@ -127,20 +130,29 @@ export default function CoursePage() {
     };
 
     return (
-        <Box sx={{ p: { xs: 1, md: 3 } }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2, alignItems: { sm: 'center' } }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, flex: 1 }}>Course Curriculum</Typography>
-                <TextField size="small" placeholder="Search by name" value={query} onChange={(e) => setQuery(e.target.value)} />
-                <TextField size="small" select label="Tag" value={tag} onChange={(e) => setTag(e.target.value)} sx={{ minWidth: 130 }}>
-                    <MenuItem value="">All tags</MenuItem>
-                    {allTags.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
-                </TextField>
-                <Button onClick={() => setExpanded(new Set(collectAllIds(tree)))}>Expand all</Button>
-                <Button onClick={() => setExpanded(new Set())}>Collapse all</Button>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setForm(emptyForm(null))}>Add programme</Button>
-            </Stack>
+        <Box sx={{ p: { xs: 1, md: 3 }, minWidth: 0 }}>
+            {/* Header: title, filters and buttons wrap instead of overflowing */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 1.5, mb: 2, alignItems: { lg: 'center' } }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, flex: 1, fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
+                    Course Curriculum
+                </Typography>
 
-            <Paper variant="outlined">
+                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1 }}>
+                    <TextField size="small" placeholder="Search by name" value={query} onChange={(e) => setQuery(e.target.value)} sx={{ flex: 1, minWidth: 0 }} />
+                    <TextField size="small" select label="Tag" value={tag} onChange={(e) => setTag(e.target.value)} sx={{ minWidth: 130 }}>
+                        <MenuItem value="">All tags</MenuItem>
+                        {allTags.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+                    </TextField>
+                </Box>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    <Button onClick={() => setExpanded(new Set(collectAllIds(tree)))}>Expand all</Button>
+                    <Button onClick={() => setExpanded(new Set())}>Collapse all</Button>
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => setForm(emptyForm(null))}>Add programme</Button>
+                </Box>
+            </Box>
+
+            <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
                 {isLoading && <Typography sx={{ p: 2 }}>Loading…</Typography>}
                 {error && <Alert severity="error">{errMsg(error)}</Alert>}
                 {!isLoading && !visible.length && <Typography sx={{ p: 2 }} color="text.secondary">Nothing to show.</Typography>}
@@ -156,7 +168,7 @@ export default function CoursePage() {
                         </Typography>
                     )}
                     renderActions={(n: any) => (
-                        <Box sx={{ display: 'flex', flexShrink: 0 }}>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0, maxWidth: { xs: 120, sm: 'none' } }}>
                             <Tooltip title="Feedback"><IconButton size="small" onClick={() => setReviewing(n)}><RateReviewIcon fontSize="small" /></IconButton></Tooltip>
                             <Tooltip title="Add child"><span><IconButton size="small" disabled={n.depth + 1 >= MAX_DEPTH} onClick={() => setForm(emptyForm(n._id))}><AddIcon fontSize="small" /></IconButton></span></Tooltip>
                             <Tooltip title="Edit"><IconButton size="small" onClick={() => setForm({ id: n._id, parentId: n.parentId, title: n.title, description: n.description, tags: n.tags, isActive: n.isActive !== false, updatedAt: n.updatedAt })}><EditIcon fontSize="small" /></IconButton></Tooltip>
@@ -171,7 +183,7 @@ export default function CoursePage() {
             </Paper>
 
             {/* Add / edit */}
-            <Dialog open={!!form} onClose={() => setForm(null)} fullWidth maxWidth="sm">
+            <Dialog open={!!form} onClose={() => setForm(null)} fullWidth maxWidth="sm" fullScreen={isMobile}>
                 <DialogTitle>{form?.id ? 'Edit item' : form?.parentId ? 'Add child' : 'Add programme'}</DialogTitle>
                 <DialogContent>
                     {form && (
@@ -195,13 +207,15 @@ export default function CoursePage() {
             </Dialog>
 
             {/* Move */}
-            <Dialog open={!!moving} onClose={() => setMoving(null)} fullWidth maxWidth="sm">
-                <DialogTitle>Move “{moving?.node.title}”</DialogTitle>
+            <Dialog open={!!moving} onClose={() => setMoving(null)} fullWidth maxWidth="sm" fullScreen={isMobile}>
+                <DialogTitle sx={{ wordBreak: 'break-word' }}>Move “{moving?.node.title}”</DialogTitle>
                 <DialogContent>
                     {moving && (
                         <TextField select fullWidth sx={{ mt: 1 }} label="New parent" value={moving.target} onChange={(e) => setMoving({ ...moving, target: e.target.value })}>
                             <MenuItem value="">(top level)</MenuItem>
-                            {moveTargets(moving.node).map((n) => <MenuItem key={n._id} value={n._id}>{pathLabel(n)}</MenuItem>)}
+                            {moveTargets(moving.node).map((n) => (
+                                <MenuItem key={n._id} value={n._id} sx={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{pathLabel(n)}</MenuItem>
+                            ))}
                         </TextField>
                     )}
                 </DialogContent>
@@ -212,8 +226,8 @@ export default function CoursePage() {
             </Dialog>
 
             {/* Delete */}
-            <Dialog open={!!deleting} onClose={() => setDeleting(null)}>
-                <DialogTitle>Delete “{deleting?.node.title}”?</DialogTitle>
+            <Dialog open={!!deleting} onClose={() => setDeleting(null)} fullWidth maxWidth="xs">
+                <DialogTitle sx={{ wordBreak: 'break-word' }}>Delete “{deleting?.node.title}”?</DialogTitle>
                 <DialogContent>
                     <Typography>This removes {deleting?.nodes} item(s) and {deleting?.selections} student selection(s). It cannot be undone.</Typography>
                 </DialogContent>

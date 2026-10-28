@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
     Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress,
-    Paper, Rating, Stack, TextField, Typography,
+    Paper, Rating, Stack, TextField, Typography, useMediaQuery, useTheme,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -18,6 +18,9 @@ type Editing = { node: { _id: string; title: string }; review?: MyReview } | nul
 
 export default function FeedbackTab() {
     const qc = useQueryClient();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     const { data: flat = [], isLoading } = useQuery({ queryKey: ['user-tree'], queryFn: courseService.getTree });
     const { data: selections = [] } = useQuery({ queryKey: ['my-selections'], queryFn: courseService.getMySelections });
     const { data: mine } = useQuery({ queryKey: ['my-feedback'], queryFn: testimonialService.getMine });
@@ -84,27 +87,29 @@ export default function FeedbackTab() {
         const r = byNode.get(n._id);
         if (r) {
             return (
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
                     <Rating value={r.rating} readOnly size="small" />
                     <Button size="small" onClick={() => openDialog(n)}>Edit</Button>
                 </Stack>
             );
         }
         return (
-            <Button size="small" variant="outlined" disabled={limitReached} onClick={() => openDialog(n)}>
+            <Button size="small" variant="outlined" disabled={limitReached} onClick={() => openDialog(n)} sx={{ whiteSpace: 'nowrap' }}>
                 Give feedback
             </Button>
         );
     };
 
     return (
-        <Box sx={{ p: { xs: 1, md: 3 } }}>
-            <Typography variant="h5" sx={{ fontWeight: 800 }}>Please provide your valuable feedback</Typography>
+        <Box sx={{ p: 0, minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, fontSize: { xs: '1.2rem', sm: '1.5rem' } }}>
+                Please provide your valuable feedback
+            </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 You can give feedback on up to {limit} topics. You can edit it later, but not delete it.
             </Typography>
 
-            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+            <Paper variant="outlined" sx={{ p: { xs: 1.5, sm: 2 }, mb: 2 }}>
                 <Typography variant="subtitle2">{used} of {limit} feedbacks used</Typography>
                 <LinearProgress variant="determinate" value={(used / limit) * 100} sx={{ mt: 1, height: 8, borderRadius: 4 }} />
                 {limitReached && <Typography variant="caption" color="text.secondary">You have used all {limit} feedbacks. You can still edit them.</Typography>}
@@ -112,7 +117,7 @@ export default function FeedbackTab() {
 
             {done && <Alert severity="success" onClose={() => setDone('')} sx={{ mb: 1 }}>{done}</Alert>}
 
-            <Paper variant="outlined">
+            <Paper variant="outlined" sx={{ overflowX: 'auto' }}>
                 {isLoading && <Typography sx={{ p: 2 }}>Loading…</Typography>}
                 {!isLoading && !tree.length && !orphaned.length && (
                     <Typography sx={{ p: 2 }} color="text.secondary">
@@ -126,8 +131,13 @@ export default function FeedbackTab() {
                         {orphaned.map((r) => {
                             const title = pathTo(flat, r.courseId).slice(-1)[0];
                             return (
-                                <Stack key={r._id} direction="row" spacing={1} sx={{ alignItems: 'center', py: 0.5 }}>
-                                    <Typography variant="body2" sx={{ flex: 1 }}>{title}</Typography>
+                                <Stack
+                                    key={r._id}
+                                    direction={{ xs: 'column', sm: 'row' }}
+                                    spacing={1}
+                                    sx={{ alignItems: { xs: 'flex-start', sm: 'center' }, py: 0.75 }}
+                                >
+                                    <Typography variant="body2" sx={{ flex: 1, minWidth: 0, wordBreak: 'break-word' }}>{title}</Typography>
                                     <Chip size="small" label="No longer selected" />
                                     {action({ _id: r.courseId, title })}
                                 </Stack>
@@ -137,7 +147,13 @@ export default function FeedbackTab() {
                 )}
             </Paper>
 
-            <Dialog open={!!editing} onClose={() => setEditing(null)} fullWidth maxWidth="sm">
+            <Dialog
+                open={!!editing}
+                onClose={() => setEditing(null)}
+                fullWidth
+                maxWidth="sm"
+                fullScreen={isMobile}
+            >
                 <DialogTitle>{editing?.review ? 'Edit your feedback' : 'Give feedback'}</DialogTitle>
                 <DialogContent>
                     {editing && (
