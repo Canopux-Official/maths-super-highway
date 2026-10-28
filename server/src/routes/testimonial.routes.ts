@@ -1,17 +1,24 @@
 import express from 'express';
-import { createTestimonial, deleteTestimonial, getMyTestimonialForCourse, getPageTestimonialsPaginated, updateTestimonial, getLandingPageTestimonials } from '../controllers/testimonial.controller';
+import {
+    adminDeleteTestimonial, createTestimonial, getMyFeedback, getNodeReviews, getReviewStats,
+    setLandingVisibility, updateTestimonial,
+} from '../controllers/testimonial.controller';
 import { verifyAuth, verifyRole } from '../middlewares/auth.middleware';
+import { validateMongoId, handleValidation } from '../validation/course.validation';
 
 const router = express.Router();
+const student = [verifyAuth, verifyRole(['student'])];
+const admin = [verifyAuth, verifyRole(['admin'])];
 
-router.post('/create',verifyAuth,verifyRole(["student"]),createTestimonial);
-router.patch('/update/:id',verifyAuth,verifyRole(["student"]),updateTestimonial);
-router.delete('/delete/:id',verifyAuth,verifyRole(["student"]),deleteTestimonial);
+// Student: list mine, create, edit. There is no student delete on purpose.
+router.get('/mine', ...student, getMyFeedback);
+router.post('/create', ...student, createTestimonial);
+router.patch('/update/:id', ...student, validateMongoId, handleValidation, updateTestimonial);
 
-
-
-router.get('/get-my-testimonial-for-course/:courseId',verifyAuth,verifyRole(["student"]),getMyTestimonialForCourse);
-router.get("/get-page-testimonials-paginated/:id", verifyAuth,verifyRole(["student"]), getPageTestimonialsPaginated);
-router.get("/landing-page", getLandingPageTestimonials);
+// Admin
+router.get('/admin/stats', ...admin, getReviewStats);
+router.get('/admin/node/:id', ...admin, validateMongoId, handleValidation, getNodeReviews);
+router.patch('/admin/:id/visibility', ...admin, validateMongoId, handleValidation, setLandingVisibility);
+router.delete('/admin/:id', ...admin, validateMongoId, handleValidation, adminDeleteTestimonial);
 
 export default router;

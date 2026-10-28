@@ -49,10 +49,10 @@ export const validateMoveCourse: ValidationChain[] = [
     .withMessage('newParentId must be a valid id or null'),
 ];
 
-export const validateReorder: ValidationChain[] = [
-  param('id').isMongoId().withMessage('Invalid ID'),
-  body('direction').isIn(['up', 'down']).withMessage('direction must be up or down'),
-];
+// export const validateReorder: ValidationChain[] = [
+//   param('id').isMongoId().withMessage('Invalid ID'),
+//   body('direction').isIn(['up', 'down']).withMessage('direction must be up or down'),
+// ];
 
 export const validateMongoId: ValidationChain[] = [
   param('id').isMongoId().withMessage('Invalid ID format'),

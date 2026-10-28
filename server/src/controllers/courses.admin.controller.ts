@@ -204,29 +204,29 @@ export const moveCourse = async (req: Request, res: Response) => {
 };
 
 // PATCH /courses-admin/reorder/:id   body: { direction: 'up' | 'down' }
-export const reorderCourse = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const { direction } = req.body;
+// export const reorderCourse = async (req: Request, res: Response) => {
+//     try {
+//         const { id } = req.params;
+//         const { direction } = req.body;
 
-        const node = await Course.findById(id).select('parentId').lean();
-        if (!node) return fail(res, 404, 'Not found');
+//         const node = await Course.findById(id).select('parentId').lean();
+//         if (!node) return fail(res, 404, 'Not found');
 
-        const siblings = await Course.find({ parentId: node.parentId }).sort({ order: 1, _id: 1 }).select('_id').lean();
-        const ids = siblings.map((s) => s._id.toString());
-        const i = ids.indexOf(String(id));
-        const j = direction === 'up' ? i - 1 : i + 1;
-        if (j < 0 || j >= ids.length) return res.status(200).json({ success: true, message: 'Already at the edge' });
+//         const siblings = await Course.find({ parentId: node.parentId }).sort({ order: 1, _id: 1 }).select('_id').lean();
+//         const ids = siblings.map((s) => s._id.toString());
+//         const i = ids.indexOf(String(id));
+//         const j = direction === 'up' ? i - 1 : i + 1;
+//         if (j < 0 || j >= ids.length) return res.status(200).json({ success: true, message: 'Already at the edge' });
 
-        [ids[i], ids[j]] = [ids[j], ids[i]];
-        await Course.bulkWrite(
-            ids.map((sid, idx) => ({ updateOne: { filter: { _id: sid }, update: { $set: { order: idx } } } }))
-        );
-        return res.status(200).json({ success: true, message: 'Reordered' });
-    } catch (error: any) {
-        return fail(res, 500, error.message);
-    }
-};
+//         [ids[i], ids[j]] = [ids[j], ids[i]];
+//         await Course.bulkWrite(
+//             ids.map((sid, idx) => ({ updateOne: { filter: { _id: sid }, update: { $set: { order: idx } } } }))
+//         );
+//         return res.status(200).json({ success: true, message: 'Reordered' });
+//     } catch (error: any) {
+//         return fail(res, 500, error.message);
+//     }
+// };
 
 // GET /courses-admin/delete-preview/:id  -> what a delete would remove
 export const getDeletePreview = async (req: Request, res: Response) => {
@@ -268,7 +268,7 @@ export const getEnrolledStudentsExport = async (req: Request, res: Response): Pr
 
         const result = await Enrollment.aggregate([
             { $match: { course: { $in: ids } } },
-            { $group: { _id: '$student' } },
+            { $group: { _id: '$student', selectedAt: { $min: '$createdAt' } } },
             { $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'user' } },
             { $unwind: '$user' },
             { $lookup: { from: 'targetexams', localField: 'user.targetExams', foreignField: '_id', as: 'targetExamsDetails' } },
@@ -281,6 +281,7 @@ export const getEnrolledStudentsExport = async (req: Request, res: Response): Pr
                     role: '$user.role',
                     isActive: '$user.isActive',
                     createdAt: '$user.createdAt',
+                    selectedAt: 1,
                     targetExams: '$targetExamsDetails',
                 },
             },

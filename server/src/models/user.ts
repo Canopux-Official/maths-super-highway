@@ -10,6 +10,7 @@ export interface IUser extends Document {
   isActive: boolean;
   isVerified: boolean;
   targetExams?: mongoose.Types.ObjectId[];
+  feedbackCount?: number; // how many testimonial slots this student has used (max 5)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,14 +22,15 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true, select: false },
     phone: { type: String, required: true },
     dob: { type: Date },
-    role: { 
-      type: String, 
-      enum: ['admin', 'student', 'parent', 'college'], 
-      default: 'student' 
+    role: {
+      type: String,
+      enum: ['admin', 'student', 'parent', 'college'],
+      default: 'student'
     },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
     targetExams: [{ type: Schema.Types.ObjectId, ref: 'TargetExam' }],
+    feedbackCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
