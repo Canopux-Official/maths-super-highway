@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { Box, Chip, IconButton, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import type { TreeNode } from '../utils/curriculumTree';
+import type { TreeNode } from '../../../utils/courseTree';
+
 
 interface Props {
     nodes: TreeNode[];
@@ -41,11 +42,11 @@ const Row = ({ node, level, ...p }: Props & { node: TreeNode; level: number }) =
                     {p.renderMeta?.(node)}
                 </Box>
                 <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.5, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: 260 }}>
-                    {node.tags.map((t) => <Chip key={t} label={t} size="small" variant="outlined" />)}
+                    {node.tags.map((t: any) => <Chip key={t} label={t} size="small" variant="outlined" />)}
                 </Box>
                 {p.renderActions?.(node)}
             </Box>
-            {hasKids && open && node.children.map((c) => <Row key={c._id} node={c} level={level + 1} {...p} />)}
+            {hasKids && open && node.children.map((c: any) => <Row key={c._id} node={c} level={level + 1} {...p} />)}
         </>
     );
 };
