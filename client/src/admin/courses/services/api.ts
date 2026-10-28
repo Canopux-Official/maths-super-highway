@@ -27,9 +27,6 @@ export const courseService = {
     moveCourse: async (id: string, newParentId: string | null) =>
         (await apiClient.patch(`/courses-admin/move/${id}`, { newParentId })).data,
 
-    reorderCourse: async (id: string, direction: 'up' | 'down') =>
-        (await apiClient.patch(`/courses-admin/reorder/${id}`, { direction })).data,
-
     getDeletePreview: async (id: string): Promise<{ nodes: number; selections: number }> =>
         (await apiClient.get(`/courses-admin/delete-preview/${id}`)).data.data,
 

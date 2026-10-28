@@ -12,6 +12,7 @@ import StudentSidebar from './student/StudentSidebar';
 import AllCoursesTab from './student/course/components/CourseTab';
 import EnrolledCoursesTab from './student/enrollment/components/EnrollmentTab';
 import ProfilePage from './student/profile/components/ProfilePage';
+import FeedbackTab from './student/testimonial/components/FeedbackTab';
 import theme from './landingPage/theme';
 import { Box, CssBaseline } from '@mui/material';
 import Header from './landingPage/components/Header';
@@ -97,6 +98,7 @@ function App() {
                   <Routes>
                     <Route path="enrolled-courses" element={<EnrolledCoursesTab />} />
                     <Route path="courses" element={<AllCoursesTab />} />
+                    <Route path="feedback" element={<FeedbackTab />} />
                     <Route path="profile" element={<ProfilePage />} />
                     <Route path="/" element={<UserDashboard userId={user?.userId || ''} />} />
                   </Routes>

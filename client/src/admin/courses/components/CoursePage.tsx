@@ -6,15 +6,19 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import DownloadIcon from '@mui/icons-material/FileDownload';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
+import RateReviewIcon from '@mui/icons-material/RateReview';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { courseService } from '../services/api';
+import { reviewService } from '../../testimonials/services/api';
+
 
 import CurriculumTree from './CurriCulumTree';
 import { buildTree, collectAllIds, collectTags, filterTree, type FlatNode, type TreeNode } from '../../../utils/courseTree';
+import NodeReviewsDialog from './NodeReviewDialog';
+import { exportTopicStudentsToExcel } from '../../../utils/excel';
 
 const MAX_DEPTH = 6;
 
@@ -39,6 +43,8 @@ export default function CoursePage() {
     const { data: flat = [], isLoading, error } = useQuery({ queryKey: ['admin-tree'], queryFn: courseService.getTree });
     const { data: counts = {} } = useQuery({ queryKey: ['admin-selection-counts'], queryFn: courseService.getSelectionCounts });
 
+    const { data: reviewStats = {} } = useQuery({ queryKey: ['admin-review-stats'], queryFn: reviewService.getStats });
+
     const tree = useMemo(() => buildTree(flat), [flat]);
     const allTags = useMemo(() => collectTags(tree), [tree]);
 
@@ -48,6 +54,7 @@ export default function CoursePage() {
     const [form, setForm] = useState<FormState | null>(null);
     const [moving, setMoving] = useState<{ node: TreeNode; target: string } | null>(null);
     const [deleting, setDeleting] = useState<{ node: TreeNode; nodes: number; selections: number } | null>(null);
+    const [reviewing, setReviewing] = useState<TreeNode | null>(null);
     const [toast, setToast] = useState<{ msg: string; severity: 'success' | 'error' } | null>(null);
 
     const filtering = !!(query.trim() || tag);
@@ -80,11 +87,18 @@ export default function CoursePage() {
         onError,
     });
 
-    const reorder = useMutation({
-        mutationFn: ({ id, dir }: { id: string; dir: 'up' | 'down' }) => courseService.reorderCourse(id, dir),
-        onSuccess: refresh,
-        onError,
-    });
+    const downloadStudents = async (n: TreeNode) => {
+        try {
+            const res = await courseService.exportCourseStudents(n._id);
+            if (!res.data?.length) {
+                setToast({ msg: 'No students have selected this topic yet.', severity: 'error' });
+                return;
+            }
+            exportTopicStudentsToExcel(res.data, n.title, pathLabel(n));
+        } catch (e) {
+            onError(e);
+        }
+    };
 
     const remove = useMutation({
         mutationFn: (id: string) => courseService.deleteCourse(id),
@@ -137,15 +151,18 @@ export default function CoursePage() {
                     renderMeta={(n: any) => (
                         <Typography variant="caption" color="text.secondary">
                             {n.children.length ? `${n.children.length} item(s)` : `${counts[n._id] ?? 0} student(s) selected`}
+                            {reviewStats[n._id]?.allCount ? ` · ★ ${reviewStats[n._id].allAvg} (${reviewStats[n._id].allCount})` : ''}
                             {n.isActive === false && ' · hidden from students'}
                         </Typography>
                     )}
                     renderActions={(n: any) => (
                         <Box sx={{ display: 'flex', flexShrink: 0 }}>
+                            <Tooltip title="Feedback"><IconButton size="small" onClick={() => setReviewing(n)}><RateReviewIcon fontSize="small" /></IconButton></Tooltip>
                             <Tooltip title="Add child"><span><IconButton size="small" disabled={n.depth + 1 >= MAX_DEPTH} onClick={() => setForm(emptyForm(n._id))}><AddIcon fontSize="small" /></IconButton></span></Tooltip>
                             <Tooltip title="Edit"><IconButton size="small" onClick={() => setForm({ id: n._id, parentId: n.parentId, title: n.title, description: n.description, tags: n.tags, isActive: n.isActive !== false, updatedAt: n.updatedAt })}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                            <Tooltip title="Move up"><IconButton size="small" disabled={filtering} onClick={() => reorder.mutate({ id: n._id, dir: 'up' })}><ArrowUpwardIcon fontSize="small" /></IconButton></Tooltip>
-                            <Tooltip title="Move down"><IconButton size="small" disabled={filtering} onClick={() => reorder.mutate({ id: n._id, dir: 'down' })}><ArrowDownwardIcon fontSize="small" /></IconButton></Tooltip>
+                            {n.children.length === 0 && (
+                                <Tooltip title="Download students (Excel)"><IconButton size="small" onClick={() => downloadStudents(n)}><DownloadIcon fontSize="small" /></IconButton></Tooltip>
+                            )}
                             <Tooltip title="Move under another parent"><IconButton size="small" onClick={() => setMoving({ node: n, target: n.parentId ?? '' })}><DriveFileMoveIcon fontSize="small" /></IconButton></Tooltip>
                             <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => askDelete(n)}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
                         </Box>
@@ -205,6 +222,8 @@ export default function CoursePage() {
                     <Button color="error" variant="contained" disabled={remove.isPending} onClick={() => deleting && remove.mutate(deleting.node._id)}>Delete</Button>
                 </DialogActions>
             </Dialog>
+
+            <NodeReviewsDialog node={reviewing} onClose={() => setReviewing(null)} />
 
             <Snackbar open={!!toast} autoHideDuration={4000} onClose={() => setToast(null)}>
                 {toast ? <Alert severity={toast.severity} onClose={() => setToast(null)}>{toast.msg}</Alert> : undefined}

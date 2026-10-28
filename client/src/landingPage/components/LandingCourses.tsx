@@ -13,32 +13,36 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import PublicIcon from "@mui/icons-material/Public";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import SchoolIcon from "@mui/icons-material/School";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
-import QuizOutlinedIcon from "@mui/icons-material/QuizOutlined";
 import FunctionsIcon from "@mui/icons-material/Functions";
-import type { SvgIconComponent } from "@mui/icons-material";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import { getLandingCurriculum, type LandingFlatNode } from "../api";
 
-const ICONS: Record<string, SvgIconComponent> = {
-    public: PublicIcon,
-    bank: AccountBalanceIcon,
-    school: SchoolIcon,
-    award: WorkspacePremiumIcon,
-    quiz: QuizOutlinedIcon,
-    functions: FunctionsIcon,
+/** One card: a topic from the database plus everything inside it. */
+interface LandingNode extends LandingFlatNode {
+    children: LandingNode[];
+}
+
+/** Flat list from the server -> nested cards (built once, drilling in/out needs no more requests). */
+const buildLandingTree = (flat: LandingFlatNode[]): LandingNode[] => {
+    const map = new Map<string, LandingNode>();
+    flat.forEach((n) => map.set(n._id, { ...n, children: [] }));
+    const roots: LandingNode[] = [];
+    flat.forEach((n) => {
+        const node = map.get(n._id)!;
+        const parent = n.parentId ? map.get(n.parentId) : undefined;
+        (parent ? parent.children : roots).push(node);
+    });
+    const sort = (list: LandingNode[]) => {
+        list.sort((a, b) => a.order - b.order);
+        list.forEach((c) => sort(c.children));
+    };
+    sort(roots);
+    return roots;
 };
 
-interface DemoNode {
-    id: string;
-    title: string;
-    label: string;
-    icon?: keyof typeof ICONS;
-    logo?: string;
-    description: string;
-    children?: DemoNode[];
-}
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 /** Unacademy-style flat illustrations, cycled across cards. */
 const GENERAL_COVERS = [
@@ -55,290 +59,6 @@ const getGeneralCover = (index: number) =>
 const PASTEL_PANELS = ["#B8D4E8", "#F0B8B0", "#F0D878", "#C5E0D8", "#D4C4E8", "#F5D0A8", "#C8D8F0"];
 
 const getPastel = (index: number) => PASTEL_PANELS[index % PASTEL_PANELS.length];
-
-const DEMO_DATA: DemoNode[] = [
-    {
-        id: "ib",
-        title: "IB",
-        label: "IB",
-        icon: "public",
-        description:
-            "The International Baccalaureate (IB) offers rigorous, globally recognised programmes that build strong mathematical reasoning and problem-solving skills for university and beyond.",
-        children: [
-            {
-                id: "ib-aa",
-                title: "IBDP Mathematics: Analysis and Approaches HL & SL",
-                label: "AA",
-                description:
-                    "Focused on algebraic and analytical techniques, calculus, and proof — designed for students who enjoy the abstract, theoretical side of mathematics.",
-            },
-            {
-                id: "ib-ai",
-                title: "IBDP Mathematics: Applications and Interpretation HL & SL",
-                label: "AI",
-                description:
-                    "Emphasises statistics, modelling, and technology-driven problem solving — ideal for students interested in real-world applications of mathematics.",
-            },
-            {
-                id: "ib-myp",
-                title: "IB MYP Extended Mathematics",
-                label: "MYP",
-                description:
-                    "An extended pathway within the Middle Years Programme that challenges students with deeper mathematical content ahead of Diploma-level study.",
-            },
-            {
-                id: "ib-std",
-                title: "IB Standard Mathematics",
-                label: "STD",
-                description:
-                    "A balanced foundation in core mathematical concepts, building the skills students need to progress confidently through the IB curriculum.",
-            },
-        ],
-    },
-    {
-        id: "caie",
-        title: "Cambridge Assessment International Education",
-        label: "CAIE",
-        icon: "bank",
-        description:
-            "Cambridge International offers globally benchmarked qualifications across AS & A Level, IGCSE, spanning pure mathematics, mechanics, and statistics.",
-        children: [
-            {
-                id: "caie-9231",
-                title: "AS & A Level Further Mathematics 9231",
-                label: "9231",
-                description:
-                    "An advanced qualification extending beyond A Level Mathematics, covering further pure mathematics, mechanics, and probability & statistics.",
-                children: [
-                    {
-                        id: "caie-9231-p1",
-                        title: "Paper 1 Further Pure Mathematics",
-                        label: "P1",
-                        description:
-                            "Advanced pure mathematics techniques including complex numbers, matrices, and further calculus.",
-                    },
-                    {
-                        id: "caie-9231-p2",
-                        title: "Paper 2 Further Pure Mathematics",
-                        label: "P2",
-                        description:
-                            "Continues the pure mathematics strand with deeper coverage of series, differential equations, and proof.",
-                    },
-                    {
-                        id: "caie-9231-p3",
-                        title: "Paper 3 Further Mechanics",
-                        label: "P3",
-                        description:
-                            "Explores advanced mechanics topics such as momentum, circular motion, and rigid body dynamics.",
-                    },
-                    {
-                        id: "caie-9231-p4",
-                        title: "Paper 4 Further Probability & Statistics",
-                        label: "P4",
-                        description:
-                            "Builds on core statistics with advanced probability distributions and hypothesis testing.",
-                    },
-                ],
-            },
-            {
-                id: "caie-9709",
-                title: "AS & A-Level Mathematics 9709",
-                label: "9709",
-                description:
-                    "One of the most widely taken Cambridge qualifications, covering pure mathematics, mechanics, and probability & statistics across six papers.",
-                children: [
-                    {
-                        id: "caie-9709-p1",
-                        title: "Paper 1 Pure Mathematics",
-                        label: "P1",
-                        description:
-                            "Foundational pure mathematics covering algebra, functions, and calculus.",
-                    },
-                    {
-                        id: "caie-9709-p2",
-                        title: "Paper 2 Pure Mathematics",
-                        label: "P2",
-                        description:
-                            "Continues pure mathematics with further calculus, trigonometry, and algebraic methods.",
-                    },
-                    {
-                        id: "caie-9709-p3",
-                        title: "Paper 3 Pure Mathematics",
-                        label: "P3",
-                        description:
-                            "Advanced pure mathematics including numerical methods, vectors, and differential equations.",
-                    },
-                    {
-                        id: "caie-9709-p4",
-                        title: "Paper 4 Mechanics",
-                        label: "P4",
-                        description:
-                            "Introduces mechanics concepts including forces, motion, and energy.",
-                    },
-                    {
-                        id: "caie-9709-p5",
-                        title: "Paper 5 Probability & Statistics",
-                        label: "P5",
-                        description:
-                            "Covers representation of data, probability, and discrete random variables.",
-                    },
-                    {
-                        id: "caie-9709-p6",
-                        title: "Paper 6 Probability & Statistics",
-                        label: "P6",
-                        description:
-                            "Extends statistical concepts with continuous distributions and hypothesis testing.",
-                    },
-                ],
-            },
-            {
-                id: "caie-0606",
-                title: "IGCSE Additional Mathematics 0606",
-                label: "0606",
-                description:
-                    "A challenging IGCSE option that bridges the gap to A Level, covering functions, trigonometry, and calculus basics.",
-            },
-            {
-                id: "caie-0607",
-                title: "IGCSE International Mathematics 0607",
-                label: "0607",
-                description:
-                    "An internationally focused syllabus emphasising practical application of mathematical concepts.",
-            },
-            {
-                id: "caie-0580-ext",
-                title: "IGCSE Extended Mathematics 0580-Extended",
-                label: "EXT",
-                description:
-                    "The extended tier of IGCSE Mathematics, covering a broader and more challenging range of topics.",
-            },
-            {
-                id: "caie-0580-core",
-                title: "IGCSE Mathematics 0580-Core",
-                label: "COR",
-                description:
-                    "The core tier of IGCSE Mathematics, focusing on essential mathematical skills and understanding.",
-            },
-        ],
-    },
-    {
-        id: "edexcel",
-        title: "Edexcel",
-        label: "EDX",
-        icon: "school",
-        description:
-            "Edexcel qualifications provide flexible, internationally recognised routes through advanced pure and discrete mathematics.",
-        children: [
-            {
-                id: "edexcel-fp",
-                title: "A-Level Further Pure Mathematics",
-                label: "FP",
-                description:
-                    "Deepens understanding of pure mathematics beyond the core A-Level syllabus, preparing students for STEM degrees.",
-            },
-            {
-                id: "edexcel-dm",
-                title: "A-Level Discrete Mathematics",
-                label: "DM",
-                description:
-                    "Covers algorithms, graph theory, and decision mathematics used widely in computer science and operations research.",
-            },
-        ],
-    },
-    {
-        id: "ap",
-        title: "Advanced Placement",
-        label: "AP",
-        icon: "award",
-        description:
-            "College Board's Advanced Placement programme lets students earn college-level credit while still in high school.",
-        children: [
-            {
-                id: "ap-calc-ab",
-                title: "AP Calculus AB",
-                label: "AB",
-                description:
-                    "An introductory college-level calculus course covering limits, derivatives, and integrals.",
-            },
-            {
-                id: "ap-calc-bc",
-                title: "AP Calculus BC",
-                label: "BC",
-                description:
-                    "Extends AP Calculus AB with additional topics such as series and parametric equations.",
-            },
-            {
-                id: "ap-stats",
-                title: "AP Statistics",
-                label: "STAT",
-                description:
-                    "Introduces students to the major concepts of collecting, analysing, and drawing conclusions from data.",
-            },
-        ],
-    },
-    {
-        id: "foreign-admission",
-        title: "Foreign Admission Tests",
-        label: "FAT",
-        icon: "quiz",
-        description:
-            "Preparation for standardised admissions tests required by universities abroad.",
-        children: [
-            {
-                id: "tmua",
-                title: "TMUA",
-                label: "TMUA",
-                icon: "quiz",
-                description:
-                    "The Test of Mathematics for University Admission, used by several UK universities for maths and joint-honours courses.",
-            },
-        ],
-    },
-    {
-        id: "indian-admission",
-        title: "Indian Admission Tests",
-        label: "IAT",
-        icon: "quiz",
-        description:
-            "Preparation for entrance examinations required for admission into Indian institutions.",
-        children: [
-            {
-                id: "mht-cet",
-                title: "MHT CET",
-                label: "CET",
-                icon: "quiz",
-                description:
-                    "Maharashtra's Common Entrance Test for admission into engineering and pharmacy programmes.",
-            },
-        ],
-    },
-    {
-        id: "state-engineering",
-        title: "State Engineering Entrance Tests",
-        label: "SEET",
-        icon: "quiz",
-        description:
-            "Preparation for state and national level engineering entrance examinations.",
-        children: [
-            {
-                id: "bitsat",
-                title: "BITSAT",
-                label: "BITS",
-                icon: "quiz",
-                description:
-                    "The Birla Institute of Technology and Science Admission Test for undergraduate engineering programmes.",
-            },
-            {
-                id: "cuet",
-                title: "CUET",
-                label: "CUET",
-                icon: "quiz",
-                description:
-                    "The Common University Entrance Test used for admission into central and participating universities.",
-            },
-        ],
-    },
-];
 
 interface ThumbProps {
     cover: string;
@@ -390,13 +110,30 @@ const Thumbnail: React.FC<ThumbProps> = ({ cover, index }) => {
 };
 
 const Courses: React.FC = () => {
-    const [path, setPath] = useState<DemoNode[]>([]);
+    const [tree, setTree] = useState<LandingNode[]>([]);
+    const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
+    const [path, setPath] = useState<LandingNode[]>([]);
+
+    // Load every visible topic once, straight from the database
+    useEffect(() => {
+        let cancelled = false;
+        getLandingCurriculum()
+            .then((flat) => {
+                if (cancelled) return;
+                setTree(buildLandingTree(flat));
+                setStatus("ready");
+            })
+            .catch(() => !cancelled && setStatus("error"));
+        return () => {
+            cancelled = true;
+        };
+    }, []);
     // const skipScrollOnMount = useRef(true);
 
-    const currentLevel: DemoNode[] = useMemo(() => {
-        if (path.length === 0) return DEMO_DATA;
-        return path[path.length - 1].children ?? [];
-    }, [path]);
+    const currentLevel: LandingNode[] = useMemo(() => {
+        if (path.length === 0) return tree;
+        return path[path.length - 1].children;
+    }, [path, tree]);
 
     // Keep Academic Catalogue in view when drilling into / out of programme levels.
     // useEffect(() => {
@@ -417,8 +154,8 @@ const Courses: React.FC = () => {
     //     });
     // }, [path]);
 
-    const handleExplore = (node: DemoNode) => {
-        if (node.children && node.children.length > 0) {
+    const handleExplore = (node: LandingNode) => {
+        if (node.children.length > 0) {
             setPath((prev) => [...prev, node]);
         }
     };
@@ -431,7 +168,8 @@ const Courses: React.FC = () => {
     const subheading =
         path.length === 0
             ? "Structured pathways across international boards and entrance exams — pick a track and go deeper."
-            : path[path.length - 1].description;
+            : path[path.length - 1].description ||
+            `${plural(path[path.length - 1].children.length, "topic")} inside. Pick one to go deeper.`;
 
     return (
         <Box
@@ -509,7 +247,7 @@ const Courses: React.FC = () => {
                     {path.length === 0 && (
                         <Chip
                             icon={<FunctionsIcon sx={{ fontSize: "16px !important" }} />}
-                            label={`${DEMO_DATA.length} programmes`}
+                            label={plural(tree.length, "programme")}
                             sx={{
                                 alignSelf: { xs: "flex-start", md: "flex-end" },
                                 bgcolor: "#fff",
@@ -579,7 +317,7 @@ const Courses: React.FC = () => {
                             </Link>
                             {path.map((node, idx) => (
                                 <Link
-                                    key={node.id}
+                                    key={node._id}
                                     component="button"
                                     underline="hover"
                                     onClick={() => goToCrumb(idx)}
@@ -615,12 +353,12 @@ const Courses: React.FC = () => {
                         rowGap: { xs: 5, md: 6 },
                     }}
                 >
-                    {currentLevel.length > 0 ? (
+                    {status === "ready" && currentLevel.length > 0 ? (
                         currentLevel.map((node, idx) => {
-                            const hasChildren = !!node.children && node.children.length > 0;
+                            const hasChildren = node.children.length > 0;
                             return (
                                 <Box
-                                    key={node.id}
+                                    key={node._id}
                                     className="course-card"
                                     onClick={() => handleExplore(node)}
                                     role={hasChildren ? "button" : undefined}
@@ -645,7 +383,7 @@ const Courses: React.FC = () => {
                                     }}
                                 >
                                     <Box className="thumb-frame">
-                                        <Thumbnail cover={getGeneralCover(idx)} index={idx} />
+                                        <Thumbnail cover={getGeneralCover(idx + path.length)} index={idx + path.length} />
                                     </Box>
 
                                     <Box sx={{ pt: 2.75, px: 0.25 }}>
@@ -676,11 +414,45 @@ const Courses: React.FC = () => {
                                                 WebkitLineClamp: 3,
                                                 WebkitBoxOrient: "vertical",
                                                 overflow: "hidden",
+                                                mb: 1.25,
+                                            }}
+                                        >
+                                            {node.description ||
+                                                (hasChildren ? `${plural(node.children.length, "topic")} inside` : "")}
+                                        </Typography>
+
+                                        {/* students enrolled · rating · topics inside */}
+                                        <Stack
+                                            direction="row"
+                                            spacing={1.75}
+                                            sx={{
+                                                alignItems: "center",
+                                                flexWrap: "wrap",
+                                                rowGap: 0.5,
+                                                color: "#7A8B94",
+                                                fontSize: "0.85rem",
                                                 mb: hasChildren ? 1.5 : 0,
                                             }}
                                         >
-                                            {node.description}
-                                        </Typography>
+                                            <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                                                <PeopleAltOutlinedIcon sx={{ fontSize: 16 }} />
+                                                <span>{plural(node.students, "student")}</span>
+                                            </Stack>
+                                            {node.reviews > 0 && (
+                                                <Stack direction="row" spacing={0.4} sx={{ alignItems: "center" }}>
+                                                    <StarRoundedIcon sx={{ fontSize: 17, color: "#F59E0B" }} />
+                                                    <span>
+                                                        {node.rating.toFixed(1)} ({node.reviews})
+                                                    </span>
+                                                </Stack>
+                                            )}
+                                            {hasChildren && (
+                                                <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                                                    <LayersOutlinedIcon sx={{ fontSize: 16 }} />
+                                                    <span>{plural(node.children.length, "topic")}</span>
+                                                </Stack>
+                                            )}
+                                        </Stack>
 
                                         {hasChildren && (
                                             <Stack
@@ -712,7 +484,11 @@ const Courses: React.FC = () => {
                                 py: 6,
                             }}
                         >
-                            No courses found.
+                            {status === "loading"
+                                ? "Loading courses…"
+                                : status === "error"
+                                    ? "Could not load courses. Please try again later."
+                                    : "No courses found."}
                         </Typography>
                     )}
                 </Box>
