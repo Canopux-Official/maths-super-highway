@@ -53,7 +53,7 @@ export default function NodeReviewsDialog({ node, onClose }: Props) {
                     )}
                 </Stack>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                    A review appears on the landing page only when it is switched on here and its topic has an average of 4.5 or more from at least 3 reviews.
+                    A review appears on the landing page only when it is switched on here and its topic has an average of 4.2 or more from at least 3 reviews.
                 </Typography>
                 {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 1 }}>{error}</Alert>}
                 {isLoading && <Typography>Loading…</Typography>}
