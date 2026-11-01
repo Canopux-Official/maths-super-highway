@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Box,
     Typography,
@@ -17,7 +18,9 @@ import FunctionsIcon from "@mui/icons-material/Functions";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+
 import { getLandingCurriculum, type LandingFlatNode } from "../api";
+import { useAuth } from "../../context/AuthContext";
 
 /** One card: a topic from the database plus everything inside it. */
 interface LandingNode extends LandingFlatNode {
@@ -110,6 +113,10 @@ const Thumbnail: React.FC<ThumbProps> = ({ cover, index }) => {
 };
 
 const Courses: React.FC = () => {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const isLoggedIn = !!user; // adjust if your AuthContext uses another name
+
     const [tree, setTree] = useState<LandingNode[]>([]);
     const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
     const [path, setPath] = useState<LandingNode[]>([]);
@@ -128,32 +135,13 @@ const Courses: React.FC = () => {
             cancelled = true;
         };
     }, []);
-    // const skipScrollOnMount = useRef(true);
 
     const currentLevel: LandingNode[] = useMemo(() => {
         if (path.length === 0) return tree;
         return path[path.length - 1].children;
     }, [path, tree]);
 
-    // Keep Academic Catalogue in view when drilling into / out of programme levels.
-    // useEffect(() => {
-    //     if (skipScrollOnMount.current) {
-    //         skipScrollOnMount.current = false;
-    //         return;
-    //     }
-
-    //     const section = document.getElementById("courses");
-    //     if (!section) return;
-
-    //     const headerOffset = 88; // sticky AppBar clearance
-    //     const top = section.getBoundingClientRect().top + window.scrollY - headerOffset;
-
-    //     window.scrollTo({
-    //         top: Math.max(0, top),
-    //         behavior: "smooth",
-    //     });
-    // }, [path]);
-
+    // Anyone can open any programme and see everything inside it
     const handleExplore = (node: LandingNode) => {
         if (node.children.length > 0) {
             setPath((prev) => [...prev, node]);
@@ -491,6 +479,22 @@ const Courses: React.FC = () => {
                                     : "No courses found."}
                         </Typography>
                     )}
+                </Box>
+
+                {/* Bottom note: depends on whether the visitor is signed in */}
+                <Box sx={{ mt: 6, textAlign: "center" }}>
+                    <Typography sx={{ color: "#475569", fontSize: "0.95rem", mb: 1.5 }}>
+                        {isLoggedIn
+                            ? "Go to the student portal and open All Courses to see the courses and select the ones you want."
+                            : "Please sign in to choose courses on the student portal."}
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        onClick={() => navigate(isLoggedIn ? "/student/courses" : "/login")}
+                        sx={{ borderRadius: "10px", fontWeight: 700, textTransform: "none" }}
+                    >
+                        {isLoggedIn ? "Go to student portal" : "Sign in"}
+                    </Button>
                 </Box>
             </Container>
         </Box>
