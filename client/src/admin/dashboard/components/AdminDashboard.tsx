@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box, Container, Typography, Alert,
-  Skeleton, Divider
+  Skeleton, Divider, Button
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
@@ -40,28 +41,98 @@ const StatSkeleton = () => (
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchStats = useCallback((isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+
     adminDashboardService
       .getStats()
-      .then(setStats)
+      .then((data) => {
+        setStats(data);
+        setLastUpdated(new Date());
+      })
       .catch(() => setError('Failed to load admin dashboard data.'))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   }, []);
+
+  useEffect(() => {
+    fetchStats(false);
+  }, [fetchStats]);
 
   return (
     <Box sx={{ py: 5, bgcolor: '#f5f5f5', minHeight: '100vh' }}>
       <Container maxWidth="lg">
 
         {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="overline" sx={{ color: '#1A237E', fontWeight: 700, letterSpacing: 1 }}>
-            Admin Panel
-          </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#1a1a1a' }}>
-            Dashboard
-          </Typography>
+        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="overline" sx={{ color: '#1A237E', fontWeight: 700, letterSpacing: 1 }}>
+              Admin Panel
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1a1a1a' }}>
+              Dashboard
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {lastUpdated && (
+              <Typography variant="caption" sx={{ color: '#64748B', display: { xs: 'none', sm: 'block' } }}>
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </Typography>
+            )}
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => fetchStats(true)}
+              disabled={refreshing || loading}
+              startIcon={
+                <RefreshIcon
+                  sx={{
+                    fontSize: '1.1rem !important',
+                    animation: refreshing ? 'spin 1s linear infinite' : 'none',
+                    '@keyframes spin': {
+                      '0%': { transform: 'rotate(0deg)' },
+                      '100%': { transform: 'rotate(360deg)' },
+                    },
+                  }}
+                />
+              }
+              sx={{
+                borderColor: '#CBD5E1',
+                color: '#1A237E',
+                bgcolor: '#fff',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                textTransform: 'none',
+                borderRadius: '8px',
+                px: 2,
+                py: 0.75,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                '&:hover': {
+                  borderColor: '#1A237E',
+                  bgcolor: '#F8FAFC',
+                },
+                '&.Mui-disabled': {
+                  bgcolor: '#F1F5F9',
+                  borderColor: '#E2E8F0',
+                  color: '#94A3B8',
+                },
+              }}
+            >
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </Box>
         </Box>
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}

@@ -259,6 +259,10 @@ interface TickerItem {
     createdAt: string;
 }
 
+interface TickerResponse {
+    data?: TickerItem[] | { data?: TickerItem[] };
+}
+
 const NewsTicker: React.FC = () => {
     const [news, setNews] = useState<TickerItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -269,8 +273,15 @@ const NewsTicker: React.FC = () => {
 
     useEffect(() => {
         getNewsTicker()
-            .then((res: any) => {
-                const apiItems = res?.data?.data || res?.data || [];
+            .then((res: TickerResponse | TickerItem[]) => {
+                const resData = (res as { data?: unknown })?.data;
+                const apiItems = (
+                    Array.isArray(res)
+                        ? res
+                        : Array.isArray(resData)
+                        ? resData
+                        : (resData as { data?: TickerItem[] })?.data || []
+                ) as TickerItem[];
                 setNews(apiItems);
             })
             .catch((err) => {
@@ -282,15 +293,16 @@ const NewsTicker: React.FC = () => {
 
     useEffect(() => {
         if (contentRef.current && news.length > 0) {
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 if (contentRef.current) {
                     const w = contentRef.current.scrollWidth / 2; // still divide by 2 — two copies
                     setContentWidth(w);
                     x.set(window.innerWidth);
                 }
             }, 100);
+            return () => clearTimeout(timer);
         }
-    }, [news]);
+    }, [news, x]);
 
     useAnimationFrame((_, delta) => {
         if (contentWidth === 0 || isPaused.current) return;
@@ -312,7 +324,7 @@ const NewsTicker: React.FC = () => {
 
     if (loading) {
         return (
-            <Box sx={{ position: "absolute", bottom: 0, left: 0, width: "100%", zIndex: 1100 }}>
+            <Box sx={{ position: "absolute", bottom: 0, left: 0, width: "100%", zIndex: 20 }}>
                 <Skeleton variant="rectangular" width="100%" height={40} sx={{ bgcolor: "rgba(255,255,255,0.06)" }} />
             </Box>
         );
@@ -330,7 +342,7 @@ const NewsTicker: React.FC = () => {
                 bottom: 0,
                 left: 0,
                 width: "100%",
-                zIndex: 1100,
+                zIndex: 20,
                 bgcolor: "#05101D",
                 borderTop: "2px solid #06B6D4",
                 display: "flex",

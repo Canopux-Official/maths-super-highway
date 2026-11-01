@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import FunctionsIcon from "@mui/icons-material/Functions";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -31,7 +30,7 @@ const navLinks = [
 const Header: React.FC = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const navigate: any = useNavigate();
+    const navigate = useNavigate();
     const { user, logout } = useAuth();
     const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
@@ -65,6 +64,7 @@ const Header: React.FC = () => {
                 position="fixed"
                 elevation={0}
                 sx={{
+                    zIndex: (theme) => theme.zIndex.appBar,
                     background: scrolled
                         ? "rgba(10, 22, 40, 0.92)"
                         : "transparent",
@@ -87,7 +87,7 @@ const Header: React.FC = () => {
                             }}
                             onClick={() => handleNavClick("#hero")}
                         >
-                                <img src="/transparentLogo.png" alt="Logo" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
+                            <img src="/transparentLogo.png" alt="Logo" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
                             <Box>
                                 <Typography
                                     sx={{
@@ -318,13 +318,13 @@ const Header: React.FC = () => {
                 </List>
             </Drawer>
 
-            <ConfirmDialog 
-                open={logoutConfirmOpen} 
-                title="Logout" 
-                message="Are you sure you want to log out?" 
-                onConfirm={confirmLogout} 
-                onCancel={() => setLogoutConfirmOpen(false)} 
-                confirmColor="error" 
+            <ConfirmDialog
+                open={logoutConfirmOpen}
+                title="Logout"
+                message="Are you sure you want to log out?"
+                onConfirm={confirmLogout}
+                onCancel={() => setLogoutConfirmOpen(false)}
+                confirmColor="error"
                 confirmText="Logout"
             />
         </>
