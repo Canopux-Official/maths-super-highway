@@ -17,8 +17,8 @@ import EmailIcon from "@mui/icons-material/Email";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
-import TelegramIcon from "@mui/icons-material/Telegram";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { LinkedIn } from "@mui/icons-material";
 
 const quickLinks = [
     { label: "Home", href: "#hero" },
@@ -31,7 +31,7 @@ const socials = [
     { icon: <YouTubeIcon sx={{ fontSize: 18 }} />, label: "YouTube", href: "#", color: "#FF0000" },
     { icon: <FacebookIcon sx={{ fontSize: 18 }} />, label: "Facebook", href: "#", color: "#1877F2" },
     { icon: <InstagramIcon sx={{ fontSize: 18 }} />, label: "Instagram", href: "#", color: "#E4405F" },
-    { icon: <TelegramIcon sx={{ fontSize: 18 }} />, label: "Telegram", href: "#", color: "#2AABEE" },
+    { icon: <LinkedIn sx={{ fontSize: 18 }} />, label: "LinkedIn", href: "https://www.linkedin.com/in/mukesh-srivastava-1031851?utm_source=share_via&utm_content=profile&utm_medium=member_android", color: "#2AABEE" },
 ];
 
 const Footer: React.FC = () => {
@@ -110,7 +110,7 @@ const Footer: React.FC = () => {
                     <Box>
                         {/* Logo */}
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2.5 }}>
-                                <img src="/transparentLogo.png" alt="Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain' }} />
+                            <img src="/transparentLogo.png" alt="Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain' }} />
                             <Box>
                                 <Typography
                                     sx={{
