@@ -1,92 +1,72 @@
 import Course from "../models/courses";
+import Enrollment from "../models/enrollment";
 import Headline from "../models/headline";
-import Testimonial from "../models/testimonials";
 import { Request, Response } from 'express';
 
-export const getLandingPageTestimonials = async (req: Request, res: Response) => {
+// Landing testimonials now live in testimonial.controller.ts (admin-approved + 4.5 average rule)
+import { computeNodeStats } from './testimonial.controller';
+export { getLandingPageTestimonials } from './testimonial.controller';
+
+// GET /landing-page/curriculum  (public)
+// Every topic a visitor may see, in one flat list, with 3 public numbers per item:
+//   students = different students who selected it or anything inside it
+//   rating / reviews = average and count of reviews on it or anything inside it
+// A topic is visible if it and all its parents are active.
+export const getLandingCurriculum = async (_req: Request, res: Response) => {
   try {
-    const testimonials = await Testimonial.aggregate([
-      // 1. Filter for top ratings (4 and 5 stars)
-      {
-        $match: { rating: { $gte: 4 } }
-      },
-      // 2. Sort by newest first
-      {
-        $sort: { createdAt: -1 }
-      },
-      // 3. Limit to 6 for the grid
-      {
-        $limit: 6
-      },
-      // 4. Join with Users collection
-      {
-        $lookup: {
-          from: 'users',           // Check your DB - usually lowercase plural
-          localField: 'user',      // Field in Testimonial
-          foreignField: '_id',     // Field in User
-          as: 'user'
-        }
-      },
-      // 5. Join with Courses collection
-      {
-        $lookup: {
-          from: 'courses',         // Check your DB - usually lowercase plural
-          localField: 'course',    // Field in Testimonial
-          foreignField: '_id',     // Field in Course
-          as: 'course'
-        }
-      },
-      // 6. Convert the joined arrays into single objects
-      { $unwind: '$user' },
-      { $unwind: '$course' },
-      // 7. Project only the fields you need for the UI
-      {
-        $project: {
-          rating: 1,
-          comment: 1,
-          message: 1,
-          createdAt: 1,
-          'user.name': 1,
-          'course.title': 1
-        }
-      }
+    const [nodes, enrollments, stats] = await Promise.all([
+      Course.find()
+        .select('title description parentId ancestors order isActive')
+        .sort({ depth: 1, order: 1, _id: 1 })
+        .lean(),
+      Enrollment.find().select('student course').lean(),
+      computeNodeStats(),
     ]);
 
-    return res.status(200).json({
-      success: true,
-      count: testimonials.length,
-      data: testimonials
+    const inactive = new Set(nodes.filter((n) => !n.isActive).map((n) => n._id.toString()));
+    const visible = nodes.filter((n) => n.isActive && !n.ancestors.some((a) => inactive.has(a.toString())));
+    const byId = new Map(visible.map((n) => [n._id.toString(), n]));
+
+    // distinct students per topic, counting every parent above it too
+    const studentsOf = new Map<string, Set<string>>();
+    const addStudent = (id: string, student: string) => {
+      let set = studentsOf.get(id);
+      if (!set) studentsOf.set(id, (set = new Set()));
+      set.add(student);
+    };
+    enrollments.forEach((e) => {
+      const node = byId.get(e.course.toString());
+      if (!node) return; // hidden or deleted topic
+      const student = e.student.toString();
+      addStudent(node._id.toString(), student);
+      node.ancestors.forEach((a) => addStudent(a.toString(), student));
     });
+
+    const data = visible.map((n) => {
+      const id = n._id.toString();
+      const r = stats.all.get(id);
+      return {
+        _id: n._id,
+        title: n.title,
+        description: n.description,
+        parentId: n.parentId,
+        order: n.order,
+        students: studentsOf.get(id)?.size ?? 0,
+        reviews: r?.count ?? 0,
+        rating: r && r.count ? Math.round((r.sum / r.count) * 10) / 10 : 0,
+      };
+    });
+
+    res.set('Cache-Control', 'public, max-age=300'); // up to 5 minutes behind the admin screen
+    return res.status(200).json({ success: true, data });
   } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: "Could not fetch testimonials for landing page",
-      error: error.message
-    });
+    return res.status(500).json({ success: false, message: error.message });
   }
-};
-
-
-export const getCourses = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        // If parentId is 'root', we look for null
-        const query = id === 'root' ? null : id;
-
-        const items = await Course.find({ parentId: query }).sort({ order: 1 });
-
-        return res.status(200).json({
-            success: true,
-            data: items
-        });
-    } catch (error: any) {
-        return res.status(500).json({ success: false, message: error.message });
-    }
 };
 
 export const getHeadlines = async (_req: Request, res: Response) => {
   try {
-    const headlines = await Headline.find({isActive : true}).sort({ createdAt: -1 });
+    const headlines = await Headline.find({ isActive: true }).sort({ createdAt: -1 });
     return res.status(200).json({ success: true, data: headlines });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

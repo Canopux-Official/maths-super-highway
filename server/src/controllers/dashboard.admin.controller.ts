@@ -11,14 +11,14 @@ import Headline from "../models/headline";
 // Admin dashboard stats
 // ─────────────────────────────────────────────
 
-export const adminDashboard   =  async (_req: Request, res: Response) => {
+export const adminDashboard = async (_req: Request, res: Response) => {
   try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
- 
+
     const [
       // ── Users ──
       totalUsers,
@@ -26,21 +26,21 @@ export const adminDashboard   =  async (_req: Request, res: Response) => {
       newUsersThisWeek,
       newUsersThisMonth,
       usersByRole,
- 
+
       // ── Courses ──
       totalFolders,
       totalPages,
       activeCourses,
- 
+
       // ── Enrollments ──
       totalEnrollments,
       mostEnrolledCourses,
- 
+
       // ── Testimonials ──
       totalTestimonials,
       ratingBreakdown,
       overallRating,
- 
+
       // ── Headlines ──
       liveHeadlines,
     ] = await Promise.all([
@@ -53,12 +53,12 @@ export const adminDashboard   =  async (_req: Request, res: Response) => {
         { $group: { _id: "$role", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
- 
+
       // Courses
-      Course.countDocuments({ itemType: "folder" }),
-      Course.countDocuments({ itemType: "page" }),
+      Course.countDocuments({ childCount: { $gt: 0 } }),   // parents
+      Course.countDocuments({ childCount: 0 }),
       Course.countDocuments({ isActive: true }),
- 
+
       // Enrollments
       Enrollment.countDocuments(),
       Enrollment.aggregate([
@@ -83,7 +83,7 @@ export const adminDashboard   =  async (_req: Request, res: Response) => {
           },
         },
       ]),
- 
+
       // Testimonials
       Testimonial.countDocuments(),
       Testimonial.aggregate([
@@ -93,11 +93,11 @@ export const adminDashboard   =  async (_req: Request, res: Response) => {
       Testimonial.aggregate([
         { $group: { _id: null, average: { $avg: "$rating" } } },
       ]),
- 
+
       // Headlines
       Headline.countDocuments({ isLive: true }),
     ]);
- 
+
     return res.status(200).json({
       users: {
         total: totalUsers,

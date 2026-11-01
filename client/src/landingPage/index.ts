@@ -3,7 +3,7 @@ export interface Course {
   title: string;
   content: string;
   itemType: string;
-  thumbnail? :{
+  thumbnail?: {
     url: string;
     publicId: string;
   }
@@ -11,10 +11,10 @@ export interface Course {
 
 
 export interface Testimonial {
-    _id: string;
-    rating: number;
-    message: string;
-    createdAt: string;
-    user: { name: string };
-    course: { title: string };
+  _id: string;
+  rating: number;
+  message: string;
+  createdAt: string;
+  user: { name: string };
+  course: { title: string; average?: number };
 }

@@ -293,9 +293,9 @@ import { getLandingPageTestimonials } from "../api";
 const clipText = (text: string, max = 100) =>
   text.length > max ? text.slice(0, max).trimEnd() + "…" : text;
 
-const CARD_WIDTH     = 340;  // px
-const CARD_GAP       = 24;   // px
-const SCROLL_SPEED   = 35;   // px per second — lower = slower
+const CARD_WIDTH = 340;  // px
+const CARD_GAP = 24;   // px
+const SCROLL_SPEED = 35;   // px per second — lower = slower
 const WRAP_THRESHOLD = 4;
 
 // ── TestimonialCard ───────────────────────────────────────────────
@@ -389,7 +389,7 @@ const TestimonialCard: React.FC<{ t: Testimonial }> = ({ t }) => (
           {t.user.name}
         </Typography>
         <Typography noWrap sx={{ color: "#1D4ED8", fontSize: "0.72rem", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
-          {t.course.title}
+          {t.course.title}{t.course.average ? ` · ★ ${t.course.average}` : ''}
         </Typography>
       </Box>
     </Box>
@@ -399,10 +399,10 @@ const TestimonialCard: React.FC<{ t: Testimonial }> = ({ t }) => (
 // ── Infinite Marquee ──────────────────────────────────────────────
 // Duplicates the list so it can scroll infinitely by looping.
 const InfiniteMarquee: React.FC<{ items: Testimonial[] }> = ({ items }) => {
-  const controls    = useAnimationControls();
-  const hoveredRef  = useRef(false);
-  const xRef        = useRef(0);          // current x position in px
-  const rafRef      = useRef<number>(0);
+  const controls = useAnimationControls();
+  const hoveredRef = useRef(false);
+  const xRef = useRef(0);          // current x position in px
+  const rafRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
 
   // Total width of one copy of the list
@@ -487,8 +487,8 @@ const WrappedGrid: React.FC<{ items: Testimonial[] }> = ({ items }) => (
 // ── Main Testimonials ─────────────────────────────────────────────
 const Testimonials: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getLandingPageTestimonials()

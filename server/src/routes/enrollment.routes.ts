@@ -1,12 +1,10 @@
 import express from 'express';
-import { checkEnrollment, enrollInCourse, unenrollFromCourse } from '../controllers/enrollment.controller';
+import { getMySelections, updateMySelections } from '../controllers/courses.user.controller';
 import { verifyAuth, verifyRole } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 
-router.post('/enroll',verifyAuth,verifyRole(["student"]),enrollInCourse);
-router.delete('/unenroll',verifyAuth,verifyRole(["student"]),unenrollFromCourse);
-
-router.get("/check-enrollment/:courseId", verifyAuth,verifyRole(["student"]),checkEnrollment);
+router.get('/mine', verifyAuth, verifyRole(['student']), getMySelections);
+router.post('/bulk', verifyAuth, verifyRole(['student']), updateMySelections);
 
 export default router;

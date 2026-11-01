@@ -32,7 +32,7 @@ export const getUserDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const enrollments = await Enrollment.find({ student: user._id }).populate('course', 'title category level price status isActive');
+    const enrollments = await Enrollment.find({ student: user._id }).populate('course', 'title tags isActive')
     const testimonials = await Testimonial.find({ user: user._id }).populate('course', 'title');
 
     res.status(200).json({
@@ -62,8 +62,8 @@ export const updateUserByAdmin = async (req: Request, res: Response) => {
 
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { 
-        $set: updateFields 
+      {
+        $set: updateFields
       },
       { new: true, runValidators: true }
     );

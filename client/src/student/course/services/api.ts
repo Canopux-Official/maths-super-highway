@@ -1,36 +1,21 @@
+import apiClient from '../../../context/api/apiClient';
+import type { FlatNode } from '../../../utils/courseTree';
 
-import apiClient from "../../../context/api/apiClient";
-
+export interface Selection {
+  courseId: string;
+  needsReview: boolean;
+}
 
 export const courseService = {
+  getTree: async (): Promise<FlatNode[]> => (await apiClient.get('/courses-user/tree')).data.data,
 
-  getSubItems: async (parentId: string) => {
-    const res = await apiClient.get(`/courses-user/${parentId}`);
-    return res.data;
-  },
+  getMySelections: async (): Promise<Selection[]> =>
+    (await apiClient.get('/courses-user/my-selections')).data.data,
 
-  getPageDetails: async (pageId: string) => {
-    const res = await apiClient.get(`/courses-user/getpage/${pageId}`);
-    return res.data;
-  },
+  // add / remove many leaf ids in one idempotent call
+  updateSelections: async (payload: { add?: string[]; remove?: string[] }) =>
+    (await apiClient.post('/courses-user/selections', payload)).data,
 
-  getMyEnrolledCourses: async () => {
-    const res = await apiClient.get(`/courses-user/myenroll-courses`);
-    return res.data;
-  },
-
-  getEnrolledStudents: async (id: string) => {
-    const response = await apiClient.get(`/courses-user/enrolled-count/${id}`);
-    return response.data;
-  },
-  getPdfBlobUrl: async (fileId: string): Promise<string> => {
-    const response = await apiClient.get(
-      `/courses-user/stream/pdf/${fileId}`,
-      {
-        responseType: 'blob',
-      }
-    );
-
-    return URL.createObjectURL(response.data);
-  },
+  markReviewed: async (id: string) =>
+    (await apiClient.patch(`/courses-user/selections/${id}/reviewed`)).data,
 };

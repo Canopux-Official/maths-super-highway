@@ -16,6 +16,7 @@ import {
     Home as HomeIcon,
 } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import FeedbackIcon from '@mui/icons-material/RateReview';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 const drawerWidth = 260;
@@ -23,7 +24,8 @@ const drawerWidth = 260;
 const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/student', description: 'Overview' },
     { text: 'All Courses', icon: <AllCoursesIcon />, path: '/student/courses', description: 'Browse content' },
-    { text: 'Enrolled Courses', icon: <EnrolledIcon />, path: '/student/enrolled-courses', description: 'Your progress' },
+    { text: 'My SuperHighway', icon: <EnrolledIcon />, path: '/student/enrolled-courses', description: 'Your progress' },
+    { text: 'Feedback', icon: <FeedbackIcon />, path: '/student/feedback', description: 'Share your experience' },
     { text: 'Profile', icon: <UserIcon />, path: '/student/profile', description: 'Account details' },
     { text: 'Back to Website', icon: <HomeIcon />, path: '/', description: 'Landing page' },
 ];
@@ -306,7 +308,9 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: { xs: 2, sm: 3, md: 4 },
+                    minWidth: 0,
+                    overflowX: 'hidden',
+                    p: { xs: 1.5, sm: 3, md: 4 },
                     bgcolor: '#F8FAFC',
                     minHeight: '100vh',
                     width: { xs: '100%', sm: `calc(100% - ${drawerWidth}px)` },
@@ -316,13 +320,13 @@ export default function StudentSidebar({ children }: { children: React.ReactNode
                 {children}
             </Box>
 
-            <ConfirmDialog 
-                open={logoutConfirmOpen} 
-                title="Logout" 
-                message="Are you sure you want to log out?" 
-                onConfirm={confirmLogout} 
-                onCancel={() => setLogoutConfirmOpen(false)} 
-                confirmColor="error" 
+            <ConfirmDialog
+                open={logoutConfirmOpen}
+                title="Logout"
+                message="Are you sure you want to log out?"
+                onConfirm={confirmLogout}
+                onCancel={() => setLogoutConfirmOpen(false)}
+                confirmColor="error"
                 confirmText="Logout"
             />
         </Box>

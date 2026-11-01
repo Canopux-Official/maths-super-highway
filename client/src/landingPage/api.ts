@@ -47,17 +47,34 @@ export const getLandingPageTestimonials = async (): Promise<Testimonial[]> => {
 };
 
 export const getNewsTicker = async () => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/landing-page/get-headlines`); // Adjust endpoint as needed
-        console.log(response)
-        return response.data; 
-    } catch (error) {
-        console.error("Error fetching news:", error);
-        return [];
-    }
+  try {
+    const response = await axios.get(`${API_BASE_URL}/landing-page/get-headlines`); // Adjust endpoint as needed
+    console.log(response)
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching news:", error);
+    return [];
+  }
 };
 
 export const getEnrolledStudents = async (id: string) => {
-    const response = await apiClient.get(`/landing-page/enrolled-count/${id}`);
-    return response.data;
+  const response = await apiClient.get(`/landing-page/enrolled-count/${id}`);
+  return response.data;
 }
+
+export interface LandingFlatNode {
+  _id: string;
+  title: string;
+  description: string;
+  parentId: string | null;
+  order: number;
+  students: number; // different students who selected it or anything inside it
+  reviews: number;  // number of reviews on it or anything inside it
+  rating: number;   // their average (0 when there are no reviews)
+}
+
+/** Every visible topic, flat. GET /landing-page/curriculum (public) */
+export const getLandingCurriculum = async (): Promise<LandingFlatNode[]> => {
+  const response = await apiClient.get("/landing-page/curriculum");
+  return response.data?.data || [];
+};
