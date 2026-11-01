@@ -74,30 +74,15 @@ import {
   Card, CardContent, Typography, Box,
   Divider, Chip, Stack
 } from '@mui/material';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import type { UserStats } from '../services/api';
 
 interface UserRecentEnrollmentsProps {
   recent: UserStats['enrollments']['recent'];
 }
-
-// ─── Detect if content is a Google Drive / PDF JSON blob ─────────────────────
-const isDriveContent = (content: string): boolean => {
-  if (!content) return false;
-  try {
-    const parsed = JSON.parse(content);
-    return !!(parsed.fileId || parsed.webViewLink || parsed.previewLink);
-  } catch {
-    return false;
-  }
-};
-
-// ─── Strip HTML tags and return plain text ────────────────────────────────────
-const stripHtml = (html: string): string =>
-  html.replace(/<[^>]*>?/gm, "").trim();
 
 // ─── Format date as "6 Jun 2026, 12:25 PM" ───────────────────────────────────
 const formatEnrolledAt = (iso: string): string => {
@@ -116,9 +101,14 @@ const UserRecentEnrollments: React.FC<UserRecentEnrollmentsProps> = ({ recent })
   return (
     <Card variant="outlined" sx={{ borderRadius: 2 }}>
       <CardContent>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>
-          Recently Enrolled
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+            Recently Enrolled
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            Course Hierarchy & Topics
+          </Typography>
+        </Box>
 
         {recent.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
@@ -127,23 +117,19 @@ const UserRecentEnrollments: React.FC<UserRecentEnrollmentsProps> = ({ recent })
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {recent.map((entry, index) => {
-              const isPdf = isDriveContent(entry.course?.content);
-              const isFolder = entry.course?.itemType === "folder";
-              const plainText = !isPdf && entry.course?.content
-                ? stripHtml(entry.course.content)
-                : "";
+              const breadcrumbs: string[] = entry.course?.breadcrumb || [];
 
               return (
-                <Box key={entry.course?._id}>
-                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', py: 1.5 }}>
+                <Box key={entry.course?._id || index}>
+                  <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'flex-start', py: 1.75 }}>
 
                     {/* Icon */}
                     <Box
                       sx={{
-                        width: 32,
-                        height: 32,
+                        width: 34,
+                        height: 34,
                         borderRadius: 1.5,
-                        bgcolor: isFolder ? '#E8EAF6' : '#F3E5F5',
+                        bgcolor: '#E8EAF6',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -151,62 +137,78 @@ const UserRecentEnrollments: React.FC<UserRecentEnrollmentsProps> = ({ recent })
                         mt: 0.2,
                       }}
                     >
-                      {isFolder ? (
-                        <FolderOpenIcon sx={{ fontSize: 16, color: '#1A237E' }} />
-                      ) : isPdf ? (
-                        <PictureAsPdfOutlinedIcon sx={{ fontSize: 16, color: '#6A1B9A' }} />
-                      ) : (
-                        <ArticleOutlinedIcon sx={{ fontSize: 16, color: '#6A1B9A' }} />
-                      )}
+                      <AccountTreeOutlinedIcon sx={{ fontSize: 18, color: '#1A237E' }} />
                     </Box>
 
                     {/* Content */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
+                      {/* Tree Breadcrumb Path */}
+                      {breadcrumbs.length > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', mb: 0.5 }}>
+                          {breadcrumbs.map((crumb: string, i: number) => (
+                            <React.Fragment key={i}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  color: '#475569',
+                                  bgcolor: '#F1F5F9',
+                                  px: 0.75,
+                                  py: 0.15,
+                                  borderRadius: '4px',
+                                  border: '1px solid #E2E8F0',
+                                }}
+                              >
+                                {crumb}
+                              </Typography>
+                              <NavigateNextIcon sx={{ fontSize: 11, color: '#94A3B8' }} />
+                            </React.Fragment>
+                          ))}
+                        </Box>
+                      )}
+
+                      {/* Topic Title + Tags */}
                       <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {entry.course?.title}
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0A1628' }}>
+                          {entry.course?.title || 'Unknown Course'}
                         </Typography>
+                        {entry.course?.tags && entry.course.tags.length > 0 && (
+                          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            {entry.course.tags.map((t: string) => (
+                              <Chip
+                                key={t}
+                                label={t}
+                                size="small"
+                                sx={{
+                                  height: 18,
+                                  fontSize: '0.62rem',
+                                  fontWeight: 600,
+                                  bgcolor: 'rgba(26,35,126,0.08)',
+                                  color: '#1A237E',
+                                  border: '1px solid rgba(26,35,126,0.15)',
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        )}
                         {!entry.course?.isActive && (
-                          <Chip label="Inactive" size="small" color="warning" variant="outlined" />
+                          <Chip label="Inactive" size="small" color="warning" variant="outlined" sx={{ height: 18, fontSize: '0.62rem' }} />
                         )}
                       </Stack>
-
-                      {/* Content preview — only for non-PDF, non-empty plain text */}
-                      {isPdf ? (
-                        <Stack sx={{ flexDirection: 'row', alignItems: 'center', gap: 0.5, mt: 0.4 }}>
-                          <PictureAsPdfOutlinedIcon sx={{ fontSize: 12, color: 'text.disabled' }} />
-                          <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
-                            PDF attached — visit the Courses tab to view
-                          </Typography>
-                        </Stack>
-                      ) : plainText ? (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 1,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            mt: 0.3,
-                          }}
-                        >
-                          {plainText}
-                        </Typography>
-                      ) : null}
 
                       {/* Enrolled at — with clock icon */}
                       <Stack
                         sx={{
                           flexDirection: 'row',
                           alignItems: 'center',
-                          gap: 0.4,
+                          gap: 0.5,
                           mt: 0.6,
                         }}
                       >
                         <AccessTimeIcon sx={{ fontSize: 11, color: 'text.disabled' }} />
                         <Typography variant="caption" color="text.disabled">
-                          {formatEnrolledAt(entry.enrolledAt)}
+                          Enrolled on {formatEnrolledAt(entry.enrolledAt)}
                         </Typography>
                       </Stack>
                     </Box>

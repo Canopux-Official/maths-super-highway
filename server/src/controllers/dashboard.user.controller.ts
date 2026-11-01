@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import User from "../models/user";
 import Enrollment from "../models/enrollment";
 import Testimonial from "../models/testimonials";
+import Course from "../models/courses";
 
 
 // ─────────────────────────────────────────────
@@ -37,8 +38,9 @@ export const userDashboard = async (req: Request, res: Response) => {
                 .limit(5)
                 .populate({
                     path: "course",
-                    select: "title tags isActive",
-                }),
+                    select: "title tags isActive ancestors depth parentId description",
+                })
+                .lean(),
 
             // Testimonial stats: count + average rating
             Testimonial.aggregate([
@@ -57,6 +59,39 @@ export const userDashboard = async (req: Request, res: Response) => {
             return res.status(404).json({ message: "User not found." });
         }
 
+        // Collect all ancestor IDs across enrolled courses to resolve their titles
+        const allAncestorIds = [
+            ...new Set(
+                recentEnrollments
+                    .map((e: any) => e.course)
+                    .filter(Boolean)
+                    .flatMap((c: any) => c.ancestors || [])
+                    .map(String)
+            ),
+        ];
+
+        const ancestors = allAncestorIds.length
+            ? await Course.find({ _id: { $in: allAncestorIds } }).select("title depth parentId").lean()
+            : [];
+        const ancestorMap = new Map(ancestors.map((a: any) => [a._id.toString(), a.title]));
+
+        const formattedRecent = recentEnrollments.map((e: any) => {
+            if (!e.course) return { enrolledAt: e.createdAt, course: null };
+            const breadcrumb = (e.course.ancestors || [])
+                .map((aId: any) => ancestorMap.get(aId.toString()))
+                .filter(Boolean);
+            const fullPath = [...breadcrumb, e.course.title];
+            return {
+                enrolledAt: e.createdAt,
+                course: {
+                    ...e.course,
+                    breadcrumb,
+                    path: fullPath,
+                    pathLabel: fullPath.join(" › "),
+                },
+            };
+        });
+
         return res.status(200).json({
             user: {
                 name: user.name,
@@ -67,10 +102,7 @@ export const userDashboard = async (req: Request, res: Response) => {
             },
             enrollments: {
                 total: totalEnrolled,
-                recent: recentEnrollments.map((e) => ({
-                    enrolledAt: e.createdAt,
-                    course: e.course,
-                })),
+                recent: formattedRecent,
             },
             testimonials: {
                 total: testimonialStats[0]?.totalReviews ?? 0,

@@ -6,9 +6,11 @@ export interface RecentEnrollment {
   course: {
     _id: string;
     title: string;
-    content: string;
-    itemType: string;
-    isActive: boolean;
+    tags?: string[];
+    isActive?: boolean;
+    breadcrumb?: string[];
+    path?: string[];
+    pathLabel?: string;
   };
 }
 

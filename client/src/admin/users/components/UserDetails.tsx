@@ -7,7 +7,8 @@ import {
 } from '@mui/material';
 import {
     ArrowBack, Email, Phone, CalendarToday,
-    School, VerifiedUser, AccessTime, Edit
+    School, VerifiedUser, AccessTime, Edit,
+    AccountTreeOutlined, NavigateNext
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '../services/api';
@@ -168,28 +169,114 @@ const UserDetails = () => {
                         
                         {/* Enrollments */}
                         <Paper elevation={0} sx={{ p: 3, border: '1px solid #E2E8F0', borderRadius: '16px' }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <School sx={{ color: '#1D4ED8' }} /> Enrolled Courses ({enrollments?.length || 0})
-                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <School sx={{ color: '#1D4ED8' }} /> Enrolled Courses ({enrollments?.length || 0})
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748B' }}>
+                                    Curriculum Tree & Selected Topics
+                                </Typography>
+                            </Box>
+
                             {enrollments?.length > 0 ? (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                                    {enrollments.map((en: any) => (
-                                        <Box sx={{ width: { xs: '100%', sm: 'calc(50% - 8px)' } }} key={en._id}>
-                                            <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                                                <CardContent sx={{ pb: '16px !important' }}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
-                                                        {en.course?.title || 'Unknown Course'}
-                                                    </Typography>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            Enrolled: {new Date(en.createdAt).toLocaleDateString('en-GB')}
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    {enrollments.map((en: any) => {
+                                        const breadcrumbs: string[] = en.course?.breadcrumb || [];
+                                        return (
+                                            <Card
+                                                variant="outlined"
+                                                key={en._id}
+                                                sx={{
+                                                    borderRadius: '12px',
+                                                    borderColor: '#E2E8F0',
+                                                    bgcolor: '#fff',
+                                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                                                    '&:hover': {
+                                                        borderColor: '#CBD5E1',
+                                                        boxShadow: '0 4px 14px rgba(0,0,0,0.04)',
+                                                    },
+                                                }}
+                                            >
+                                                <CardContent sx={{ p: 2.5, pb: '20px !important' }}>
+                                                    {/* Tree path hierarchy */}
+                                                    {breadcrumbs.length > 0 && (
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 1.5 }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#1D4ED8' }}>
+                                                                <AccountTreeOutlined sx={{ fontSize: 15 }} />
+                                                                <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                    Tree Path:
+                                                                </Typography>
+                                                            </Box>
+                                                            {breadcrumbs.map((crumb, idx) => (
+                                                                <React.Fragment key={idx}>
+                                                                    <Typography
+                                                                        sx={{
+                                                                            fontSize: '0.72rem',
+                                                                            fontWeight: 600,
+                                                                            color: '#334155',
+                                                                            bgcolor: '#F1F5F9',
+                                                                            px: 1,
+                                                                            py: 0.25,
+                                                                            borderRadius: '6px',
+                                                                            border: '1px solid #E2E8F0',
+                                                                        }}
+                                                                    >
+                                                                        {crumb}
+                                                                    </Typography>
+                                                                    <NavigateNext sx={{ fontSize: 13, color: '#94A3B8' }} />
+                                                                </React.Fragment>
+                                                            ))}
+                                                        </Box>
+                                                    )}
+
+                                                    {/* Enrolled Topic Title & Tags */}
+                                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5, mb: 1 }}>
+                                                        <Box>
+                                                            <Typography sx={{ fontWeight: 700, fontSize: '1rem', color: '#0A1628', fontFamily: "'Sora', sans-serif" }}>
+                                                                {en.course?.title || 'Unknown Topic'}
+                                                            </Typography>
+                                                            {en.course?.description && (
+                                                                <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.8rem', mt: 0.5 }}>
+                                                                    {en.course.description}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+
+                                                        {en.course?.tags && en.course.tags.length > 0 && (
+                                                            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', flexShrink: 0 }}>
+                                                                {en.course.tags.map((tag: string) => (
+                                                                    <Chip
+                                                                        key={tag}
+                                                                        label={tag}
+                                                                        size="small"
+                                                                        sx={{
+                                                                            height: 22,
+                                                                            fontSize: '0.68rem',
+                                                                            fontWeight: 700,
+                                                                            bgcolor: 'rgba(29,78,216,0.08)',
+                                                                            color: '#1D4ED8',
+                                                                            border: '1px solid rgba(29,78,216,0.2)',
+                                                                        }}
+                                                                    />
+                                                                ))}
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+
+                                                    {/* Footer Info: Enrolled Date & Activity status */}
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5, pt: 1.25, borderTop: '1px solid #F1F5F9' }}>
+                                                        <Typography variant="caption" sx={{ color: '#64748B', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <AccessTime sx={{ fontSize: 13, color: '#94A3B8' }} />
+                                                            Enrolled on: {new Date(en.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         </Typography>
-                                                        <Chip label={en.course?.level || 'N/A'} size="small" sx={{ height: 20, fontSize: '0.65rem' }} />
+                                                        {en.course?.isActive === false && (
+                                                            <Chip label="Hidden from students" size="small" color="warning" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                                                        )}
                                                     </Box>
                                                 </CardContent>
                                             </Card>
-                                        </Box>
-                                    ))}
+                                        );
+                                    })}
                                 </Box>
                             ) : (
                                 <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>

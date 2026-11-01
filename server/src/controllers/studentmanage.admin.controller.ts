@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import User from '../models/user';
 import Enrollment from '../models/enrollment';
 import Testimonial from '../models/testimonials';
+import Course from '../models/courses';
 
 /**
  * @desc    Get all users (Typically filtered for the Admin view)
@@ -32,14 +33,52 @@ export const getUserDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const enrollments = await Enrollment.find({ student: user._id }).populate('course', 'title tags isActive')
+    const enrollments = await Enrollment.find({ student: user._id })
+      .populate('course', 'title tags isActive ancestors depth parentId description')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Collect all ancestor IDs across enrolled courses to resolve their titles
+    const allAncestorIds = [
+      ...new Set(
+        enrollments
+          .map((e: any) => e.course)
+          .filter(Boolean)
+          .flatMap((c: any) => c.ancestors || [])
+          .map(String)
+      ),
+    ];
+
+    const ancestors = allAncestorIds.length
+      ? await Course.find({ _id: { $in: allAncestorIds } }).select('title depth parentId').lean()
+      : [];
+    const ancestorMap = new Map(ancestors.map((a: any) => [a._id.toString(), a.title]));
+
+    // Attach tree hierarchy / breadcrumbs to each enrollment
+    const formattedEnrollments = enrollments.map((e: any) => {
+      if (!e.course) return e;
+      const breadcrumb = (e.course.ancestors || [])
+        .map((aId: any) => ancestorMap.get(aId.toString()))
+        .filter(Boolean);
+      const fullPath = [...breadcrumb, e.course.title];
+      return {
+        ...e,
+        course: {
+          ...e.course,
+          breadcrumb,
+          path: fullPath,
+          pathLabel: fullPath.join(' › '),
+        },
+      };
+    });
+
     const testimonials = await Testimonial.find({ user: user._id }).populate('course', 'title');
 
     res.status(200).json({
       success: true,
       data: {
         user,
-        enrollments,
+        enrollments: formattedEnrollments,
         testimonials
       }
     });

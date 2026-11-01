@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import {
-  Alert, Box, Button, Checkbox, Chip, Drawer, MenuItem, Paper, Stack, TextField, Typography,
+  Alert, Box, Button, Checkbox, Chip, Drawer, MenuItem, Paper, Stack, Switch, TextField, Tooltip, Typography,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import CheckIcon from '@mui/icons-material/Check';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { courseService } from '../services/api';
+import { courseService, type Selection } from '../services/api';
 import { buildTree, collectAllIds, collectLeafIds, collectTags, filterTree, isLeaf, pathTo, type TreeNode } from '../../../utils/courseTree';
 import CurriculumTree from '../../../admin/courses/components/CurriCulumTree';
 
@@ -24,6 +26,7 @@ export default function CourseTab() {
   // "Choose Courses" mode: ticks go into a temporary draft until the student presses Update
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Set<string>>(new Set());
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
   // While choosing, the UI shows the draft; otherwise it shows what is saved.
   const selected = editing ? draft : savedSelected;
@@ -41,9 +44,18 @@ export default function CourseTab() {
   // Saves only the differences between the draft and what is already saved
   const save = useMutation({
     mutationFn: (p: { add?: string[]; remove?: string[] }) => courseService.updateSelections(p),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: SEL_KEY }); // wait so the screen doesn't flash old ticks
-      setEditing(false);
+    onSuccess: async (_data, variables) => {
+      // Synchronously update local cache so savedSelected matches draft immediately, freezing the Update button
+      qc.setQueryData<Selection[]>(SEL_KEY, (old = []) => {
+        const added = new Set(variables.add || []);
+        const removed = new Set(variables.remove || []);
+        const kept = old.filter((s) => !removed.has(s.courseId));
+        const newItems = Array.from(added).map((courseId) => ({ courseId, needsReview: false }));
+        return [...kept, ...newItems];
+      });
+      await qc.invalidateQueries({ queryKey: SEL_KEY });
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3500);
     },
     onError: (e: any) => setProblem(e?.response?.data?.message ?? 'Could not save your selection'),
   });
@@ -51,21 +63,27 @@ export default function CourseTab() {
   const startEditing = () => {
     setDraft(new Set(savedSelected));
     setProblem('');
+    setSavedSuccess(false);
     setEditing(true);
   };
-  const cancelEditing = () => setEditing(false);
+  const cancelEditing = () => {
+    setDraft(new Set(savedSelected));
+    setEditing(false);
+    setSavedSuccess(false);
+  };
 
   const toAdd = Array.from(draft).filter((id) => !savedSelected.has(id));
   const toRemove = Array.from(savedSelected).filter((id) => !draft.has(id));
   const changes = toAdd.length + toRemove.length;
 
   const saveChanges = () => {
-    if (!changes) return setEditing(false);
+    if (!changes) return;
     save.mutate({ add: toAdd, remove: toRemove });
   };
 
   const toggleNode = (n: TreeNode) => {
     if (!editing) return;
+    setSavedSuccess(false);
     const leaves = collectLeafIds(n);
     const all = leaves.every((id: any) => draft.has(id));
     setDraft((prev) => {
@@ -91,25 +109,175 @@ export default function CourseTab() {
           </TextField>
         </Box>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <Button onClick={() => setExpanded(new Set(collectAllIds(tree)))}>Expand all</Button>
-          <Button onClick={() => setExpanded(new Set())}>Collapse all</Button>
-          {!editing ? (
-            <Button variant="contained" onClick={startEditing}>Choose Courses</Button>
-          ) : (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+          <Button size="small" onClick={() => setExpanded(new Set(collectAllIds(tree)))}>Expand all</Button>
+          <Button size="small" onClick={() => setExpanded(new Set())}>Collapse all</Button>
+
+          {/* Toggle Button for Course Selection */}
+          <Box
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              if (!editing) startEditing();
+              else cancelEditing();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (!editing) startEditing();
+                else cancelEditing();
+              }
+            }}
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: '24px',
+              border: '1.5px solid',
+              borderColor: editing ? '#1A237E' : '#CBD5E1',
+              bgcolor: editing ? '#EEF2FF' : '#FFFFFF',
+              cursor: 'pointer',
+              userSelect: 'none',
+              transition: 'all 0.2s ease',
+              boxShadow: editing ? '0 2px 8px rgba(26,35,126,0.18)' : '0 1px 3px rgba(0,0,0,0.05)',
+              '&:hover': {
+                borderColor: '#1A237E',
+                bgcolor: editing ? '#E0E7FF' : '#F8FAFC',
+              },
+            }}
+          >
+            <Switch
+              size="small"
+              checked={editing}
+              sx={{
+                pointerEvents: 'none',
+                m: 0,
+                '& .MuiSwitch-switchBase.Mui-checked': {
+                  color: '#1A237E',
+                },
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                  backgroundColor: '#1A237E',
+                },
+              }}
+            />
+            <Typography
+              sx={{
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                color: editing ? '#1A237E' : '#334155',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
+              Choose Courses
+              {editing && (
+                <Chip
+                  label="ON"
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    bgcolor: '#1A237E',
+                    color: '#fff',
+                    borderRadius: '4px',
+                  }}
+                />
+              )}
+            </Typography>
+          </Box>
+
+          {/* Update Button (Frozen/Disabled when changes === 0) */}
+          {editing && (
             <>
-              <Button variant="contained" color="success" onClick={saveChanges} disabled={save.isPending}>
-                {save.isPending ? 'Updating…' : `Update${changes ? ` (${changes})` : ''}`}
+              <Tooltip
+                title={
+                  changes === 0
+                    ? 'Update button is frozen because no changes have been made yet.'
+                    : `Save ${changes} course selection change${changes > 1 ? 's' : ''}`
+                }
+              >
+                <span>
+                  <Button
+                    variant="contained"
+                    onClick={saveChanges}
+                    disabled={changes === 0 || save.isPending}
+                    startIcon={
+                      changes === 0 ? (
+                        <AcUnitIcon sx={{ fontSize: 16, opacity: 0.7 }} />
+                      ) : (
+                        <CheckIcon sx={{ fontSize: 18 }} />
+                      )
+                    }
+                    sx={{
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      borderRadius: '8px',
+                      px: 2,
+                      py: 0.75,
+                      bgcolor: '#2E7D32',
+                      color: '#fff',
+                      boxShadow: changes > 0 ? '0 2px 8px rgba(46,125,50,0.3)' : 'none',
+                      '&:hover': {
+                        bgcolor: '#1B5E20',
+                      },
+                      '&.Mui-disabled': {
+                        bgcolor: '#E2E8F0',
+                        color: '#94A3B8',
+                        cursor: 'not-allowed',
+                      },
+                    }}
+                  >
+                    {save.isPending
+                      ? 'Updating…'
+                      : changes > 0
+                      ? `Update (${changes})`
+                      : 'Update (Frozen)'}
+                  </Button>
+                </span>
+              </Tooltip>
+
+              <Button
+                size="small"
+                onClick={cancelEditing}
+                disabled={save.isPending}
+                sx={{
+                  textTransform: 'none',
+                  color: '#64748B',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  borderRadius: '8px',
+                  '&:hover': { bgcolor: '#F1F5F9' },
+                }}
+              >
+                Done
               </Button>
-              <Button onClick={cancelEditing} disabled={save.isPending}>Cancel</Button>
+
+              {savedSuccess && (
+                <Chip
+                  icon={<CheckIcon sx={{ fontSize: '14px !important', color: '#fff !important' }} />}
+                  label="Saved & up to date"
+                  size="small"
+                  color="success"
+                  variant="filled"
+                  sx={{ fontWeight: 700, fontSize: '0.75rem', height: 28, px: 0.5 }}
+                />
+              )}
             </>
           )}
         </Box>
       </Box>
+
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         {editing
-          ? 'Tick the topics you want, then press Update. Ticking a parent selects everything inside it.'
-          : 'Press “Choose Courses” to pick topics for “My Superhighway”. You can still browse, expand and collapse.'}
+          ? (changes > 0
+              ? `You have ${changes} unsaved change${changes > 1 ? 's' : ''}. Click “Update” to save.`
+              : 'Course selection mode is active. Check or uncheck topics below, then click “Update” (frozen until edits are made).')
+          : 'Toggle “Choose Courses” ON to pick topics for “My Superhighway”. You can still browse, expand and collapse.'}
       </Typography>
 
       {problem && <Alert severity="error" onClose={() => setProblem('')} sx={{ mb: 1 }}>{problem}</Alert>}
@@ -159,7 +327,7 @@ export default function CourseTab() {
               </Button>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                Press “Choose Courses” on the main page to select this topic.
+                Toggle “Choose Courses” ON above to select this topic.
               </Typography>
             )}
           </Box>
