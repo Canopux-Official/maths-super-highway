@@ -29,7 +29,7 @@ export const createResult = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'No image file uploaded' });
     }
 
-    const { title, isActive, order } = req.body;
+    const { title, studentName, exam, score, isActive, order } = req.body;
     
     // multer-storage-cloudinary adds `path` (the url) and `filename` (the public_id)
     const imageUrl = req.file.path;
@@ -39,6 +39,9 @@ export const createResult = async (req: Request, res: Response) => {
       imageUrl,
       publicId,
       title: title || '',
+      studentName: studentName || '',
+      exam: exam || '',
+      score: score || '',
       isActive: isActive !== 'false',
       order: order ? parseInt(order, 10) : 0,
     });
@@ -53,11 +56,11 @@ export const createResult = async (req: Request, res: Response) => {
 export const updateResult = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, isActive, order } = req.body;
+    const { title, studentName, exam, score, isActive, order } = req.body;
 
     const result = await Result.findByIdAndUpdate(
       id,
-      { title, isActive, order },
+      { title, studentName, exam, score, isActive, order },
       { new: true }
     );
 

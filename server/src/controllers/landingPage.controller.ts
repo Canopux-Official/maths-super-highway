@@ -1,6 +1,5 @@
 import Course from "../models/courses";
 import Enrollment from "../models/enrollment";
-import Headline from "../models/headline";
 import { Request, Response } from 'express';
 
 // Landing testimonials now live in testimonial.controller.ts (admin-approved + 4.5 average rule)
@@ -59,15 +58,6 @@ export const getLandingCurriculum = async (_req: Request, res: Response) => {
 
     res.set('Cache-Control', 'public, max-age=300'); // up to 5 minutes behind the admin screen
     return res.status(200).json({ success: true, data });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const getHeadlines = async (_req: Request, res: Response) => {
-  try {
-    const headlines = await Headline.find({ isActive: true }).sort({ createdAt: -1 });
-    return res.status(200).json({ success: true, data: headlines });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }

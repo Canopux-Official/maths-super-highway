@@ -18,9 +18,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import MobileNewsStrip from "./MobileNewsStrip";
 
 const navLinks = [
     { label: "Home", href: "#hero" },
+    { label: "Results", href: "#results" },
     { label: "Courses", href: "#courses" },
     { label: "Testimonials", href: "#testimonials" },
     { label: "About Us", href: "#about" },
@@ -208,6 +210,7 @@ const Header: React.FC = () => {
                         </IconButton>
                     </Toolbar>
                 </Container>
+                <MobileNewsStrip />
             </AppBar>
 
             {/* Mobile Drawer */}

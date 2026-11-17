@@ -49,7 +49,6 @@ export const getLandingPageTestimonials = async (): Promise<Testimonial[]> => {
 export const getNewsTicker = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/landing-page/get-headlines`); // Adjust endpoint as needed
-    console.log(response)
     return response.data;
   } catch (error) {
     console.error("Error fetching news:", error);

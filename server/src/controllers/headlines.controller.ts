@@ -1,10 +1,18 @@
 import { Request, Response } from 'express';
 import Headline from '../models/headline';
 
+/** Accepts an ISO date string, '' / null (clear), or undefined (leave unchanged). */
+const parseLiveUntil = (value: unknown): Date | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null || value === '') return null;
+  const d = new Date(String(value));
+  return Number.isNaN(d.getTime()) ? undefined : d;
+};
+
 // 1. Create Headline
 export const createHeadline = async (req: Request, res: Response) => {
   try {
-    const { text, link, isLive } = req.body;
+    const { text, link, isLive, liveUntil } = req.body;
 
     if (!text) {
       return res.status(400).json({ success: false, message: "Headline text is required" });
@@ -25,7 +33,8 @@ export const createHeadline = async (req: Request, res: Response) => {
     const headline = await Headline.create({
       text: text.trim(),
       link,
-      isLive: isLive ?? true
+      isLive: isLive ?? true,
+      liveUntil: parseLiveUntil(liveUntil) ?? null
     });
 
     return res.status(201).json({
@@ -42,7 +51,7 @@ export const createHeadline = async (req: Request, res: Response) => {
 export const updateHeadline = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { text, link, isLive } = req.body;
+    const { text, link, isLive, liveUntil } = req.body;
 
     // If text is being updated, check if the new text collides with another headline
     if (text) {
@@ -61,7 +70,7 @@ export const updateHeadline = async (req: Request, res: Response) => {
 
     const updatedHeadline = await Headline.findByIdAndUpdate(
       id,
-      { $set: { text, link, isLive } },
+      { $set: { text, link, isLive, liveUntil: parseLiveUntil(liveUntil) } },
       { new: true, runValidators: true }
     );
 
@@ -99,10 +108,23 @@ export const deleteHeadline = async (req: Request, res: Response) => {
   }
 };
 
-// 4. Get Live Headlines (For User View)
+// 4. Get all headlines, including hidden and expired ones (admin table)
 export const getHeadlines = async (_req: Request, res: Response) => {
   try {
     const headlines = await Headline.find({}).sort({ createdAt: -1 });
+    return res.status(200).json({ success: true, data: headlines });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 5. Public headlines for the landing page: visible and not expired
+export const getPublicHeadlines = async (_req: Request, res: Response) => {
+  try {
+    const headlines = await Headline.find({
+      isLive: true,
+      $or: [{ liveUntil: null }, { liveUntil: { $gt: new Date() } }],
+    }).sort({ createdAt: -1 });
     return res.status(200).json({ success: true, data: headlines });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });

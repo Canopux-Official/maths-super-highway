@@ -195,14 +195,12 @@ const Courses: React.FC = () => {
                         <Typography
                             sx={{
                                 color: "#0891B2",
-                                fontWeight: 700,
-                                fontSize: "0.8rem",
-                                letterSpacing: 1.4,
-                                textTransform: "uppercase",
+                                fontWeight: 600,
+                                fontSize: "0.9rem",
                                 mb: 1,
                             }}
                         >
-                            Academic Catalogue
+                            Academic catalogue
                         </Typography>
                         <Typography
                             variant="h4"

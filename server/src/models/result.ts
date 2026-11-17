@@ -4,6 +4,9 @@ export interface IResult extends Document {
   imageUrl: string;
   publicId: string;
   title?: string;
+  studentName?: string;
+  exam?: string;
+  score?: string;
   order: number;
   isActive: boolean;
   createdAt: Date;
@@ -15,6 +18,9 @@ const resultSchema = new Schema<IResult>(
     imageUrl: { type: String, required: true },
     publicId: { type: String, required: true },
     title: { type: String, trim: true },
+    studentName: { type: String, trim: true },
+    exam: { type: String, trim: true },
+    score: { type: String, trim: true },
     order: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
   },

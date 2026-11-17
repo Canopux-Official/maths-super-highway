@@ -17,6 +17,7 @@ import theme from './landingPage/theme';
 import { Box, CssBaseline } from '@mui/material';
 import Header from './landingPage/components/Header';
 import Hero from './landingPage/components/HeroSection';
+import ResultsShowcase from './landingPage/components/ResultsShowcase';
 import LandingCourses from './landingPage/components/LandingCourses';
 import Testimonials from './landingPage/components/Testimonial';
 import AboutUs from './landingPage/components/AboutUs';
@@ -48,6 +49,7 @@ function App() {
               <Box>
                 <Header />
                 <Hero />
+                <ResultsShowcase />
                 <LandingCourses />
                 <Testimonials />
                 <AboutUs />

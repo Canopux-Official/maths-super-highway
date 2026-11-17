@@ -16,9 +16,14 @@ interface ResultImage {
   _id: string;
   imageUrl: string;
   title: string;
+  studentName?: string;
+  exam?: string;
+  score?: string;
   order: number;
   isActive: boolean;
 }
+
+const EMPTY_FORM = { title: '', studentName: '', exam: '', score: '', order: 0, isActive: true };
 
 const ResultsManagement = () => {
   const [results, setResults] = useState<ResultImage[]>([]);
@@ -27,7 +32,7 @@ const ResultsManagement = () => {
 
   const [openAdd, setOpenAdd] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [formData, setFormData] = useState({ title: '', order: 0, isActive: true });
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [uploading, setUploading] = useState(false);
 
   const [openEdit, setOpenEdit] = useState(false);
@@ -75,6 +80,9 @@ const ResultsManagement = () => {
     const data = new FormData();
     data.append('image', selectedFile);
     data.append('title', formData.title);
+    data.append('studentName', formData.studentName);
+    data.append('exam', formData.exam);
+    data.append('score', formData.score);
     data.append('order', formData.order.toString());
     data.append('isActive', formData.isActive.toString());
 
@@ -86,7 +94,7 @@ const ResultsManagement = () => {
       });
       setOpenAdd(false);
       setSelectedFile(null);
-      setFormData({ title: '', order: 0, isActive: true });
+      setFormData(EMPTY_FORM);
       fetchResults();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to upload result');
@@ -160,8 +168,13 @@ const ResultsManagement = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <Box>
                     <Typography sx={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                      {result.title || 'Untitled'}
+                      {result.studentName || result.title || 'Untitled'}
                     </Typography>
+                    {(result.exam || result.score) && (
+                      <Typography variant="body2" color="text.secondary">
+                        {[result.exam, result.score].filter(Boolean).join(' · ')}
+                      </Typography>
+                    )}
                     <Typography variant="caption" color="text.secondary">
                       Order: {result.order} • Status: {result.isActive ? 'Active' : 'Hidden'}
                     </Typography>
@@ -201,7 +214,29 @@ const ResultsManagement = () => {
           </Button>
           <TextField
             sx={{ mt: 1 }}
-            label="Title (Optional)"
+            label="Student name"
+            placeholder="e.g. Riya Sharma"
+            value={formData.studentName}
+            onChange={e => setFormData({ ...formData, studentName: e.target.value })}
+          />
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              fullWidth
+              label="Exam"
+              placeholder="e.g. JEE Advanced 2026"
+              value={formData.exam}
+              onChange={e => setFormData({ ...formData, exam: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              label="Score / rank"
+              placeholder="e.g. AIR 112"
+              value={formData.score}
+              onChange={e => setFormData({ ...formData, score: e.target.value })}
+            />
+          </Box>
+          <TextField
+            label="Title (Optional, used if no student name)"
             value={formData.title}
             onChange={e => setFormData({ ...formData, title: e.target.value })}
           />
@@ -234,7 +269,26 @@ const ResultsManagement = () => {
             <>
               <TextField
                 sx={{ mt: 1 }}
-                label="Title (Optional)"
+                label="Student name"
+                value={editingResult.studentName || ''}
+                onChange={e => setEditingResult({ ...editingResult, studentName: e.target.value })}
+              />
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Exam"
+                  value={editingResult.exam || ''}
+                  onChange={e => setEditingResult({ ...editingResult, exam: e.target.value })}
+                />
+                <TextField
+                  fullWidth
+                  label="Score / rank"
+                  value={editingResult.score || ''}
+                  onChange={e => setEditingResult({ ...editingResult, score: e.target.value })}
+                />
+              </Box>
+              <TextField
+                label="Title (Optional, used if no student name)"
                 value={editingResult.title}
                 onChange={e => setEditingResult({ ...editingResult, title: e.target.value })}
               />

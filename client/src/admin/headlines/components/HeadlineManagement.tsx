@@ -9,11 +9,24 @@ import { Add, Edit, Delete, Link as LinkIcon, Campaign as CampaignIcon, FiberMan
 import { headlineService } from '../services/api';
 import ConfirmDialog from '../../../components/ConfirmDialog';
 
+/** ISO timestamp -> 'yyyy-mm-dd' for a date input (local time). */
+const toDateInput = (iso?: string | null) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+/** 'yyyy-mm-dd' -> ISO at the end of that day (local), so "until 24 Nov" includes all of 24 Nov. */
+const endOfDayIso = (value: string) => (value ? new Date(`${value}T23:59:59`).toISOString() : null);
+const isExpired = (h: { liveUntil?: string | null }) => !!h.liveUntil && new Date(h.liveUntil).getTime() <= Date.now();
+const shortDate = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
 const HeadlineManagement = () => {
     const [headlines, setHeadlines] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [form, setForm] = useState({ text: '', link: '', isLive: true });
+    const [form, setForm] = useState({ text: '', link: '', isLive: true, liveUntil: '' });
 
     const [confirmState, setConfirmState] = useState<{ open: boolean, title: string, message: string, action: (() => void) | null, color: "primary" | "error" | "warning" }>({
         open: false, title: '', message: '', action: null, color: 'primary'
@@ -30,10 +43,10 @@ const HeadlineManagement = () => {
     const handleOpenModal = (headline?: any) => {
         if (headline) {
             setEditingId(headline._id);
-            setForm({ text: headline.text, link: headline.link || '', isLive: headline.isLive });
+            setForm({ text: headline.text, link: headline.link || '', isLive: headline.isLive, liveUntil: toDateInput(headline.liveUntil) });
         } else {
             setEditingId(null);
-            setForm({ text: '', link: '', isLive: true });
+            setForm({ text: '', link: '', isLive: true, liveUntil: '' });
         }
         setIsModalOpen(true);
     };
@@ -52,11 +65,12 @@ const HeadlineManagement = () => {
             return;
         }
 
+        const payload = { ...form, liveUntil: endOfDayIso(form.liveUntil) };
         let res;
         if (editingId) {
-            res = await headlineService.updateHeadline(editingId, form);
+            res = await headlineService.updateHeadline(editingId, payload);
         } else {
-            res = await headlineService.createHeadline(form);
+            res = await headlineService.createHeadline(payload);
         }
         if (res.success) {
             setIsModalOpen(false);
@@ -85,7 +99,7 @@ const HeadlineManagement = () => {
         if (res.success) loadHeadlines();
     };
 
-    const liveCount = (headlines as any[]).filter((h: any) => h.isLive).length;
+    const liveCount = (headlines as any[]).filter((h: any) => h.isLive && !isExpired(h)).length;
 
     return (
         <Box>
@@ -96,7 +110,7 @@ const HeadlineManagement = () => {
                         Announcements
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#64748B', fontFamily: "'Inter', sans-serif" }}>
-                        Manage live news ticker content shown on the student portal
+                        Shown in the Latest updates panel on the home page
                     </Typography>
                 </Box>
                 <Button
@@ -130,7 +144,7 @@ const HeadlineManagement = () => {
                 {[
                     { label: 'Total Announcements', value: (headlines as any[]).length, color: '#0A1628', bg: 'rgba(10,22,40,0.06)' },
                     { label: 'Live Now', value: liveCount, color: '#16A34A', bg: 'rgba(22,163,74,0.08)' },
-                    { label: 'Hidden', value: (headlines as any[]).length - liveCount, color: '#64748B', bg: 'rgba(100,116,139,0.08)' },
+                    { label: 'Hidden or expired', value: (headlines as any[]).length - liveCount, color: '#64748B', bg: 'rgba(100,116,139,0.08)' },
                 ].map(stat => (
                     <Box
                         key={stat.label}
@@ -202,32 +216,50 @@ const HeadlineManagement = () => {
 
                                     {/* Status */}
                                     <TableCell sx={{ py: 2 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Chip
-                                                icon={<DotIcon sx={{ fontSize: '8px !important' }} />}
-                                                label={item.isLive ? 'Live' : 'Hidden'}
-                                                size="small"
-                                                sx={{
-                                                    fontWeight: 700,
-                                                    fontSize: '0.7rem',
-                                                    fontFamily: "'Inter', sans-serif",
-                                                    bgcolor: item.isLive ? 'rgba(22,163,74,0.10)' : 'rgba(100,116,139,0.10)',
-                                                    color: item.isLive ? '#16A34A' : '#64748B',
-                                                    border: '1px solid',
-                                                    borderColor: item.isLive ? 'rgba(22,163,74,0.25)' : 'rgba(100,116,139,0.2)',
-                                                    '& .MuiChip-icon': { color: item.isLive ? '#16A34A' : '#94A3B8', ml: 0.5 },
-                                                }}
-                                            />
-                                            <Switch
-                                                size="small"
-                                                checked={item.isLive}
-                                                onChange={() => toggleLiveStatus(item)}
-                                                sx={{
-                                                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#16A34A' },
-                                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#16A34A' },
-                                                }}
-                                            />
-                                        </Box>
+                                        {(() => {
+                                            const expired = item.isLive && isExpired(item);
+                                            const state = !item.isLive ? 'hidden' : expired ? 'expired' : 'live';
+                                            const palette = {
+                                                live: { label: 'Live', fg: '#16A34A', bg: 'rgba(22,163,74,0.10)', bd: 'rgba(22,163,74,0.25)' },
+                                                expired: { label: 'Expired', fg: '#B45309', bg: 'rgba(217,119,6,0.10)', bd: 'rgba(217,119,6,0.25)' },
+                                                hidden: { label: 'Hidden', fg: '#64748B', bg: 'rgba(100,116,139,0.10)', bd: 'rgba(100,116,139,0.2)' },
+                                            }[state];
+                                            return (
+                                                <Box>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Chip
+                                                            icon={<DotIcon sx={{ fontSize: '8px !important' }} />}
+                                                            label={palette.label}
+                                                            size="small"
+                                                            sx={{
+                                                                fontWeight: 700,
+                                                                fontSize: '0.7rem',
+                                                                fontFamily: "'Inter', sans-serif",
+                                                                bgcolor: palette.bg,
+                                                                color: palette.fg,
+                                                                border: '1px solid',
+                                                                borderColor: palette.bd,
+                                                                '& .MuiChip-icon': { color: palette.fg, ml: 0.5 },
+                                                            }}
+                                                        />
+                                                        <Switch
+                                                            size="small"
+                                                            checked={item.isLive}
+                                                            onChange={() => toggleLiveStatus(item)}
+                                                            sx={{
+                                                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#16A34A' },
+                                                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#16A34A' },
+                                                            }}
+                                                        />
+                                                    </Box>
+                                                    {item.liveUntil && (
+                                                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: expired ? '#B45309' : '#64748B', fontFamily: "'Inter', sans-serif" }}>
+                                                            {expired ? 'Ended' : 'Until'} {shortDate(item.liveUntil)}
+                                                        </Typography>
+                                                    )}
+                                                </Box>
+                                            );
+                                        })()}
                                     </TableCell>
 
                                     {/* Actions */}
@@ -302,6 +334,19 @@ const HeadlineManagement = () => {
                             onChange={(e) => setForm({ ...form, link: e.target.value })}
                             placeholder="https://..."
                             slotProps={{ input: { startAdornment: <InputAdornment position="start"><LinkIcon sx={{ fontSize: 16, color: '#94A3B8' }} /></InputAdornment> } }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': { borderRadius: '10px', '& fieldset': { borderColor: '#E2E8F0' }, '&.Mui-focused fieldset': { borderColor: '#1D4ED8' } },
+                                '& label.Mui-focused': { color: '#1D4ED8' },
+                            }}
+                        />
+                        <TextField
+                            label="Show until (optional)"
+                            type="date"
+                            fullWidth
+                            value={form.liveUntil}
+                            onChange={(e) => setForm({ ...form, liveUntil: e.target.value })}
+                            helperText="The announcement hides itself after this day. Leave empty to keep it up until you hide it."
+                            slotProps={{ inputLabel: { shrink: true } }}
                             sx={{
                                 '& .MuiOutlinedInput-root': { borderRadius: '10px', '& fieldset': { borderColor: '#E2E8F0' }, '&.Mui-focused fieldset': { borderColor: '#1D4ED8' } },
                                 '& label.Mui-focused': { color: '#1D4ED8' },
